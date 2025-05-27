@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://froggy1014.github.io/sitemap.xml

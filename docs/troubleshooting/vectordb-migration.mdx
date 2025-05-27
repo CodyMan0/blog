@@ -1,0 +1,56 @@
+---
+title: 로컬 벡터 DB가 안 가져와지네
+description: page/api 에서 app/api로 옮기면서 `hnswlib-node` 가 import가 안됬던 삽질
+tags: [트러블슈팅]
+last_update:
+  date: 3/12/2024
+---
+
+## 개요
+
+1. 해커톤 당시 아직 기술부채가 있는 `app router`를 과감히 버리고 `page router`로 진행
+2. 생성형 AI를 사용하여 `RAG`를 통해 원하는 키워드를 뽑아내는 로직 구현
+3. 당시 `pages/api` 라우터였고 [`HNSWLib`](https://js.langchain.com/docs/integrations/vectorstores/hnswlib) 라는 Node 전용 벡터스토어 패키지로 벡터화를 진행하였음
+
+## 문제
+
+1. 해커톤 프로젝트를 실사용으로 올리기 위해 과감히 `app router`로 마이그레이션 작업
+2. `app router`에서의 `api route` [사용법](https://nextjs.org/docs/app/building-your-application/routing/route-handlers)은 좀 다른 것을 인지하게 되었음
+3. 로직은 그대로 가져왔으나 500에러 발생, 에러 메세지는 아래와 같았음.
+
+```bash
+
+⨯ Error: Could not import hnswlib-node. Please install hnswlib-node as a dependency with, e.g. `npm install -S hnswlib-node`.
+
+Error: Cannot read properties of undefined (reading 'indexOf')
+    at HNSWLib.imports (webpack-internal:///(rsc)/./node_modules/@langchain/community/dist/vectorstores/hnswlib.js:275:19)
+    at async HNSWLib.getHierarchicalNSW (webpack-internal:///(rsc)/./node_modules/@langchain/community/dist/vectorstores/hnswlib.js:58:37)
+    at async HNSWLib.load (webpack-internal:///(rsc)/./node_modules/@langchain/community/dist/vectorstores/hnswlib.js:217:23)
+    ...
+```
+
+4. `node_modules`에 해당 패키지 정상적으로 설치 되었음을 확인
+5. `버전이슈`확인 하였으나 아님을 확인
+6. `pages/api` 에서는 정상적으로 동작함을 확인
+
+## 결론
+
+1. `app router`의 `api router`에서 문제가 있는 것을 확신
+2. 깃헙 이슈에 해당 패키지 검색해서 아래 관련 이슈 확인
+3. https://github.com/langchain-ai/langchainjs/issues/943
+4. Nextjs 13버전의 route handler로 전환하자 문제가 발생하는 하는 것을 확인
+5. 공식적으로 아직 이유에 대해서 밝혀진 바가 없지만 아래 `next.config` 설정으로 해결
+
+```ts
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  webpack: config => {
+    config.externals = [...config.externals, "hnswlib-node"];
+
+    return config;
+  },
+};
+
+export default nextConfig;
+```
