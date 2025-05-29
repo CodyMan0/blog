@@ -12,18 +12,18 @@ const sidebars: SidebarsConfig = {
         keywords: ["스터디", "노트", "스터디 노트"],
       },
       items: [
-        {
-          type: "category",
-          label: "Docker & Kubernetes",
-          items: [
-            "study/docker-kubernetes/overview",
-            "study/docker-kubernetes/image-and-container",
-            "study/docker-kubernetes/volume",
-            "study/docker-kubernetes/container-and-networking",
-          ],
-        },
-        "study/swr",
-        "study/llm",
+        // {
+        //   type: "category",
+        //   label: "Docker & Kubernetes",
+        //   items: [
+        //     "study/docker-kubernetes/overview",
+        //     "study/docker-kubernetes/image-and-container",
+        //     "study/docker-kubernetes/volume",
+        //     "study/docker-kubernetes/container-and-networking",
+        //   ],
+        // },
+        // "study/swr",
+        // "study/llm",
         "study/pre-commit",
       ],
     },
@@ -36,12 +36,7 @@ const sidebars: SidebarsConfig = {
         description: "마주했던 문제를 해결한 내용을 적어놓는 곳입니다.",
         keywords: ["트러블슈팅"],
       },
-      items: [
-        "troubleshooting/automation",
-        "troubleshooting/hls",
-        "troubleshooting/ios-input-zoom-in",
-        "troubleshooting/vectordb-migration",
-      ],
+      items: ["troubleshooting/automation"],
     },
     {
       type: "category",
@@ -52,7 +47,7 @@ const sidebars: SidebarsConfig = {
         description: "기술서적 읽고 정리한 내용을 모아두는 곳입니다.",
         keywords: ["독서", "기술서적"],
       },
-      items: ["reading/front-optimize-performance"],
+      items: ["reading/object-oriented-programming", "reading/unit-test"],
     },
   ],
 };

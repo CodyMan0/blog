@@ -63,7 +63,7 @@ class WebDriverService {
       .setChromeOptions(
         new chrome.Options()
           .addArguments("--headless")
-          .windowSize({ width: 1920, height: 3000 })
+          .windowSize({ width: 1920, height: 3000 }),
       )
       .build();
   }
@@ -74,7 +74,7 @@ class WebDriverService {
       .setFirefoxOptions(
         new firefox.Options()
           .addArguments("--headless")
-          .windowSize({ width: 1920, height: 3000 })
+          .windowSize({ width: 1920, height: 3000 }),
       )
       .build();
   }
