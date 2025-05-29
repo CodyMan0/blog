@@ -28,17 +28,12 @@ export default function ProfileSection() {
       <div className="flex gap-2 md:gap-3 lg:gap-4 mb-2">
         <IconLink
           icon={<GitHubLogoIcon className="w-8 h-8 md:w-10 md:h-10" />}
-          href="https://github.com/froggy1014"
+          href="https://github.com/CodyMan0"
           label="GitHub"
         />
         <IconLink
-          icon={<InstagramLogoIcon className="w-8 h-8 md:w-10 md:h-10" />}
-          href="https://www.instagram.com/min6_6b"
-          label="Instagram"
-        />
-        <IconLink
           icon={<LinkedInLogoIcon className="w-8 h-8 md:w-10 md:h-10" />}
-          href="https://www.linkedin.com/in/jeongmin-lee-617a4a145"
+          href="https://www.linkedin.com/in/brian0"
           label="LinkedIn"
         />
       </div>
