@@ -28,12 +28,12 @@ function reverseSidebarItems(items) {
 }
 
 const config: Config = {
-  title: "프로기네",
+  title: "이주영 블로그",
   favicon: "img/favicon.ico",
-  url: "https://froggy1014.github.io",
+  url: "https://lee2022.com/",
   baseUrl: "/",
-  projectName: "froggy1014.github.io", // Usually your repo name.
-  organizationName: "froggy1014", // Usually your GitHub org/user name.
+  projectName: "lee-2022.github.io", // Usually your repo name.
+  organizationName: "codyMan0", // Usually your GitHub org/user name.
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
   plugins: [tailwindPlugin],
@@ -74,32 +74,28 @@ const config: Config = {
             return items.filter((item) => !item.url.includes("/page/"));
           },
         },
-        gtag: {
-          trackingID: "G-L7XK3EPZ7C",
-          anonymizeIP: true,
-        },
       } satisfies Preset.Options,
     ],
   ],
   themeConfig: {
     image: "/img/profile.webp",
     colorMode: {
-      defaultMode: "dark",
+      defaultMode: "light",
     },
     metadata: [
       {
         name: "google-site-verification",
-        content: "jyGDXJ29gIqX2cQC8u2gfMH24MpxDk8ROAx9QPWNLoY",
+        content: "AxsS2ygF2WicUs9-epbufPPEZ-mCAGWyxAv7I7Z98Jo",
       },
       {
         name: "keywords",
         content:
-          "프론트엔드 개발자, 이정민, 에반, 블리딩 엣지, 새로운 기술, 대외 활동, 사이드 프로젝트, 자동화, 문서화, 협업, 프로젝트 품질, 지속적 학습, 개발자 경험, 사회 기여, 개발자 성장, 블로그, 기술 블로그, 웹 개발, 자바스크립트, 리액트, 프론트엔드 기술, 웹 퍼포먼스, SEO, 검색 엔진 최적화, 웹 접근성, UI/UX, CSS, HTML, 웹 디자인, 프로그래밍, 코딩, 개발자 블로그, 기술 공유, 개발자 커뮤니티, 최신 기술, 개발자 도구, 오픈 소스, 코드 리뷰, 테스트 자동화, 프론트엔드 프레임워크, 웹 표준, 웹 보안, 웹 최적화, 프론트엔드 아키텍처, 웹 애플리케이션, 프론트엔드 성능, 웹 트렌드, 웹 개발 팁, 개발자 네트워킹, 기술 세미나, 기술 컨퍼런스, Frontend Developer, Jeongmin Lee, Evan, Bleeding Edge, New Technology, External Activities, Side Projects, Automation, Documentation, Collaboration, Project Quality, Continuous Learning, Developer Experience, Social Contribution, Developer Growth, Blog, Tech Blog, Web Development, JavaScript, React, Frontend Technology, Web Performance, SEO, Search Engine Optimization, Web Accessibility, UI/UX, CSS, HTML, Web Design, Programming, Coding, Developer Blog, Tech Sharing, Developer Community, Latest Technology, Developer Tools, Open Source, Code Review, Test Automation, Frontend Framework, Web Standards, Web Security, Web Optimization, Frontend Architecture, Web Application, Frontend Performance, Web Trends, Web Development Tips, Developer Networking, Tech Seminar, Tech Conference",
+          "프론트엔드 개발자, 이주영, Brian, 주도적인 개발자, 사이드 프로젝트, 자동화, 문서화, 협업, 프로젝트 품질, 지속적 학습, 개발자 경험, 사회 기여, 개발자 성장, 블로그, 기술 블로그, 웹 개발, 자바스크립트, 리액트, 프론트엔드 기술, 웹 퍼포먼스, SEO, 검색 엔진 최적화, 웹 접근성, UI/UX, CSS, HTML, 웹 디자인, 프로그래밍, 코딩, 개발자 블로그, 기술 공유, 개발자 커뮤니티, 최신 기술, 개발자 도구, 오픈 소스, 코드 리뷰, 테스트 자동화, 프론트엔드 프레임워크, 웹 표준, 웹 보안, 웹 최적화, 프론트엔드 아키텍처, 웹 애플리케이션, 프론트엔드 성능, 웹 트렌드, 웹 개발 팁, 개발자 네트워킹, 기술 세미나, 기술 컨퍼런스, Frontend Developer, Jeongmin Lee, Evan, Bleeding Edge, New Technology, External Activities, Side Projects, Automation, Documentation, Collaboration, Project Quality, Continuous Learning, Developer Experience, Social Contribution, Developer Growth, Blog, Tech Blog, Web Development, JavaScript, React, Frontend Technology, Web Performance, SEO, Search Engine Optimization, Web Accessibility, UI/UX, CSS, HTML, Web Design, Programming, Coding, Developer Blog, Tech Sharing, Developer Community, Latest Technology, Developer Tools, Open Source, Code Review, Test Automation, Frontend Framework, Web Standards, Web Security, Web Optimization, Frontend Architecture, Web Application, Frontend Performance, Web Trends, Web Development Tips, Developer Networking, Tech Seminar, Tech Conference",
       },
       {
         name: "description",
         content:
-          "안녕하세요. 프론트엔드 개발자 이정민입니다. 새로운 기술을 배우고 이를 실제 프로젝트에 적용하는 것을 좋아하며, 대외 활동과 사이드 프로젝트를 통해 빠르게 지식을 습득하고 반복적인 작업을 자동화하는 데 열정을 가지고 있습니다. 문서화를 통해 팀 협업을 원활하게 하고 프로젝트 품질을 향상하는 데 기여하고 있으며, 지속적으로 학습하고 배운 바를 적용함으로써 개발자 경험을 쌓고 사회에 기여하는 개발자로 성장하고 싶습니다.",
+          "안녕하세요. 프론트엔드 개발자 이주영입니다. 함께 성장하길 바라는 마음으로 블로그를 운영합니다.",
       },
     ],
     headTags: [
@@ -107,7 +103,7 @@ const config: Config = {
         tagName: "link",
         attributes: {
           rel: "preconnect",
-          href: "https://froggy1014.github.io",
+          href: "https://lee2022.com/",
         },
       },
       {
@@ -118,13 +114,13 @@ const config: Config = {
         innerHTML: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Person",
-          name: "Froggy",
-          url: "https://froggy1014.github.io",
-          sameAs: ["https://github.com/froggy1014"],
-          jobTitle: "Frontend Developer",
+          name: "CodyMan0",
+          url: "https://lee2022.com/",
+          sameAs: ["https://github.com/CodyMan0"],
+          jobTitle: "Software Engineer",
           worksFor: {
             "@type": "Organization",
-            name: "CloudHospital",
+            name: "FuturismLabs",
           },
         }),
       },
@@ -136,30 +132,29 @@ const config: Config = {
         innerHTML: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
-          url: "https://froggy1014.github.io",
-          name: "프로기네",
-          description: "프론트엔드 개발자 이정민의 기술 블로그",
+          url: "https://lee2022.com/",
+          name: "이주영 블로그",
+          description: "프론트엔드 개발자 이주영의 기술 블로그",
           potentialAction: {
             "@type": "SearchAction",
-            target:
-              "https://froggy1014.github.io/search?q={search_term_string}",
+            target: "https://lee2022.com/search?q={search_term_string}",
             "query-input": "required name=search_term_string",
           },
         }),
       },
     ],
     navbar: {
-      title: "Evan",
+      title: "Since 2022",
       items: [
         {
           type: "docSidebar",
           sidebarId: "docSidebar",
           position: "left",
-          label: "포스팅",
+          label: "지식 학습",
         },
         { to: "/blog", label: "회고", position: "left" },
         {
-          href: "https://github.com/froggy1014",
+          href: "https://github.com/CodyMan0",
           label: "GitHub",
           position: "right",
         },
