@@ -1,0 +1,372 @@
+---
+title: 25년 1분기 회고
+authors: me
+description: "25년 2분기는 어떤 경험을 하고 싶은가?"
+tags: [회고]
+keywords: [회고, 퓨쳐리즘랩스, 주간회고, 성장]
+date: 2025-04-01
+---
+
+25년 1분기가 빠르게 흘러갔습니다. 현재 진행하고 있는 프로젝트인 비젼 시스템과 관련해 기획부터 개발 및 운영을 하며 1분기를 보냈습니다. 1분기를 돌아보며 2분기의 나아갈 방향을 설계하고 액션포인트를 기록해보려고 합니다.
+
+## **항해 프론트엔드 4기 수료했습니다!**
+
+1분기를 돌아보면 가장 먼저 떠오르는 것은 아무래도 항해입니다. 24년 연말 평가를 통해 기본기를 다지는 시간이 필요하다고 생각이 들어 합류하게 됐고 이를 통해 리액트의 동작 원리와 클린 코드 및 테스트 코드에 대한 학습을 진행했습니다. 자세한 내용은 [개인 블로그](https://lee2022.com/)를 통해 확인해 보실 수 있습니다. 과제는 왜 이렇게 어렵던지요… ㅠㅠ 그럼에도 불구하고 실무에 적용할 수 있는 기술들을 익힐 수 있는 유익한 시간이었습니다.
+
+## **24년 12월, 테더가이,신사업 잠정 중단 결정**
+
+비록 작년에 경험한 것이지만,,, 24년 6월에 입사해서 12월까지 해외 거래소 중개 플랫폼 개발을 진행했습니다.
+
+<img src="https://raw.githubusercontent.com/CodyMan0/bucket/refs/heads/main/tether-main.png" />
+
+기획의 핵심은 “해외 거래소를 이용하는 고객들의 수수료를 우리 플랫폼을 통해 거래하면 돌려주자.”였습니다. 해외 거래소의 수수료는 상당히 부담스러운데요. 당시 상황은 우리의 타겟인 예비 고객들은 이미 여러 플랫폼을 사용하여 수수료를 절감하고 있었습니다. 그럼에도 우리도 해당 플랫폼을 만들어보기로 결정했습니다. 그들과 차별화 포인트를 만들지 않고 우선 만들게 됐던 것이 실패의 핵심 원인 중 하나이지 않을까 싶습니다.
+
+프론트엔드 기술 스택은 `Next.js`, `tailwindCss`, `zustand`, `tanstack-query`, `storybook` 등을 사용했습니다. 그 당시에 서버 컴포넌트와 Next.js의 SSR에 대한 이해도 부족했을 때였기에 만들면서 이게 맞는지, 고생했던 기억이 납니다. 리액트 쿼리와 어떻게 병행해서 사용해야 하는 것인지, 인증과 인가는 어떻게 해야하는지 싶었습니다. Next.js의 미들웨어를 활용했습니다. 서버에서 쿠키를 가지고 왔을 때와 클라이언트에서 쿠키를 가지고 왔을 때, 값이 달라 고생을 했던 기억이 납니다. 그러다 결국… 모든 컴포넌트를 클라이언트 컴포넌트로 변경하여 일정을 맞췄습니다. Next.js를 정확히 알지 못하고 프로젝트를 바로 시작했던게 불찰이라고 생각합니다. 이를 통해 기본적인 개념들과 사용방법을 익히고 실무에 적용해야 함을 경험했습니다. MVP를 시장에 출시하였지만 반응이 차가웠습니다. GA와 hotjar을 활용해서 유입 출처와 이탈률등을 살펴보면서 개선점을 제안하고 알림함 기능과 쿠폰 기능을 도입했음에도 불구하고 고객 자체가 유입이 안돼, 우리가 잘할 수 있는 것에 집중하기로 하며 해당 플랫폼 사업을 잠정 중단했습니다.
+
+돌아보면 초기 시장 선점하지 못한 것 / 프로덕트 팀이라는 정체성의 부재 / 마케팅의 전략의 부재 / 낮은 사업 허들이라고 생각이 듭니다. 당시에는 초조함이 컸고 처음 하는 프로젝트인데 힘도 못 써보는 느낌이라 막막했던 기억이 납니다. 하지만 이 경험으로 비젼 시스템 어드민을 만드는데 도움이 많이 됐다고 생각합니다.
+
+### 개발자가 기획에 더 적극적으로 참여 해야한다. (있는 리소스 안에서 최대한 시도가 필요하다.)
+
+지난 8개월간 지속적인 페인 포인트가 있었습니다.
+
+> “우리는 기획자가 필요하지 않을까?”
+>
+> “기획자가 오면 이 모든 문제가 해결되는 게 아닐까?”
+>
+> “소프트웨어를 만드는데 기획이라는 ‘머리’가 없으면 안 되는 게 아닐까?”
+
+당시 사내에선 데이터 기반 의사결정, 가설 검증을 위한 가설조차 없이 그냥 기능은 만들고 보는... 가슴이 답답한 상황이었습니다. 그래서 "기획이 필요하다. 기획이 필요하다!"는 의견을 피력했고 거기에서 시작하여 우리는 현재 기획자가 필요하지 않나? 라는 생각으로 이어졌습니다.
+
+하지만 **“제 생각이 틀렸음을 알게 됐습니다.”** "에자일 에자일"을 외쳤던 제가 정작 원했던 것은 **워터폴 방식의 일하는 방식이었다는 것을 알게 됐습니다.**
+
+전 **기획 → 디자인 → 개발**의 순차적인 프로세스를 거치면서, 개발에만 집중하는 역할을 원했습니다. 하지만 우리가 나아가야할 방향은 더 **빠르고, 유연하며, 고객 중심적인** 방향이었습니다.
+
+> 우리는 수동적으로 지시받는 조직인가? 아니면 능동적으로 움직이는 조직인가?
+
+당연히 능동적으로 움직이는 조직이기에 더욱 기획에 적극 참여하고 나아가야함을 또 한번 깨달았습니다.
+그래서 문서를 작성하여 동료들에게 공유하고 프로덕트팀을 만들기 위해 시도했으나 대표님으로부터 긍정적인 답변은 듣지 못했으나 더 좋은 방향으로 가고 있다고 생각이 듭니다.
+
+<img src="https://raw.githubusercontent.com/CodyMan0/bucket/refs/heads/main/document.png" />
+[참고 노션 공유 페이지]
+
+## **어떻게 개발을 즐길 수 있을까?**
+
+업무를 하면서 스트레스의 출처를 곰곰이 돌이켜보면 9할 정도는 과거에 확장성을 고려하지 않고 동작만하도록 작성해 놓은 코드…라는 것을 알게 됐습니다. 감사하게도 아직 프론트엔드 개발 동료가 없어 혼자 뒷감당을 하고 있습니다. 내 코드로 인해 동료를 힘들게 하지 않을 수 있음이 정말 다행이다는 생각이… 듭니다. 그래서 지금 이 시기에 경각심을 가지고 코드의 근거를 고민해 보면서 작성하는 연습이 반드시 필요하다고 느낍니다.
+
+대시보드를 만들고 있는 지금,,, 이런 요구사항을 받곤 합니다.
+
+> “이런 기능은 이렇게 수정해 주세요.”
+
+> “이런 기능에 이 기능에 붙여주실 수 있으세요?”
+
+> 고객의 계좌의 포지션과 오더를 한 눈에 파악할 수 있으면 좋겠어요. 음...
+
+> 그래프 필터링 버튼 클릭하면 1초 있다가 움직이는데 이거 왜 이러죠?
+
+위와 같은 요구 사항에 대해 회의 시간에 예상되는 시간을 공유합니다. 내가 공유한 일정 마감을 지키지 못할 때, 아쉬운 마음이 들더라고요... 죄송하기도 하고
+누가 뭐라고 하지 않아도 개인적으로 일정을 꼭 지키는 습관을 갖추기 위해 노력하고 있는데 잘 안 되는 모습이 스스로 힘들었습니다.
+
+다시 돌아가, 개발을 즐기려면 개발을 잘해야 함을 느꼈습니다. 가진 자가 더 가지는 것과 동일하다고 생각합니다. 돌이켜보면 제가 좋아하는 농구나 체스, 드럼 모두 처음에는 재미없었지만 시간이 지나고 그 안에서 규칙을 이해하고 자신만의 규칙을 만들어 꾸준히 연습해 나가면서 실력이 늘 때에서야 더 재밌어졌던 기억이 있습니다. 개발도 동일하다고 생각합니다. 못할 때 즐기는 것은 사치라고 생각이 들었고 역설적으로 즐길 수도 없다고 생각합니다.
+
+> 그럼 어떻게 할 것인가??
+
+주어진 환경에서 제가 할 수 있는 것은 `테스트 코드 도입`이었습니다. 항해를 통해 통합 테스트, 단위테스트, e2e 테스트에 대한 학습과 과제를 진행했습니다. TDD에 대해서도 학습을 진행했었죠. 이제 이런 지식을 실무에 조금씩 적용하며 리팩터링을 진행해보려고 합니다. 테스트 코드 도입으로 함수를 보다 순수하게 작성하게 되고 각 함수의 역할을 한번 더 고민할 수 있게 하는 것이 가독성 좋은 코드를 작성할 수 있게 도와줄 거라고 생각이 듭니다.
+
+3월 중순, 드디어 처음으로 실무에 테스트 코드를 도입하게 됐고 별거 아닐 수 있지만 나름 기분 좋게 퇴근했던 기억이 납니다. 어드민 프로젝트에서 사용자의 권한에 따라 다르게 보이는 부분들이 있습니다. 권한에 대해 요구사항이 늘어나면서 일일이 확인하는 것들이 번거로워졌습니다. 그래서 이를 테스트 코드로 작성하였습니다.
+
+통합 테스트를 활용했습니다. 메인 페이지에 여러 도메인을 동시에 테스트하려고 했기 때문입니다. 작성하면서 zustand의 store를 모킹 하는 방법, 하위 컴포넌트는 검사하지 않고 해당 컴포넌트만 검사하는 법 등 새롭게 알게 됐습니다. 코드는 아래와 같습니다. 피드백은 언제나 환영입니다!! (아마 모든 코드 라인에 피드백이 있을 만한 수준의 코드이지만 공개합니다..) 누구나 시작 단계는 있으니까요! ㅎㅎ
+
+```tsx
+// 사이드 네비게이션 영역 ( 사용자 로그인 여부에 따른 UI 렌더링 및 상호 작용)
+
+// 사용자 로그인 및 회원가입 기능 테스트
+import { mockSessionStore } from "@/__mock__/mockZustandStore";
+import { render, renderHook, screen } from "@testing-library/react";
+import { useState } from "react";
+import { MemoryRouter } from "react-router-dom";
+
+import { Sidebar } from "@/pages/home";
+
+import { VIEW } from "@/shared/lib";
+
+vi.mock("../pages/home/ui/sidebar/AccountsSubNav.tsx", () => ({
+  default: () => <div data-testid="mock-heavy-child">Mocked HeavyChild</div>,
+}));
+
+describe("사이드바 UI 테스트", () => {
+  it("어드민일 경우 사이드 바 UI가 권한에 맞는 요소들이 존재하나요?", async () => {
+    mockSessionStore({
+      access_token: "admin",
+      refresh_token: "admin",
+      access_token_duration: 3600,
+      role: "administrator",
+      token_type: "Bearer",
+    });
+    const { result } = renderHook(() => useState(false));
+
+    render(
+      <MemoryRouter>
+        <Sidebar
+          sidebarOpen={result.current[0]}
+          setSidebarOpen={result.current[1]}
+        />
+      </MemoryRouter>,
+    );
+    // TODO : 이게 최선을 아니겠지만 더 좋은 방법이 있을까?
+    expect(screen.getByText(VIEW.HOME)).toBeInTheDocument();
+    expect(screen.getByText(VIEW.PNL_TRANKING)).toBeInTheDocument();
+    expect(screen.getByText(VIEW.ORGANIZATIONS)).toBeInTheDocument();
+    expect(screen.getByText(VIEW.ACCOUNTS)).toBeInTheDocument();
+    expect(screen.getByText(VIEW.USERS)).toBeInTheDocument();
+    expect(screen.getByText(VIEW.TRANSFER_RECORDS)).toBeInTheDocument();
+    expect(screen.getByText(VIEW.RISK_MANAGEMENT)).toBeInTheDocument();
+    expect(screen.getByText(VIEW.DASHBOARDS)).toBeInTheDocument();
+  });
+
+  it("스태프일 경우 사이드 바 UI가 권한에 맞는 요소들이 존재하나요?", () => {
+    mockSessionStore({
+      access_token: "admin",
+      refresh_token: "admin",
+      access_token_duration: 3600,
+      role: "staff",
+      token_type: "Bearer",
+    });
+    const { result } = renderHook(() => useState(false));
+
+    render(
+      <MemoryRouter>
+        <Sidebar
+          sidebarOpen={result.current[0]}
+          setSidebarOpen={result.current[1]}
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText(VIEW.HOME)).toBeInTheDocument();
+    expect(screen.getByText(VIEW.PNL_TRANKING)).toBeInTheDocument();
+    expect(screen.getByText(VIEW.ORGANIZATIONS)).toBeInTheDocument();
+    expect(screen.getByText(VIEW.ACCOUNTS)).toBeInTheDocument();
+    expect(screen.getByText(VIEW.USERS)).toBeInTheDocument();
+    expect(screen.getByText(VIEW.TRANSFER_RECORDS)).toBeInTheDocument();
+    expect(screen.getByText(VIEW.RISK_MANAGEMENT)).toBeInTheDocument();
+    expect(screen.getByText(VIEW.DASHBOARDS)).toBeInTheDocument();
+  });
+
+  it("유저일 경우 사이드 바 UI가 권한에 맞는 요소들이 존재하나요?", () => {
+    mockSessionStore({
+      access_token: "admin",
+      refresh_token: "admin",
+      access_token_duration: 3600,
+      role: "user",
+      token_type: "Bearer",
+    });
+
+    const { result } = renderHook(() => useState(false));
+
+    render(
+      <MemoryRouter>
+        <Sidebar
+          sidebarOpen={result.current[0]}
+          setSidebarOpen={result.current[1]}
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText(VIEW.HOME)).toBeInTheDocument();
+    expect(screen.getByText(VIEW.DASHBOARDS)).toBeInTheDocument();
+  });
+});
+```
+
+이를 시작으로 회사의 중요한 로직에 테스트 코드로 작성해보기 시작했습니다. 4월 첫째주엔 업무 전체 AUM 그래프 및 인증 부분에 테스트 코드를 도입해보려고 합니다.
+
+## FSD (Feature-Sliced Design)를 적용해보고 있어요
+
+1월에 항해를 통해 FSD를 알게 됐고 2월부터 차츰 프로젝트에 적용해보고 있습니다. 자세한 내용은 블로그를 참고하시면 도움이 될 수 있을 것 같아요. [FSD 적용기 1편](https://lee2022.com/blog/apply-fsd-in-the-project-1) 계속 진행하고 있고 현재는 2편 블로그를 작성하기 위해 학습하고 있습니다.
+
+## map 매소드는 Array.prototype에만 있지 않다. (크로스 브라우징 이슈)
+
+어느 날, 사내 메신저에 동료의 태그가 있었습니다.
+
+<img src="https://github.com/CodyMan0/bucket/blob/main/call.png?raw=true" />
+
+문제 정의를 위해 해당 버그 환경을 재현해 보니 데스크팁에서 모바일 Viewport로 축소할 경우는 정상 작동하지만 모바일에서는 보이지 않는 것을 확인했습니다. 또한 브라우저 사파리에서 해당 페이지가 동작하지 않는 것을 확인했죠.
+
+에러를 디버깅하기 위해 모바일 에러를 확인할 수 있는 디버거를 사용해야 했습니다. 구글에 검색해 보니 모바일 디버거 (chrome://inspect/#devices)가 존재했고 해당 모바일 디버거를 활용하여 console.log()를 확인하였습니다.
+
+에러 메시지를 확인해 보니 테이블 헤더 코드에 문제가 있다는 것을 알게 됐습니다. 헤더를 필터링하는 로직이 문제였죠. 우선 필터링 기능을 제외하고 hotfix를 만들어 배포를 진행하고 main와 develop에 각각 merge를 진행하였습니다.
+
+우선 Filter 컴포넌트를 제거하니 정상 작동하는 것을 확인했으니 범위가 좁아졌습니다.
+
+```tsx
+const PnlTable = () => {
+  return (
+    <Table>
+      <TableHeader>
+        {table.getHeaderGroups().map((headerGroup) => (
+          <TableRow key={headerGroup.id}>
+            {headerGroup.headers.map((header) => {
+              return (
+                <TableHead key={header.id} className="text-center font-bold">
+                  <div className="flex w-full items-center justify-center gap-2">
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+
+                    {header.column.getCanFilter() ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="flex items-center">
+                            <ChevronDown />
+                          </button>
+                        </DropdownMenuTrigger>
+                        {/* HERE : 모바일에선 에러가 뜨는데 데스크탑에서는 정상 작동함... */}
+                        <DropdownMenuContent align="end">
+                          <Suspense fallback={"error in Filter Component"}>
+                            {/* HERE : 아래의 Filter 컴포넌트 제거하여 우선 문제 해결 */}
+                            <Filter column={header.column} />
+                          </Suspense>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : null}
+                  </div>
+                </TableHead>
+              );
+            })}
+          </TableRow>
+        ))}
+      </TableHeader>
+      <TableBody>...</TableBody>
+    </Table>
+  );
+};
+```
+
+우선 Filter 컴포넌트를 주석 처리하여 임시로 해결한 후 자세히 살펴보니
+
+```tsx
+// HERE!
+function Filter({ column }: { column: Column<any, unknown> }) {
+  return (
+    <>
+      {Array.from(
+        column
+          .getFacetedUniqueValues()
+          .keys()
+          .map((option) => {
+            return <>123</>;
+          }),
+      )}
+    </>
+  );
+}
+```
+
+map 메서드가 이상함을 발견했습니다. 위의 코드는 공식 문서의 코드를 참고하여 구현한 것인데,,, 해당 타입을 보니,
+
+```tsx
+column.getFacetedUniqueValues(); // Type: Map<any, number>
+```
+
+Map 자료구조에도 keys 메소드가 존재합니다. [MDN 공식문서](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map/keys)를 통해 확인해보니 keys 매소드는 새로운 map interator 객체를 반환한다고 합니다.
+이터레이터를 반환하고 있었습니다!
+
+> 그럼 iterator에도 map 메소드가 있었던 것인가?
+
+**그렇습니다.** map 메소드는 동일해보이지만, 두가지로 사용될 수 있습니다.
+
+1. [Array 클래스의 상속 map](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/map)
+2. [Iterator의 map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/map)
+
+> Iterator 객체의 메소드인 map은 Limited availability yet이라고 합니다. 사파리에선 아직 호환되지 않는다고 합니다. 그래서 모바일 버전에서 해당 기능이 있는 페이지에서 문제가 발생했다는 것을 알게 됐습니다.
+
+<img src="https://github.com/CodyMan0/bucket/blob/main/iterator.png?raw=true" />
+
+기존에는 모든 메소드를 통해 나온 결과를 배열로 반환했었다면, map을 Array 프로토타입의 map을 사용하도록 코드를 변경하여 오류를 해결했습니다.
+
+## **리프레시 도입에 따른 API 중복 호출 문제**
+
+현재 프로젝트에서는 react-router-dom의 loader 함수를 활용하여 페이지에 대한 권한 처리와 prefetch 할 데이터를 가지고 오는 로직을 추가하여 한 곳에서 관리하고 있습니다.
+
+```tsx
+export const router: ReturnType<typeof createBrowserRouter> = createBrowserRouter([
+	{
+  //public route
+	path: publicPathKeys.root,
+  element: <DefaultLayout />,
+  //HERE!
+  loader: DefaultLayoutLoader.AuthLayoutPage,
+	  errorElement:<ErrorPage>,
+  children:{
+		...
+  }},
+
+  {
+  // private route
+  path: privatePathKeys.root,
+  element: <AuthLayout />,
+  //HERE!
+  loader: AuthLayoutLoader.AuthLayoutPage,
+  errorElement:<ErrorPage>,
+  children:{
+		...
+  },
+	}
+])
+```
+
+loader 함수를 활용한 이유는 Cumulative Layout Shift를 줄이기 위함이었습니다. react-router-dom 라이브러리에서 서버로부터 데이터가 받아와 진 경우 해당 페이지를 렌더링 하는 로직을 실행시키기 때문에 다소 느리게 보이더라고 사용자는 데이터와 UI가 결합된 상태로 볼 수 있게 됩니다.
+
+현재 프로젝트에선 axios를 사용하고 있으며 axios의 기능 중 하나인 요청과 응답을 가로채는 방식으로 401 에러가 있을 때, 액세스 토큰을 재발급하는 과정을 통해 자동 로그인 기능을 구현했습니다.
+
+하지만 문제가 발생했습니다. 로그인을 하면 슬랙으로 알림이 오는 구조입니다. 액세스 토큰이 만료된 이후 자동 로그인이 되어도 슬랙으로 알림이 옵니다. 문제는 액세스 토큰 갱신을 하면 3번의 알림이 가는 것인데 우선 왜 그런지 파악해 보니 메인 페이지서 3개의 API를 호출했습니다.
+
+페이지 진입 때 인증 검증과 prefetch 하도록 해서 페이지가 보일 때 CLS를 제거하기 위해서 사용했는데 리프레시 토큰을 도입하고 새로운 액세스 토큰을 발급받을 때 슬랙으로 3번 로그인 요청이 보내지는 것을 알게 됐어 그래서 이 부분이 원래 prefetchQuery였는데 fetchQuery로 바꿔서 에러를 리턴하도록 해서 이때 interceptor가 실행되도록 해서 1번만 가게 했는데 이 방법도 괜찮은 방법 같은데 정답이 있는 것 같습니다. 4월에 제대로 해결하고 넘어가려고 합니다.
+
+## Git 세션을 만들고 공유하기로 했다.
+
+<img src="https://github.com/CodyMan0/bucket/blob/main/onboard.png?raw=true" />
+
+퓨랩의 개발 문화를 만들어 나가는데 힘을 쓰기로 했습니다. 백엔드 동료에게 Git의 원리와 사용법을 공유하는 시간을 가졌습니다. 2월 중순에 약 3주간 진행했다가 최근 바뻐서 못했지만 4월에는 다시 진행해서 마무리해보려고 합니다.
+
+## 보안에 경각심을 가지자. 클라이언트 사이드의 취약성에 대해
+
+25년 1분기에 바이비트 사건 및 가상 자산 업계의 해커의 공격이 상당하는 것을 알게 됐습니다. 피부로 많이 느끼며 보안이라는 키워드에 관심을 두기 시작했습니다. 퓨랩의 비젼 시스템과 추후에 진행할 여러 프로젝트 모두 브라우저 위에서 동작하게 될 것인데 악의적인 해커들의 주요 타켓이기 때문에 반드시 보안은 우선순위를 높여 개발해야겠다고 생각했습니다.
+프론트엔드 개발자로서 웹 브라우저와 누구보다 친해지려고 합니다. 보안 관련한 개념은 하나씩 이해하고 넘어가려고 합니다.
+
+## 2년만에 재독립을 했습니다.
+
+취업 준비를 하며 부모님 댁에 잠시 들어가게 됐습니다. 24년 6월 취업 이후 올해 좋은 공간을 발견했고 다시 독립을 시작했습니다. 부모님과 함께 지내면 좋은 점이 너무 많지만, 주도적으로 삶을 만들어가고 싶었던 마음이 너무 커서, 취업하고 6개월이 지나 독립하게 됐습니다. 너무 감사하게 어린이 대공원 주변에 너무 저렴한 방을 찾아 이사하게 됐고 상당히 만족하며 지내고 있습니다. 매일 운동할 수 있음에 감사하죠!
+
+## 교회 드럼 반주 다시 시작
+
+<img src="https://github.com/CodyMan0/bucket/blob/main/drum.png?raw=true" />
+
+어릴 적, 부모님을 따라 교회를 다녔고 드럼과 베이스를 형들에게 배울 수 있었습니다. 벌써 그게 15년 정도가 지나 어느새 29살이 되었네요… 시간이 참 빠른 것 같습니다. 무엇인가 꾸준히 한다는 것은 쉽지 않은 것 같지만, 저에게 몇 안되게 오랫동안 놓지 못한 것 중 하나입니다... 놓고 싶었던 적이 수두룩 빽빽입니다. 다시 주말이면 메트로놈 연습을 시작하게 됐습니다. 어느 분야던 기본기는 그 사람의 성장 가능성이라고 생각합니다. 일맥 상통하게 개발에서 기본기에 집중해 보겠습니다!
+
+## 운동 수행 능력 향상, 턱걸이 2개 → 8개
+
+전 상대적으로 등이 약했었습니다. 그래서 1분기에는 턱걸이에 집중했습니다. 회사 건물 지하에 있는 헬스장에서 주로 연습했고 렛풀 다운부터 다시 시작해서 끌어올렸고 3개월 동안 한 결과 현재는 8개 정도 할 수 있게 됐습니다. 2분기에는 조금 더 자세에 신경 써서 10개 정도 하는 게 목표입니다. 보다 천천히 정확하게 해보려고 합니다.
+
+## 이형의 타임 트레커 사용 후기
+
+24년 연말 평가를 통해 기본기를 쌓아야겠다는 생각으로 진행한 항해 플러스, 1분기에 항해 플러스를 진행하면서 시간 관리의 어려움을 느꼈고 주어진 하루에 더 많은 것들을 하기 위해선 시간을 어떻게 사용했는지 기록하는 습관이 필요하다는 것을 절실히 느꼈습니다.
+
+2월 3월, 타임 트래커를 사용하면서 느낀 점은 시간을 기록하면서 낭비한 시간이 얼마나 많은지에 대한 감각이 생긴다는 것입니다. 그렇게 유쾌한 일은 아니었습니다. 매일 나의 실패를 마주해야 했습니다. 그로 인해 1분기에 내가 얼마나 시간을 효율적으로 사용하지 못했는지를 알게 됐고 회고할 수 있게 됐습니다. 하지만 낭비한 시간도 있었지만 그럼에도 불구하고 지켜낸 시간도 많았던 1분기입니다.
+
+아직 해당 캘린더를 잘 사용하는진 모르겠지만 분명 2분기에는 1분기보다 시간을 잘 사용할 수 있을 것 같습니다. 어떤 일이 없다면요… 인생은 변수의 연속!
+
+# 4월 액션 포인트
+
+- [ ] 실무에서 만난 문제 근본적으로 2개 이상 해결
+- [ ] Git 문서 정리하고 Merge와 rebase 세션 정리 및 공유
+- [ ] 백엔드 CI/CD 활용하여 ECS에 컨테이너 자동 배포 파이프라인 구축
+- [ ] FSD의 Public API 방식와 번들러 연관지어 인사이트 정리
+- [ ] HTTP 전송 계층에 대해 정확히 정리
+- [ ] 클라이언트 사이드 보안 문서화하기 (XSS 및 CSRF 공격)
+- [ ] FSD 적용기 포스트 2편 작성하기
+- [ ] 객체 지향 프로그래밍에 대해 학습 시작하기
+- [ ] 함수형 프로그래밍에 대해 학습 시작하기
+
+**4월은 1분기를 뛰어넘어 더 치열하게 학습하고 적용하는 시간을 가지며 사내에 더 많은 기여와 성장을 기대해봅니다.**

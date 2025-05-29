@@ -1,0 +1,553 @@
+---
+title: 4월 회고
+authors: me
+description: 5월에는 유지보수에 용이한 프론트엔드 설계를 고민해보고 적용후 결과를 보자.
+tags: [회고]
+keywords: [회고, 퓨쳐리즘랩스, 주간회고, 성장]
+date: 2025-04-31
+---
+
+## 서론
+
+2025년 4월, 비전 시스템에 새로운 기능을 추가하고 기존 기능을 유지·개선하는 과정에서 실제 사용자 경험에 직결되는 두 가지 문제를 마주하게 됐다.
+
+1. **Axios 중복 호출 문제** – 자동 로그인 과정에서 발생한 불필요한 API 호출로 인해 네트워크 비용 증가
+2. **AUM 그래프 성능 저하** – 대용량 시계열 데이터 처리로 인해 페이지 진입과 필터링 시 발생하는 렌더링 지연
+
+이번 회고에서는 각각의 문제를 어떻게 인식하고 분석했으며, 어떤 접근을 통해 해결했는지 기록하려고 한다.
+
+> (더 나은 접근 방법이 있다면 댓글을 통해 알려주시면 진심으로 감사하겠습니다!!) 😊
+
+4월에는 사용자 권한과 관련한 기능을 구현하는 데 집중했지만, 그 기능과 관련된 것은 5월 회고에 자세히 다뤄보려고 한다.
+
+### 4월 Action Point
+
+1분기를 돌아보며 4월 Action Point를 작성해보았는데 이 중 4가지는 실천했다. 그 외의 내용들은 호기심 노트에 저장해놨고 5월의 휴일에 공부하며 나아가려고 한다.
+
+- [x] 실무에서 만난 문제 근본적으로 2개 이상 해결
+- [x] Git 문서 정리하고 Merge와 rebase 세션 정리 및 공유
+- [ ] 백엔드 CI/CD 활용하여 EB에 컨테이너 자동 배포 파이프라인 구축
+- [ ] FSD의 Public API 방식와 번들러 연관지어 인사이트 정리
+- [ ] HTTP 전송 계층에 대해 정확히 정리
+- [ ] 클라이언트 사이드 보안 문서화하기 (XSS 및 CSRF 공격)
+- [ ] FSD 적용기 포스트 2편 작성하기
+- [x] 객체 지향 프로그래밍에 대해 학습
+- [x] 함수형 프로그래밍에 대해 학습 시작하기
+
+## 본론
+
+### Axios 중복 호출 문제 개선
+
+#### 문제 개요
+
+자동 로그인 구현 후, 다음과 같은 문제가 발생됐다.
+
+- **문제 현상**: 엑세스 토큰 만료 시 여러 API에서 동시에 401 에러 발생
+- **결과**: 각각의 요청이 **동시에 리프레시 API를 호출** → **중복 호출 발생**
+- **실제 영향**: 서버 부하 증가, 사용자 로그아웃 리스크 증가, UX 저하
+
+기존 코드는 아래와 같았다.
+
+```tsx
+// axiosConfig.ts
+...
+ if (error.response.status === STATUS.UNATHORIZED) {
+      if (error.response.data.message === ERROR_RESPONSES.accessExpired) {
+        if (!session?.refresh_token) {
+          resetSession();
+          return Promise.reject(new Error('No refresh token available'));
+        }
+
+        try {
+          const reissuedResult = await authApi.reissueToken(session.refresh_token);
+           return instance({
+            ...config,
+            headers: {
+              ...config?.headers,
+              Authorization: `Bearer ${reissuedResult.access_token}`,
+            },
+          });
+        } catch {
+          ...
+        }
+
+      }
+ }
+ ...
+```
+
+콘솔을 확인해보니 아래와 같았다.
+
+<img src="https://raw.githubusercontent.com/CodyMan0/bucket/refs/heads/main/refresh-problem.png" />
+
+3개의 401을 반환한 API요청에 대해 3번 refresh 요청이 있음을 확인할 수 있었다.
+
+### 임시 해결책: react-router-dom + tanstack-query, loader 활용
+
+이 문제를 해결하기 위해 찾아보다 생각난 것은 react-router-dom과 tanstack-query를 활용하는 것이었다.
+
+react-router-dom의 createBrowserRouter API에서 사용되는 loader 메서드는 라우트가 렌더링되기 전에 데이터를 미리 가져오는 함수이며 사용자 경험을 개선하기 위해 사용할 수 있다. 이점을 이용하면 페이지 단에서 호출하고 있는 여러 API 이전에 API를 실행하도록 할 수 있다는 점이다.
+
+그래서 AuthLayoutLoader 클래스에 자신의 정보를 미리 가지고 오는 API를 하나 추가하는 방식으로 임시 해결하려고 했다.
+
+```tsx
+//route.tsx
+export const router: ReturnType<typeof createBrowserRouter> = createBrowserRouter([
+  {
+    path: publicPathKeys.root,
+    element: <DefaultLayout />,
+    loader: DefaultLayoutLoader.AuthLayoutPage,
+    errorElement: <GlobalErrorFallback />,
+    children:[
+      ...
+    ]
+  },
+  {
+    path: privatePathKeys.root,
+    element: <AuthLayout />,
+    loader: AuthLayoutLoader.AuthLayoutPage,
+    errorElement: <GlobalErrorFallback />,
+    children:[
+      ...
+    ]
+  }])
+
+
+
+// auth-layout.model.ts
+
+export class AuthLayoutLoader {
+   const { session, setSession, resetSession } = useSessionStore.getState();
+  static async AuthLayoutPage(args: LoaderFunctionArgs) {
+    const session = AuthLayoutLoader.getSession();
+    if (!session) {
+      return redirect(publicPathKeys.login());
+    }
+    await AuthLayoutLoader.fetchMyInfo();
+    return args;
+  }
+
+  private static async fetchMyInfo() {
+    const userInfoQuery = {
+      queryKey: ['me'],
+      queryFn: () => authApi.getMyInfo(),
+    };
+
+    const result = await queryClient.fetchQuery(userInfoQuery);
+    return result;
+  }
+
+  private static getSession() {
+    return useSessionStore.getState().session;
+  }
+}
+```
+
+위와 같이 Loader 내부에 에러를 반환할 수 있는 fetchQuery를 활용하여 자신의 정보를 가지고 오는 Promise 요청을 추가하였고, 그 결과
+
+<img src="https://raw.githubusercontent.com/CodyMan0/bucket/refs/heads/main/refresh-prefetch.png" />
+
+n번의 요청 이전에 데이터를 가지고 오는 레이어 (loader)에서 한 번 체크하도록 하여 해당 중복 호출 문제를 해결할 수 있었다.
+
+하지만 3일 정도 지나, 이 방법은 다음과 같은 문제가 있었다.
+
+- **문제 1**: 페이지 진입 시마다 불필요한 사용자 정보 조회 발생
+- **문제 2**: loader에 의존하면, 컴포넌트 단에서 발생하는 토큰 만료는 대응하지 못함
+
+Loader는 라우트 기반 동작하는 메소드이기에 컴포넌트 내부에서 여러 API가 호출되는 경우에는 대응하지 못하는 문제가 있다. 그래서 더 본질적으로 해결해야 했다.
+
+### 근본 해결: RefreshManager를 통한 요청 큐 관리
+
+구글 검색을 통해 살펴보니, 대체적으로 큐를 만들어 사용하는데 깔끔한 코드가 없었다. 그래서 RefreshManager 클래스를 만들어보았다. 다음과 같은 전략으로 해당 클래스는 구성되어 있다.
+
+1. **isRefreshing** 상태로 첫 요청 이후부터는 대기 큐에 넣기
+2. **토큰 갱신 완료 후** 큐에 쌓인 요청에 새로운 토큰으로 재요청
+3. **클래스로 추상화**하여 인터셉터 내에서 반복되는 로직 제거
+
+**RefreshManage Class 구현**
+
+```tsx
+import { InternalAxiosRequestConfig } from 'axios'
+
+import { CustomInstance } from '@/shared/lib'
+
+type RequestCallback = (token: string) => void
+
+class RefreshManager {
+  private isRefreshing = false
+  private queue: RequestCallback[] = []
+
+  async handle401(
+    config: InternalAxiosRequestConfig,
+    refreshFn: () => Promise<string>,
+    api: CustomInstance
+  ): Promise<InternalAxiosRequestConfig> {
+    if (this.isRefreshing) {
+      return new Promise((resolve) => {
+        this.queue.push((token: string) => {
+          config.headers = config.headers || {}
+          config.headers.Authorization = `Bearer ${token}`
+          resolve(api(config))
+        })
+      })
+    }
+
+    this.isRefreshing = true
+
+    try {
+      const newToken = await refreshFn()
+      this.queue.forEach((cb) => cb(newToken))
+      this.queue = []
+      config.headers = config.headers || {}
+      config.headers.Authorization = `Bearer ${newToken}`
+      return api(config)
+    } catch (err) {
+      this.queue = []
+      throw err
+    } finally {
+      this.isRefreshing = false
+    }
+  }
+}
+
+export const refreshManager = new RefreshManager()
+
+
+// axiosConfig.tsx (클래스 인스턴트 생성부)
+
+ if (error.response.status === STATUS.UNATHORIZED) {
+      if (error.response.data.message === ERROR_RESPONSES.accessExpired) {
+        if (!session?.refresh_token) {
+          resetSession();
+          return Promise.reject(new Error('No refresh token available'));
+        }
+
+        try {
+           const retryResponse = await refreshManager.handle401(
+              config,
+              async () => {
+                const reissued = await authApi.reissueToken();
+                setSession({
+                  access_token: reissued.access_token,
+                  role: reissued.role,
+                  token_type: reissued.token_type,
+                });
+                return reissued.access_token;
+              },
+              instance,
+            );
+
+            return retryResponse;
+        } catch {
+          ...
+        }
+
+      }
+ }
+```
+
+아래 콘솔 로그를 확인해보니 근본적으로 문제가 해결됨을 확인했다.
+
+<img src="https://raw.githubusercontent.com/CodyMan0/bucket/refs/heads/main/refresh-class.png" />
+
+이제, 동시에 여러 API 401에러를 반환해도 최초 요청에 대해서만 리프레시 요청을 진행한다.
+
+#### 결과 비교
+
+| 상황                 | 이전 방식                   | 개선 방식                                |
+| -------------------- | --------------------------- | ---------------------------------------- |
+| 401 에러 발생 시     | 요청마다 개별 리프레시 실행 | 단 1회 리프레시 후 큐에 있던 요청 재시도 |
+| 리프레시 API 호출 수 | N회 (API 요청 수만큼)       | 1회                                      |
+| 코드 복잡도          | 인터셉터 내 복잡한 분기     | 클래스 내부로 추상화하여 간결            |
+
+#### 회고
+
+- 이 문제를 해결하며 **비동기 상태 공유**와 **Axios 인터셉터의 한계**를 다시 체감했다. (5월에는 HttpClient를 만들어서 fetch를 사용하던 axios 혹은 ky에 상관없이 의존성을 주입하는 형태로 만들어보려고 한다.)
+- React 앱에서 인증 토큰을 관리할 때는 **클라이언트 동시성 문제**를 반드시 고려해야 한다.
+- 공유 자원 문제 해결 방법인 뮤텍스에 대해 공부해 보자.
+
+### AUM 그래프 성능 개선
+
+AUM (Assets Under Management) 은 금융 기관이 고객 자산을 대신 관리하며 운용하는 총 시장 가치를 의미한다.
+이번 개선 작업은, 전체 고객의 AUM 시계열 그래프 성능 최적화에 중점을 둔다.
+
+<img src="https://raw.githubusercontent.com/CodyMan0/bucket/refs/heads/main/v-graph.png" />
+
+#### 문제 개요
+
+전체 고객의 AUM 데이터를 보여주는 페이지에서 다음과 같은 문제가 발생했습니다:
+
+- 그래프가 존재하는 페이지 진입 시 **1~2초의 딜레이**
+
+- 필터링(전략/기관/기간) 적용 시 **렌더링이 버벅임**
+
+- **사용자 경험(UX) 저하**, 페이지 반응 속도 불만
+
+시각적으로는 아래와 같은 그래프에서 성능 저하를 체감할 수 있었습니다:
+
+<div className="flex h-full w-full items-center justify-center overflow-hidden rounded-lg bg-black">
+  <video controls preload="metadata" className="h-full w-full object-contain">
+    <source
+      src="https://raw.githubusercontent.com/CodyMan0/bucket/main/v-graph-delay.mp4"
+      type="video/webm"
+    />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+어느 날부터 해당 그래프가 있는 페이지로 들어갈 때와 핕터링을 조작할 때 1초에서 2초정도의 블로킹이 되는 것을 발견했다.
+
+#### 원인 분석
+
+Permance, Network Panel을 살펴본 결과
+
+<img src="https://raw.githubusercontent.com/CodyMan0/bucket/refs/heads/main/v-graph-js-delay.png" />
+
+**1. API 네트워크 지연시간**
+
+**2. JavaScript 블로킹**
+
+> 원인을 알게 됐고 하나씩 개선해보았다.
+
+##### 1. **API 변경하여 네트워크 지연시간 1초 단축**
+
+우선 간단한 배경을 설명하고자 한다. 전체 AUM 그래프 상태는 클라이언트에서 서버로부터 받은 데이터를 가공해서 만든다.
+그래프를 위한 API는 존재할 필요도 없다고 판단했고 이미 모든 계좌 List를 내려주는 API가 있기에 해당 API를 사용하면 됐었다.
+
+이전에는 전체 계좌 목록을 조회한 뒤, 이 데이터를 캐싱해서 그래프를 그리고 있었다.
+그런데 각 계좌는 매일 쌓이는 시계열 데이터를 포함하고 있어서, 시간이 지날수록 데이터 양이 꾸준히 늘어나는 특징이 있다. 또한 해당 API는 서버에서 다양한 로직이 존재하고 있다.
+
+처음엔 큰 문제가 없었지만, 시간이 지나며 데이터 양이 많아지고, 필터링이나 렌더링 시점에 전체 데이터를 반복 처리하는 부분이 점점 성능 병목으로 드러나기 시작했다.
+
+Swagger를 살펴보니 한달 전, 고객의 Equity(자산)을 수정하는 기능에 필요한 API를 만들었고 이 API는 그래프를 그릴 때 필요한 데이터가 있음을 파악했습니다.
+해당 데이터는 단순한 List 형태의 반환값을 가지는 형태였다. 다만 각 객체의 Interface는 다소 복잡했다. 또한 그래프에 필요한 데이터를 모두 만족하진 않았지만 핵심적인 데이터는 있어서 해당 API를 활용하여 개선을 시도했다.
+시도하는 과정에서 상태의 자료구조가 달라지게 돼 어려움이 있었지만, 그로 인해 함수를 더 순수하게 작성하여 계산 로직을 분리할 수 있게 됐다.
+
+> 결과적으로 약 1초의 네트워크 지연시간을 개선할 수 있었다.
+
+**이전 (전체 계좌 리스트 조회 API)**
+
+<img src="https://raw.githubusercontent.com/CodyMan0/bucket/refs/heads/main/v-network-accounts.png" />
+
+- 디코딩된 본문 1.3MB
+- content-length === 1321701
+- 요청 전송 완료 및 대기 중: **1.8s**
+
+**이후 (historical Snapshot 조회 API)**
+
+<img src="https://raw.githubusercontent.com/CodyMan0/bucket/refs/heads/main/v-network-historical.png" />
+
+- 디코딩된 본문 :5.0 MB
+- content-length === 5049472
+- 요청 전송 완료 및 대기 중 : **836.46 ms**
+
+| 항목        | 개선 전 방식                          | 개선 후 방식                               |
+| ----------- | ------------------------------------- | ------------------------------------------ |
+| 사용 API    | 전체 계좌 목록 API                    | /historicalSnapshot/all API                |
+| 데이터 구조 | 계좌별 시계열 데이터 포함 (중첩 구조) | 평탄한 List 형태                           |
+| 성능 개선   | 네트워크 지연시간 (1~2초)             | 네트워크 지연 시간 0.8초 **(약 1초 단축)** |
+
+> 더 적절한 API를 활용하여 해당 그래프를 구현하였다. 그럼 이제 나머지인 자바스크립트 블로킹 현상을 살펴보면
+
+##### **2. 자바스크립트블로킹 CPU 블로킹 최소화**
+
+<img src="https://raw.githubusercontent.com/CodyMan0/bucket/refs/heads/main/v-icp.png" />
+
+Performance 패널을 분석해보니 findMarketInfo() 함수가 호출되는 시점에서 CPU 블로킹이 집중적으로 발생하는 것을 확인했다.
+
+AUM 그래프에는 날짜별로 마켓 데이터를 함께 보여줘야 했는데, 이를 위해 특정 날짜에 해당하는 마켓 데이터를 찾아오는 로직이 필요했다.
+
+기존에는 findMarketInfo 함수가 markets 배열에서 Array.prototype.find()를 사용해 날짜가 일치하는 항목을 매번 순회하며 탐색하고 있었고,
+이 반복 탐색이 성능 병목의 주요 원인 중 하나로 드러났다.
+
+```ts
+export const findMarketInfo = ({
+  dailiesRowUpdatedTimestamp,
+  markets,
+}: MarketProp): MarketDto | null => {
+  const marketInfo = markets.find((market) => {
+    const parseMarketDate = dayjs.unix(market.createdTimestamp).format(DATE_FORMAT_YYYY_MM_DD)
+    const parseDailiesDate = dayjs.unix(dailiesRowUpdatedTimestamp).format(DATE_FORMAT_YYYY_MM_DD)
+
+    return parseMarketDate === parseDailiesDate
+  })
+  if (!marketInfo) return null
+  return marketInfo
+}
+
+const processAum = () => {
+...
+    const market = findMarketInfo({
+      dailiesRowUpdatedTimestamp: snapshot.updatedTimestamp,
+      markets,
+    });
+...
+}
+```
+
+이런 식으로... AUM 상태를 계산하기 순회하는 로직 내부에서 해당 순회 로직이 실행되고 있었다. 그래서 이부분을 해시 기반 Map을 활용해보았고 또한 해당 함수의 수준을 높여보았다.
+
+```tsx
+const createMarketMap = (markets: MarketDto[]): Record<string, MarketDto> => {
+  return markets.reduce(
+    (map, market) => {
+      const marketDate = dayjs
+        .unix(market.createdTimestamp)
+        .format(DATE_FORMAT_YYYY_MM_DD);
+      map[marketDate] = market;
+      return map;
+    },
+    {} as Record<string, MarketDto>,
+  );
+};
+```
+
+아래의 훅이 실행될때 한번에 해당 Map을 가지고 오도록 구현해보았다. O(1)로 동일한 날짜의 마켓 데이터에 접근할 수 있도록 구현하였다.
+
+```tsx
+export const useHistoricalAum = () => {
+  const { data: historicalSnapshotList } = useSuspenseQuery(
+    SnapShotQueries.getHistoricalAccountSnapshots(),
+  );
+  const { data: markets } = useSuspenseQuery(MarketQueries.getMarketData());
+  const { filters } = useTimeSeriesStore();
+
+  const aumWithMarkets = useMemo(() => {
+    const marketMap = createMarketMap(markets);
+    const aum = processAumData(historicalSnapshotList, marketMap);
+    return enrichAumWithMarkets(aum, marketMap, filters.asset);
+  }, [historicalSnapshotList, markets, filters.asset]);
+
+  return {
+    aumWithMarkets,
+  };
+};
+```
+
+이렇게 구현하면 ProcessAumData 함수가 실행되기 전, 한번만 List를 Map에 맞게 바꾸는 작업만 하면 되도록 수정했다.
+
+<img src="https://raw.githubusercontent.com/CodyMan0/bucket/refs/heads/main/v-graph-solve-1.png" />
+
+이 부분을 수정하자 페이지 진입 및 새로고침시 0.6초로 INP가 개선됐다. 약 1초 정도 개선이 됐다.
+
+##### 3. **zustand + react-query를 활용하여 필터링 최적화**
+
+마지막 병목은 필터링 시 매번 AUM 계산 함수가 재실행된다는 점이었다. 위에서 네트워크 API 변경 및 js blocking을 유발하는 함수를 최적화했음에도 불구하고 필터링할 경우 해당 함수를 다시 호출하기에 약간의 버벅거림이 존재했다. 이를 해결하기 위해 필터 로직을 zustand 내부로 옮겨보았다.
+
+```tsx
+export const useTimeSeriesStore = create<TimeSeriesState>((set, get) => ({
+  aums: {},
+  filters: {
+    strategy: "all", // 초기값: 필터 없음
+    organizationId: "all", // 초기값: 필터 없음,
+    asset: "krw",
+  },
+  setAums: (aumObj) => set({ aums: aumObj }),
+  setOrganizationFilter: (organizationId: string) => {
+    set((state) => ({
+      filters: {
+        ...state.filters,
+        organizationId,
+      },
+    }));
+  },
+  setAssetFiler: (asset) =>
+    set((state) => ({
+      filters: {
+        ...state.filters,
+        asset,
+      },
+    })),
+  getFilteredAums: () => {
+    // TODO : 회고를 작성하면서 보이는 개선 포인트... 분기문 따로 분리하기
+    const { aums, filters } = get();
+    const { strategy, organizationId } = filters;
+
+    if (
+      (strategy === "all" || !strategy) &&
+      (organizationId === "all" || !organizationId)
+    ) {
+      return aums;
+    }
+
+    const filteredAums: AUM = {};
+    Object.entries(aums).forEach(([date, entries]) => {
+      const filteredEntries = entries.filter(
+        (entry) =>
+          (strategy === "all" || entry.strategy === strategy) &&
+          (organizationId === "all" || entry.organizationId === organizationId),
+      );
+      if (filteredEntries.length > 0) {
+        filteredAums[date] = filteredEntries;
+      }
+    });
+    return filteredAums;
+  },
+  setStrategyFilter: (strategy) =>
+    set((state) => ({
+      filters: {
+        ...state.filters,
+        strategy,
+      },
+    })),
+}));
+```
+
+react-query를 통해 받은 서버 데이터를 zustand 클라이언트 상태 저장소에 저장하는게 맞는지 모르겠다. 하지만 여러 이유로 이런식으로 시도해봤다.
+
+1. 필터링된 데이터를 여러 컴포넌트에서 공유하기 용이하다.
+2. 상태와 로직을 한 곳에서 관리하므로 재사용성과 일관성이 좋아진다고 생각했다.
+
+#### 최종 결과
+
+<div className="flex h-full w-full items-center justify-center overflow-hidden rounded-lg bg-black">
+  <video controls preload="metadata" className="h-full w-full object-contain">
+    <source
+      src="https://raw.githubusercontent.com/CodyMan0/bucket/main/v-graph-result.mp4"
+      type="video/webm"
+    />
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+- ✅ 필터 적용 시 반응 속도 개선
+- ✅ LCP 200ms 미만 유지 (Web Vitals 기준 ‘Good’)
+- ✅ 전체 로직 단 3개의 순수 함수로 분리
+
+참고 : [Google INP 성능 가이드](https://web.dev/articles/inp?hl=ko)
+
+### 비젼시스템 유지보수 개선
+
+- 고민하고 있는 포인트
+
+1. 유지 보수란 무엇이며 어떻게 유지 보수하기 좋은 프로그램을 만들 수 있는걸까?
+
+- 해당 문제를 해결하기 위한 지식이라고 생각한 포인트
+
+1. OOP
+2. FP
+3. Adapter Pattern
+
+> 다들 어떻게 유지보수하기 좋게 프론트엔드 설계하시나요?
+
+> 서버 응답에 대한 Mapper를 두시나요?
+
+## 결론
+
+확실히 1분기 회고를 진행하며 뽑은 Action point로 인해 바쁜 와중에도 조금씩 정리할 수 있게 됐다.  
+누군가 시켜서 하는 것도 잘해야 하지만, 스스로 개선점을 찾아 개선하는 재미도 쏠쏠한 것 같다.  
+이 과정에서 내가 얼마나 실력이 부족한지 깨닫는 것 같다.  
+AI로 빠르게 코드를 작성할 수 있지만, 코드의 한 줄에 대한 이유를 고민하며 그로 인해 기여하는 개발자가 되기로 오늘도 다짐해본다.
+
+긴 글 읽어주셔서 감사합니다. 모두 각자 있는 자리에서 파이팅!
+
+### 5월 Action Point
+
+- [ ] FSD 블로그 2편 작성
+- [ ] 단위/통합 테스트 적용 및 학습
+- [ ] 객체 지향 프로그래밍에 대해 학습 시작하기
+- [ ] 캡슐화하여 프로그램 유지보수 쉽게 리팩터링
+- [ ] 함수형 프로그래밍에 대해 학습 시작하기
+- [ ] Next.js 사이드 프로젝트 진행 (fillsLog 진행 중)
+- [ ] 사용자 권한 정책 도입 정리
+- [ ] 백엔드 CI/CD 활용하여 EB에 컨테이너 자동 배포 파이프라인 구축
