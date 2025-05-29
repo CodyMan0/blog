@@ -13,10 +13,10 @@ export default function GiscusComponent({
   return (
     <Giscus
       id={metadata.title}
-      repo="CodyMan0/new-blog"
-      repoId="R_kgDOMHhVWw"
+      repo="CodyMan0/blog"
+      repoId="R_kgDOOwz9qw"
       category="Announcements"
-      categoryId="DIC_kwDOMHhVW84CmeL7"
+      categoryId="DIC_kwDOOwz9q84Cqt3c"
       mapping="url"
       strict="0"
       term="Welcome to juyoung's Blog"
