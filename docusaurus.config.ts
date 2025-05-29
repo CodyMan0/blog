@@ -32,7 +32,7 @@ const config: Config = {
   favicon: "img/favicon.ico",
   url: "https://lee2022.com/",
   baseUrl: "/",
-  projectName: "lee-2022.github.io", // Usually your repo name.
+  projectName: "lee-2022", // Usually your repo name.
   organizationName: "codyMan0", // Usually your GitHub org/user name.
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
