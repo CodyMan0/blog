@@ -1,0 +1,325 @@
+---
+title: 사이드 프로젝트 - LCP 1초 단축!
+sidebar_position: 2
+last_update:
+  date: 04/12/2024
+description: 날카로운 문제 정의는 문제 해결의 지름길
+tags: [문제해결]
+---
+
+<br />
+
+# 들어가기 앞서
+
+> **기존에 구현 방식의 문제점을 찾고 어떻게 개선을 할 수 있을까 고민하는 과정을 기록하고 그 과정에서 학습하는 내용들을 정리해 보았습니다.**
+
+만약 무슨 프로젝트인지 궁금하시다면 [해당 링크](https://www.dnd.ac/project/68)를 통해 상세 설명을 보실 수 있습니다. 이번 포스트에서는 테스트가 완료되면 로딩이 보이고 로딩 이후 결과 페이지가 추가 로딩 및 지연 없이 바로 보이는 결과를 만들어낸 방식을 공유하고자 합니다.
+
+돈워리 서비스를 배포하고 부족한 점이 없는지를 찾던 도중 문제를 발견하였습니다. 테스트를 모두 진행하고 마지막 버튼을 클릭하면 **로딩 컴포넌트가 등장하는데 3초 이후 결과 페이지로 라우트를 이동시키는 과정에서 로딩 컴포넌트에서 3초가 지난 이후 1.5~2초 정도의 추가적인 지연 시간이 발생한 후 테스트 결과 페이지가 보여지고 있었습니다.**
+
+<br />
+
+# 본론
+
+## 기획 요구 사항은 이렇습니다.
+
+> 첫 번째, 테스트 진행 이후 완료 **결과 페이지를 보여주기 전 로딩 페이지**가 있어야 합니다.<br/>
+> 두 번째, **3초의 로딩 시간**이 이후 결과 페이지가 보여야 합니다.
+
+두가지 요구 사항이 있었어요. 참고로 개발은 Next.js와 react-query를 활용하여 진행하였습니다.
+
+## 리팩토링 전 구현 상황 알아보기
+
+구현된 코드를 보여드리기 전에 한 단계씩 정리하여 현재 구현 상황을 알아보려고 합니다.
+
+![](https://velog.velcdn.com/images/sharphand1/post/85026bc2-906c-49ca-9801-d3ad57985029/image.png)
+출처 : [돈워리 피그마](<https://www.figma.com/file/6xym5dVFTRaA8Fdll2sxuf/DND-%EC%98%B9%EA%B8%B0%EC%A2%85%EA%B8%B0-(Copy)?type=design&node-id=0%3A1&mode=design&t=IfEaocMbdSni5jnc-1>)
+
+1. 테스트 진행 마지막 버튼을 **클릭**합니다.
+2. loading 상태가 true **변경**됩니다.
+3. 로딩 컴포넌프가 렌더링됩니다.
+4. 3초 후 100퍼센트로 가득 찰 프로그래스 바 애니메이션이 시작됩니다.
+5. 로딩 컴포넌트가 마운트 되면 테스트 진행 데이터를 mutate(post) **요청**을 합니다.
+6. 네트워크 응답 시간을 setTimeout의 시간 인자인 3초에서 뺍니다.
+7. 프로그래스바가 3초가 되면 router.push(’test/result/:id’)가 **실행**됩니다.
+
+## 문제 정의
+
+위의 단계별로 구현한다면, 기획 요구 사항의 1번(로딩 페이지가 존재해야함)은 만족했습니다. 당연히 상태를 활용한다면 버튼을 클릭했을 때 해당 상태를 참으로 즉시 변경하게 된다면 로딩이 즉시 보여지겠죠. 하지만 기획 요구 사항의 2번째인 “3초의 로딩 시간 이후 결과 페이지가 보인다.”라는 요구 사항은 만족하지 못하고 있습니다. 기획자 혹은 디자이너가 보기에는 3초의 로딩 시간 이후 테스트 결과 페이지가 보여지기에 “구현이 됐군요!!”라고 반응할 수 있지만
+
+> **기획자와 디자이너, 모두가 만족할만한 구현은 무엇일까요?!**
+
+3초의 로딩 시간이 지나면 test/result/:id 페이지로 보냅니다. 만약 빌드시 미리 HTML을 가지고 있는 SSG(Static Site Generation)가 아니라면 페이지 초기 로딩 속도가 빠르지 않을텐데 추가적인 지연시간이 발생하는것이죠. 그러면 3초의 로딩 시간 이외에 데이터를 가지고 오는 시간이 추가되는 것을 생각해볼 수 있습니다. 그럼 3초 + 알파...가 소요됩니다. 이건 반드시 해결해야하는 문제인거죠.
+
+> **문제는 3초 후, router.push하는 로직이 실행되는 것.**
+
+## 문제 해결 과정
+
+### 첫번째, [CSR] useQuery 방식
+
+클라이언트 컴포넌트인 test/result/[id] > page.tsx에서 useQuery로 테스트 결과 데이터를 가지고 오는 방식입니다.
+
+위의 방식으로 구현하면 아래의 단계로 진행이 됩니다.
+
+- 유저가 테스트를 완료한다.
+- 로딩 컴포넌트가 3초가 보여진다.
+- 3초 - 응답 시간 이후 setTimeout API를 통해 결과 페이지로 이동한다.
+- 결과 페이지의 빈 html을 받는다. **(여기서부터)**
+- 결과 데이터를 요청한다.
+- 결과 데이터를 받는다. **(여기까지)**
+- 데이터가 받아지면 Layout이 완성된다.
+
+3초 이후 결과 페이지가 보여진 후, 데이터를 가져오기에 **(여기서부터 여기까지)** 추가적인 로딩이 발생하는데 이것은 기획문서 당연히 로딩 3초 이후, 추가적인 로딩은 있으면 피하는게 맞습니다.
+
+> 그림으로 표현해봅시다.
+
+![](https://velog.velcdn.com/images/sharphand1/post/bf609e72-af5f-4ecf-918c-5bffd8fbfdee/image.png)
+
+로딩 컴포넌트가 렌더링된 이후, 결과를 바디에 담아 서버에게 요청을 보냅니다. 그 이후 setTimeout 두번째 인자의 ms가 지나면 라우터 이동이 됩니다. 그 이후 테스트 결과 조회 요청을 통해 데이터를 받아오는데 이 요청을 아래와 같이 변경할 수 없을까요?!
+
+![](https://velog.velcdn.com/images/sharphand1/post/eca36d7e-3e4f-43d5-9d2f-448f68e4fd55/image.png)
+
+테스트 결과 저장을 해야 조회를 할 수 있으니 async-await을 활용하여 결과 저장이 된 이후에 결과 조회를 하도록 로직을 구현하면 어떨까요?! 결과적으로 지연시간과 추가 로딩을 해결할 수 있지 않을까 생각했습니다. 그래서 이 방식으로 리팩터링을 진행해보았습니다.
+
+### 두번째, [CSR] prefetch 시점 변경
+
+> prefetch를 어떻게 할 수 있을까요?!
+
+[리액트 쿼리 공식문서](https://tanstack.com/query/latest/docs/framework/react/guides/prefetching) prefetchQuery를 알게 됐습니다.
+
+#### React-Query prefetchQuery에 대해 공식문서 내용을 정리해보았습니다.
+
+1. **용도** : 요청 워터폴을 피하기 위해 사용한다고 합니다.
+2. **사전 지식**
+   1. prefetchQuery 함수는 데이터의 신선도를 파악하기 위해 기존 queryClient에서 확인할 수 있는 staleTime을 사용합니다.
+   2. 혹은 사용하는 위치에서 staleTime을 직접 할당할 수 있습니다.
+   3. 프리패치된 쿼리를 사용하는 useQuery 인스턴스가 없다면, 해당 쿼리는 삭제되고 gcTime 이후 버려집니다.
+   4. prefetchQuery의 반환값은 `Promise<void>`입니다. 쿼리 데이터를 반환하지 않습니다. 만약 반환값이 필요핟면 fetchQuery를 사용하면 됩니다.
+   5. prefetchQuery는 에러를 던지지 않습니다. 왜냐하면 useQuery를 활용하여 다시 해당 쿼리를 요청하는데 이 자체가 fallback 역할을 수행하기 때문입니다. 만약 에러를 캐치해야한다면 fetchQuery를 사용하면 됩니다.
+3. **사용법**
+   공식 문서의 예제를 활용해서 이해해보겠습니다.
+
+```tsx
+const prefetchTodos = async () => {
+  await queryClient.prefetchQuery({
+    queryKey: ["todos"],
+    queryFn: fetchTodos,
+  });
+};
+```
+
+queryClient 인스턴스의 매소드로 인자로 queryKey와 queryFn을 담아보내고 있습니다. 위의 쿼리의 결과는 useQuery를 활용하여 데이터를 가지고 왔을때와 동일하게 cache됩니다.
+
+> 그런데 캐싱은 어떻게 되는걸까요??...
+
+한, 두단계 깊이 들어가보겠습니다. 도대체 어떻게 캐싱이 되는건지 알아보려고 합니다. 궁금하시다면 [prefetchQuery 동작 원리 파헤치기](https://danny-blog.vercel.app/blog/how-to-cache-querykey) 포스트를 추천드립니다.
+
+이제 다시 돌아와서 다음 방법을 활용해서 문제를 해결해보겠습니다.
+
+![](https://velog.velcdn.com/images/sharphand1/post/eca36d7e-3e4f-43d5-9d2f-448f68e4fd55/image.png)
+
+위의 이미지와 같이 테스트 결과 조회의 타이밍을 로딩 페이지에서 진행한다면 테스트 결과 페이지에서 useQuery 훅을 활용할 경우 해당 키가 캐싱되어있어 즉시 상태값을 내려받을 수 있으니 빠르게 보여줄 수 있지 않을까 생각했습니다. 결과적으로 prefetch 시점을 로딩 컴포넌트로 이동시켰습니다.
+
+기존 코드에서 추가된 코드는 주석 HERE 부분입니다.
+
+```tsx
+useEffect(() => {
+  const handlePostTestResult = async () => {
+    try {
+      const startMs = performance.now();
+      const testResult = await mutateAsync(test);
+      const endMs = performance.now();
+      const diffMsToSec = Math.round(endMs - startMs) / 1000;
+      // HERE!
+      queryClient.prefetchQuery({
+        queryKey: queryKey.test.result(testResult.id),
+        queryFn: () => donworryApi.test.getResultById(testResult.id),
+      });
+
+      setTimeout(
+        () => {
+          router.push(`/test/result/${testResult.id}`);
+        },
+        (LOADING_SECOND_TIMEOUT - diffMsToSec) * 1000,
+      );
+    } catch (errors) {
+      toast({ type: "warning", message: "테스트 결과 요청에 실패하였습니다." });
+      onLoading();
+      onReset();
+    }
+  };
+
+  handlePostTestResult();
+}, [mutateAsync, router, test, toast, onReset, onLoading, queryClient]);
+```
+
+**성능 패널을 통해 결과를 확인해보았습니다.**
+
+![](https://velog.velcdn.com/images/sharphand1/post/4f196795-6d76-4704-8a45-f022bcaa2d23/image.png)
+
+위의 이미지에 작게 표현되지만, 확실한 것은 페이지가 3초 이후 딜레이 없이 바로 보인다는 것을 확인했습니다. 데이터 요청을 로딩 페이지에서 하여 해당 값을 리액트 쿼리의 키에 캐싱한 후, 결과 페이지에서 캐싱된 값을 보여주는 방식으로 구현하였습니다. 성공한 것 같이 보였습니다.
+
+**문제가 해결된걸까요?! 기대한 결과인지 살펴보겠습니다**
+
+> 첫 방문시 : 1.2초
+> 두 번째 방문시 : 0.1초의 유휴 시간
+
+![](https://velog.velcdn.com/images/sharphand1/post/b99fe750-7b1a-4cba-a2a7-f143af8a5065/image.png)
+
+첫방문시 1.2초의 지연시간이 발생하고 이후에 다시 테스트를 진행하면 지연시간 없이 결과 페이지가 렌더링되는 것을 확인하였습니다.
+
+**[Next.js 캐시 문제]**
+첫 방문 유저가 테스트를 진행할 경우 데이터 없이도 자체 페이지 로드 시간이 길어서 (왜 길지…?) 2번 방식(SSR)은 데이터 가져오는 시간 (평균 1.2초) + 자체 페이지 로드 시간 (1초) 총 2초 정도의 결과 페이지 렌더링 블로킹 발생이 발생하였습니다. CSR로 구현할 경우 이미 데이터를 가지고 있기에 데이터를 가지고 오는 시간은 짧으나 자체 페이지 로드 시간이 발생합니다. **하지만 재방문 유저에게는 자체 페이지 로드 시간이 캐싱되어 원하는 결과가 나타납니다.**
+
+하지만 아래 그림과 같이 예상하지 못했던 지연시간이 여전히 존재하였습니다.
+
+![](https://velog.velcdn.com/images/sharphand1/post/03c6d1d9-062d-40c3-a40e-f80b40dc8866/image.png)
+
+> router.push를 미리 가지고 올 수 있는 방법을 찾기 전, [푸망](https://poomang.com/) 서비스를 분석하여 해당 서비스는 어떻게 로딩 처리 후 결과 페이지가 즉시 보이는지 확인해보았습니다.
+
+### 세번째 푸망 분석
+
+푸망은 테스트 커뮤니티로써 여러가지 테스트가 있습니다. 위에서 제가 정의한 스텝을 다시 가지고 와봅시다.
+
+1. 테스트 진행 마지막 버튼을 클릭합니다.
+2. loading 상태가 true 변경됩니다.
+3. 로딩 컴포넌프가 렌더링됩니다.
+4. 3초 후 100퍼센트로 가득 찰 프로그래스 바 애니메이션이 시작됩니다.
+5. 로딩 컴포넌트가 마운트 되면 테스트 진행 데이터를 mutate(post) 요청을 합니다.
+6. 네트워크 응답 시간을 setTimeout의 시간 인자인 3초에서 뺍니다.
+7. 프로그래스바가 3초가 되면 router.push(’test/result/:id’)가 실행됩니다.
+
+> 푸망은 어떻게 구현했는지 단계로 정리하기 위해 분석해봅시다.
+
+푸망에서는 마지막 버튼을 클릭하면 어떻게 할까요?! 상태를 변경해서 로딩 컴포넌트를 띄울까요? 혹은 그 즉시 요청을 보낼까요?! 궁금했습니다.
+![](https://velog.velcdn.com/images/sharphand1/post/f8cb6cad-ee91-4bb7-8a7b-9649e8a63430/image.png)
+
+마지막 버튼을 클릭후, 자세히 살펴보니 **마이크로 테스크큐**가 실행되는 것을 알 수 있습니다. 오호!! 콜백 큐에는 테스크큐와 마이크로 테스큐가 존재하는데 마이크로 테스큐에는 Promise, MutationObserver가 해당 큐에 저장이 되고 우선순위가 높게 실행됩니다. 비동기 요청이 진행되는 것을 확인할 수 있었습니다. 그렇다면 푸망에서는 버튼을 클릭하면 POST 요청을 바로 보내는군요. 하지만 로딩 페이지가 바로 뜹니다. 그러니 예상해보면 요청을 보내고 상태를 변경하여 덮어씌운 로딩 페이지가 보이는 방식입니다.
+
+1. 테스트 진행 마지막 버튼을 클릭합니다.
+2. POST 요청을 보낸다.
+3. 전역 로딩 상태를 true로 변경한다.
+
+그렇다면 조금 더 살펴봅시다. 우리 돈워리는 3초의 로딩 시간을 정적으로 부여하였습니다.
+
+**그 이유는 신빙성이 있어보이기 위함이었고 4초 이상의 로딩 시간부터 이탈률이 높다는 데이터를
+근거하여 3초로 정하였습니다.** 하지만 푸망은 응답 이후 결과 페이지가 로드되면 즉시 결과 페이지를
+렌더하는 방식으로 구현되어있는 것을 확인했습니다.
+
+로딩 중 해당 결과 페이지에 필요한 데이터 GET하는 네트워크를 확인했습니다. ![](https://velog.velcdn.com/images/sharphand1/post/88e4150d-adb5-45a6-975f-3cfc6744282b/image.png)
+
+이 과정에서 얻은 힌트는 로딩 중... **결과 페이지에서 보일 HTML을 가지고 올 수 있는 것**이었습니다.
+
+1. 테스트 진행 마지막 버튼을 클릭합니다.
+2. POST 요청을 보낸다.
+3. 전역 로딩 상태를 true로 변경한다.
+4. 요청에 대한 응답을 받고 병렬적으로 모든 요청에 대한 결과를 받는다.
+5. 준비된 결과 페이지를 즉시 보여준다.
+
+이를 통해 알 수 있는 것은 HTML을 해당 라우터에 이동하기 전, 미리 렌더링할 수 있다는 것이 떠올랐습니다.
+**(중요: next.js는 초기 페이지만 HTML을 받으며 이후 라우트 이동시 RSC_payload를 받습니다.)**
+
+### 네 번째, router.prefetch() 활용
+
+Next.js는 SSR 프레임워크로써 어떻게 페이지 이동시 속도를 보장할 수 있었을까요?! 지금껏 불편함을 느끼지 못한 이유가 있었습니다.
+
+[next.js 프리패치 관련 공식문서](https://nextjs.org/docs/app/building-your-application/routing/linking-and-navigating#linking-to-dynamic-segments)에 보다 자세히 나와있습니다. Next.js에선 라우트 이동시에 prefetch가 기본적으로 동작하고 있습니다. 아래는 prefetch 하는 네 가지 방식입니다.
+
+1. Link Component (CSR)
+2. useRouter Hook (CSR)
+3. redirect Func (SSR)
+4. History API
+
+위의 네가지 방식으로 이동하고자 하는 라우트로 미리 이동할 수 있다고 합니다. Link 컴포넌트와 useRouter 훅은 클라이언트 사이드 컴포넌트에서 사용할 수 있고 redirect 함수는 서버 사이드에서 사용할 수 있다고 정리가 되어있네요.
+
+우선 현재 구현된 TestLoadingPage는 클라이언트 컴포넌트로 구성되어있기에 Link와 useRouter 훅을 활용할 수 있습니다. useRouter를 활용하여 구현해보았습니다. Here 주석을 통해 위치를 아실 수 있습니다.
+
+```tsx
+const TestLoadingPage = () => {
+	...
+
+  useEffect(() => {
+    const handlePostTestResult = async () => {
+      try {
+        const startMs = performance.now();
+        const testResult = await mutateAsync(test);
+        const endMs = performance.now();
+        const diffMsToSec = Math.round(endMs - startMs) / 1000;
+
+        queryClient.prefetchQuery({
+          queryKey: queryKey.test.result(testResult.id),
+          queryFn: () => donworryApi.test.getResultById(testResult.id),
+        });
+        // HERE!!!
+        router.prefetch(`/test/result/${testResult.id}`);
+        setTimeout(
+          () => {
+            router.push(`/test/result/${testResult.id}`);
+          },
+          (LOADING_SECOND_TIMEOUT - diffMsToSec) * 1000,
+        );
+      } catch (errors) {
+        toast({ type: 'warning', message: '테스트 결과 요청에 실패하였습니다.' });
+        onLoading();
+        onReset();
+      }
+    };
+
+    handlePostTestResult();
+  }, [mutateAsync, router, test, toast, onReset, onLoading, queryClient]);
+
+  return (
+  <>...</>
+  )
+}
+```
+
+HERE 주석 위치에 testResult.id를 포함한 라우트를 prefetch하는 로직을 추가하였습니다. 그리고 개발 서버를 확인해보았습니다. 하지만....... 전혀 미동도 없고 prefetch도 되지 않는 것을 확인했습니다.
+
+"공식문서 Link와 useRouter Docs를 확인한 결과 prefetch는 Production 환경에서만 구현된다."고 합니다.
+
+배포된 환경에서 확인해보았습니다. next/link 의 Link 컴포넌트는 배포 환경에서 마우스가 hover되면 해당 페이지를 prefetch 합니다.
+
+![](https://velog.velcdn.com/images/sharphand1/post/f6d9a0f6-944f-4920-b002-77a1a8c9d326/image.png)
+
+네트워크 패널을 통해 확인해본 결과 배포 환경에서 마우스가 위의 두 버튼에 hover될 경우 해당 라우트 js를 요청하는 것을 확인했습니다.
+
+![](https://velog.velcdn.com/images/sharphand1/post/30519c78-776a-463b-a701-8715ebc36637/image.png)
+
+그래서 동료의 리뷰를 받고 main 브랜치에 수정한 코드를 반영하였습니다.
+
+그런데 여기서 궁금한 것이 생겼습니다.
+router.prefetch는 도대체 뭘 prefetch하는걸까요? 위에 보이는 `_rsc=`는 무엇일까요??! 이게 무엇인지 알아야 next.js를 활용하여 최적화할 수 있다고 판단했습니다.
+
+### 결과 0.03초?
+
+- **배포 사이트 router.prefetch 전**
+  ![](https://velog.velcdn.com/images/sharphand1/post/edec174c-f611-4f21-becb-265b307f56cd/image.png)
+
+  1.5초 보다는 적은 지연시간인 0.6초가 발생했습니다.
+  첫방문 : 0.6초의 지연시간이 존재합니다. 즉 100퍼센트가 된 후 잠시 지연이 발생합니다. 우리 서비스는 번들 크기도 크지 않고 결과 페이지에도 많은 데이터가 필요하지 않은데 0.6초가 소요된다는 것을 작지 않은 문제라고 생각합니다.
+
+- **배포 사이트 router.prefetch 후**
+  ![](https://velog.velcdn.com/images/sharphand1/post/739e8119-d517-4d3a-a46c-6503626ea201/image.png)
+
+> 와!!!!! 배포환경에서 router.prefetch는 동작하며 라우트가 이동되기 전, 이동할 라우트의 페이지를 미리 가지고 오는 것을 확인했습니다. 또한 첫 방문에도 굉장히 짧은 시간이 소요됩니다.
+
+![](https://velog.velcdn.com/images/sharphand1/post/ce9c114f-2a01-4793-800e-38c916ec3dba/image.png)
+
+> **첫 방문시에 대략 0.03초로 기존 1.5초에서 0.03초로 변경되었습니다.**
+
+# 마치며
+
+기획 요구 사항은 상당히 간단했습니다.
+
+- **첫 번째, 테스트 진행 이후 완료 결과 페이지를 보여주기 전 로딩 페이지가 있어야 합니다.**
+- **두 번째, 3초의 로딩 시간이 이후 결과 페이지가 보여야 합니다.**
+
+두 가지의 간단한 요구 사항이었음에도 UX관점에서 바라본 개발자의 시선으로 요구사항을 분석해보니 아래와 같은 요구사항을 도출할 수 있었습니다.
+
+> 첫 번째, 테스트 진행 이후 마지막 문항의 버튼을 클릭하면 로딩 페이지가 즉시 화면에 표시되어야합니다. <br/>
+> 두 번째, 테스트 로딩 시간(3초) 이후 추가 로딩 UI 및 지연 시간을 최소화하여 결과 페이지를 보여줘야합니다.
+
+결과적으로 위의 과정을 통해 배포환경에서 테스트 결과 페이지가 보이는데 평균 1.5초의 지연시간에서 0.03초로 단축하였습니다. 위의 두가지의 요구사항을 만족하는 기능을 구현했습니다.
+
+> 긴 글 읽어주셔서 감사합니다 .

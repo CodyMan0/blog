@@ -1,0 +1,633 @@
+---
+title: prefetchQuery 동작 원리 파헤치기
+sidebar_position: 1
+last_update:
+  date: 04/13/2024
+description: tanstack-query의 캐싱 동작 원리와 prefetchQuery 이해해보기
+tags: [스터디, 회고, tanstack-query]
+---
+
+> 해당 포스트의 궁금증은 [LCP 단축 여정 포스트](https://lee2022.com/blog/lcp)에서 시작되었습니다.
+
+# 들어가기 앞서
+
+테스트 결과 LCP 단축 과정에서 클라이언트 컴포넌트에서 react-query를 활용해서 이동할 페이지의 데이터를 미리 가지고 온후, useQuery 훅으로 해당 키에 대한 데이터를 가지고 오도록 구현하였고 캐싱된 데이터를 사용하여 로딩을 제거하였습니다.
+
+> 하지만 '이게 뭐지?' 어떻게 이게 가능한거지? 싶었습니다. 도대체 queryKey는 어떻게 캐싱되는 것인지 궁금해졌습니다. 단지 하나의 queryClient를 전역에 만들고 필요한 곳에서 불러와 prefetch 매소드만 사용하면 일련의 과정들이 수행되는 것이 마법처럼 느껴졌습니다.
+
+그래서 마법을 마술로 이해하기 위해
+
+1. 리액트 쿼리는 쿼리키를 어떻게 **캐싱하는 것인지 동작 원리**를 살펴보고
+2. **prefetchQuery는 어떻게 구현**되어있는지 살펴보려고 합니다.
+
+# 본론
+
+## 쿼리 키는 어떻게 캐싱되는걸까?!
+
+먼저 리액트 쿼리 깃헙을 클론하여 진행하였습니다.
+
+### 1. 오픈 소스 구성 방식
+
+먼저 해당 오픈소스의 프레임워크를 살펴보았습니다. nx를 활용한 모노 레포로 이루어진 레포입니다. pnpm-workspace.yaml 파일을 보니 namspace를 확인할 수 있었습니다.
+
+```yml
+// pnpm-workspace.yaml
+packages:
+  - 'packages/*'
+  - 'integrations/*'
+  - 'examples/angular/*'
+  - 'examples/react/*'
+  - 'examples/solid/*'
+  - 'examples/svelte/*'
+  - 'examples/vue/*'
+  - '!examples/vue/2*'
+  - '!examples/vue/nuxt*'
+```
+
+위의 네임스페이스를 공유하는 모노 레포임을 확인했습니다. 제가 알고자 하는 것은 리액트 쿼리 캐싱은 어떻게 구현된 것이며 어떻게 동작하는지이기에 packages 디렉토리로 이동해보겠습니다.
+
+![](https://velog.velcdn.com/images/sharphand1/post/97f55804-306d-451d-84af-83dfc9c07f78/image.png)
+
+query-core부터 살펴보겠습니다. query-core 디렉터리의 package.json -> index.tsx를 확인해보겠습니다.
+
+```tsx
+export { CancelledError } from "./retryer";
+export { QueryCache } from "./queryCache";
+export type { QueryCacheNotifyEvent } from "./queryCache";
+export { QueryClient } from "./queryClient";
+export { QueryObserver } from "./queryObserver";
+export { QueriesObserver } from "./queriesObserver";
+export { InfiniteQueryObserver } from "./infiniteQueryObserver";
+export { MutationCache } from "./mutationCache";
+export type { MutationCacheNotifyEvent } from "./mutationCache";
+export { MutationObserver } from "./mutationObserver";
+export { notifyManager } from "./notifyManager";
+export { focusManager } from "./focusManager";
+export { onlineManager } from "./onlineManager";
+export {
+  hashKey,
+  replaceEqualDeep,
+  isServer,
+  matchQuery,
+  matchMutation,
+  keepPreviousData,
+  skipToken,
+} from "./utils";
+export type {
+  MutationFilters,
+  QueryFilters,
+  Updater,
+  SkipToken,
+} from "./utils";
+export { isCancelledError } from "./retryer";
+export {
+  dehydrate,
+  hydrate,
+  defaultShouldDehydrateQuery,
+  defaultShouldDehydrateMutation,
+} from "./hydration";
+
+// Types
+export * from "./types";
+export type { QueryState } from "./query";
+export { Query } from "./query";
+export type { Mutation, MutationState } from "./mutation";
+export type {
+  DehydrateOptions,
+  DehydratedState,
+  HydrateOptions,
+} from "./hydration";
+export type { QueriesObserverOptions } from "./queriesObserver";
+```
+
+조각 조각 알고 있던 개념들이 조금씩 보이기 시작합니다. hydration, retryer, utils에 keepPreviousData까지 보입니다. 쿼리키와 관련된 것은 보이지 않는데 하나가 있네요 **hashKey** 유틸 함수가 존재합니다. 확인해보겠습니다.
+
+### 2. hashKey 유틸 함수 살펴보기
+
+```tsx
+/**
+ * Default query & mutation keys hash function.
+ * Hashes the value into a stable hash.
+ */
+export function hashKey(queryKey: QueryKey | MutationKey): string {
+  return JSON.stringify(queryKey, (_, val) =>
+    isPlainObject(val)
+      ? Object.keys(val)
+          .sort()
+          .reduce((result, key) => {
+            result[key] = val[key];
+            return result;
+          }, {} as any)
+      : val,
+  );
+}
+```
+
+위의 hashKey 함수명 그자체로 그대로 키를 해시하는 함수입니다.
+
+```tsx
+export type QueryKey = ReadonlyArray<unknown>;
+export type MutationKey = ReadonlyArray<unknown>;
+```
+
+hashKey 함수는 쿼리키 타입 혹은 뮤테이션키 타입의 쿼리키를 인자로 받고 string를 리턴합니다.
+
+함수를 단계별로 정리해보죠.
+
+1. JSON 직렬화가 진행됩니다.
+2. 첫번째 매개변수로 queryKey가 들어갑니다.
+3. 두번째 매개변수로 콜백함수가 들어갑니다.
+4. 콜백함수의 매개변수 첫번째는 비어있고 두번째는 value가 있습니다. 콜백함수의 실행부로 넘어갑니다.
+5. isPlainObject(val)가 참이면 오브젝트의 키를 배열로 만들고 정렬한 후 reduce 안에 있는 방식으로 새로운 객체를 반환합니다.
+6. isPlainObject(val)가 거짓이면 받은 value를 그대로 반환합니다.
+
+> hashkey 함수를 사용하는 곳을 살펴봅시다.
+
+### 3. hashkey 함수를 사용하는 queryClient 클래스 살펴보기
+
+클래스로 구현되어 있어서 이해하기 쉽지 않지만 하나씩 살펴보고자 합니다.
+
+> 우선 인터페이스부터 살펴보시죠.
+
+```tsx
+// TYPES
+interface QueryDefaults {
+  queryKey: QueryKey;
+  defaultOptions: OmitKeyof<QueryOptions<any, any, any>, "queryKey">;
+}
+
+interface MutationDefaults {
+  mutationKey: MutationKey;
+  defaultOptions: MutationOptions<any, any, any, any>;
+}
+```
+
+useQuery와 useMutation에 대응하는 타입이 상단에 지정되어있습니다. 위에서 QueryOptions와 MutationOptions 타입을 한번 확인해보시죠
+
+```tsx
+export interface QueryOptions<
+  TQueryFnData = unknown,
+  TError = DefaultError,
+  TData = TQueryFnData,
+  TQueryKey extends QueryKey = QueryKey,
+  TPageParam = never,
+> {
+  retry?: RetryValue<TError>;
+  retryDelay?: RetryDelayValue<TError>;
+  networkMode?: NetworkMode;
+  gcTime?: number;
+  queryFn?: QueryFunction<TQueryFnData, TQueryKey, TPageParam> | SkipToken;
+  persister?: QueryPersister<
+    NoInfer<TQueryFnData>,
+    NoInfer<TQueryKey>,
+    NoInfer<TPageParam>
+  >;
+  queryHash?: string;
+  queryKey?: TQueryKey;
+  queryKeyHashFn?: QueryKeyHashFunction<TQueryKey>;
+  initialData?: TData | InitialDataFunction<TData>;
+  initialDataUpdatedAt?: number | (() => number | undefined);
+  behavior?: QueryBehavior<TQueryFnData, TError, TData, TQueryKey>;
+  structuralSharing?:
+    | boolean
+    | ((oldData: unknown | undefined, newData: unknown) => unknown);
+  defaulted?: boolean;
+  meta?: QueryMeta;
+  maxPages?: number;
+}
+```
+
+제네릭 타입으로 구현되어있고 TQueryFnData는 비동기 요청이니 unknown 타입, 두번째 인자는 DefaultError 타입, 세번째는 첫번째 타입이 들어있고 QueryKey타입으로부터 상속받은 타입이 네번째에 들어있네요. 생각보다 많은 옵션들이 있으며 각 옵션들은 상황에 맞게 사용할 수 있을 것 같습니다.
+
+**구현체를 살펴보러 가시죠.**
+
+```tsx
+//query-core/src/queryClient.ts
+
+export class QueryClient {
+  #queryCache: QueryCache
+  #mutationCache: MutationCache
+  #defaultOptions: DefaultOptions
+  #queryDefaults: Map<string, QueryDefaults>
+  #mutationDefaults: Map<string, MutationDefaults>
+  #mountCount: number
+  #unsubscribeFocus?: () => void
+  #unsubscribeOnline?: () => void
+```
+
+클래스 필드를 활용하여 여러 프러퍼티를 private하게 받고 있습니다. private 프로퍼티와 메서드는 `#`으로 시작합니다. `#`이 붙으면 클래스 안에서만 접근할 수 있습니다. 리액트 쿼리를 사용하면서 QueryClient 가지고 올떄 해당 클래스는 8개의 프로퍼티를 받습니다.
+
+1. 쿼리 캐시
+2. 뮤테이션 캐시
+3. 기본 옵션
+4. 쿼리 기본객체
+5. 뮤테이션 기본객체
+6. 마운트 카운트
+7. 포커스시 미구독 함수
+8. 온라인시 미구독 함수
+
+우리가 알고자하는 것은 쿼리가 어떻게 캐싱되는지이기 때문에 쿼리 캐시 인스턴스로 넘어가보겠습니다.
+
+### 4. QueryCache 클래스 살펴보기
+
+#### 4-1. 타입 살펴보기
+
+먼저 인터페이스를 살펴보겠습니다. 크게 보면
+
+1. **QueryCacheConfig**
+2. **QueryCacheNotifyEvent**
+3. **QueryStore**
+
+총 세가지의 타입이 있습니다. 하나씩 살펴보시죠.
+
+**QueryCacheConfig 타입은**
+
+```tsx
+interface QueryCacheConfig {
+  onError?: (
+    error: DefaultError,
+    query: Query<unknown, unknown, unknown>,
+  ) => void;
+  onSuccess?: (data: unknown, query: Query<unknown, unknown, unknown>) => void;
+  onSettled?: (
+    data: unknown | undefined,
+    error: DefaultError | null,
+    query: Query<unknown, unknown, unknown>,
+  ) => void;
+}
+```
+
+모두 옵셔널입니다. 값이 있을 수도 있고 없을 수도 있습니다. 에러일 경우, 성공할 경우, 그리고 세번째인 성공시 혹은 에러시 알려주는 onSettled 프로퍼티가 있습니다.
+
+**QueryCacheNotifyEvent 타입을 살펴봅시다.**
+
+```tsx
+
+interface NotifyEventQueryAdded extends NotifyEvent {
+	type: 'added'
+	query: Query<any, any, any, any>
+}
+
+interface NotifyEventQueryRemoved extends NotifyEvent {
+	type: 'removed'
+	query: Query<any, any, any, any>
+}
+...
+
+export type QueryCacheNotifyEvent =
+  | NotifyEventQueryAdded
+  | NotifyEventQueryRemoved
+  | NotifyEventQueryUpdated
+  | NotifyEventQueryObserverAdded
+  | NotifyEventQueryObserverRemoved
+  | NotifyEventQueryObserverResultsUpdated
+  | NotifyEventQueryObserverOptionsUpdated
+
+type QueryCacheListener = (event: QueryCacheNotifyEvent) => void
+```
+
+액션(타입)에 따른 여러개의 interface가 존재합니다. useReducer 훅과 같이 타입 프로퍼티가 있고 query 프로퍼티도 있습니다. type에 해당하는 인터페이스가 정의되어있고 QueryCacheListener 타입은 이벤트로 동작에 대한 인터페이스가 묶인 QueryCachNotifyEvent라는 타입을 매개변수의 인자로 받고 반환값이 없는 함수의 타입으로 지정합니다. 오호 어렵지 않네요!!!
+
+**그럼 세번째인 QueryStore을 확인해봅시다.**
+
+```tsx
+export interface QueryStore {
+  has: (queryHash: string) => boolean;
+  set: (queryHash: string, query: Query) => void;
+  get: (queryHash: string) => Query | undefined;
+  delete: (queryHash: string) => void;
+  values: () => IterableIterator<Query>;
+}
+```
+
+QueryStore 타입에는 5개의 매소드가 정의되어 있습니다. QueryStore의 매소드를 활용하여 쿼리키를 저장하지 않을까 싶습니다. 조금 더 깊이 가보겠습니다.
+
+#### 4-2. QueryCache 생성자 함수
+
+QueryCache 클래스의 프로퍼티와 생성자 함수를 살펴보겠습니다.
+
+```tsx
+export class QueryCache extends Subscribable<QueryCacheListener> {
+  #queries: QueryStore
+
+  constructor(public config: QueryCacheConfig = {}) {
+    super()
+    this.#queries = new Map<string, Query>()
+  }
+```
+
+생성자 함수를 먼저 살펴보면, QueryCache의 인스턴스로부터 config 인자를 받습니다. 기본값은 객체 리터럴로 만들어진 일반 객체로 할당합니다. 그리고 super 매소드로 QueryCache의 부모인 QueryCacheListener의 타입을 제네릭으로 받는 Subscribable 클래스를 매소드를 사용할 수 있도록 생성합니다.
+
+결과적으로 Subscribable`<QueryCacheListener>` 클래스의 매소드를 QueryCache 클래스에서도 사용할 수 있게 됐습니다. **마지막으로 QueryCache의 비공개 프로퍼티인 queries 변수에 Map 자료구조를 할당해줍니다!!** 신기하네요. `결국 Javascript의 해시 맵에 쿼리 키가 저장이 되는 것입니다.` key는 string 타입이며 value는 모든 정보가 담긴 Query가 추가되는 것을 확인했습니다.
+
+#### 4-3. QueryCache 매소드 파헤치기
+
+> 그럼 이제 해당 클래스의 매소드를 확인해봅시다.
+
+**1. QueryCache.add()**
+
+```tsx
+  export class QueryCache extends Subscribable<QueryCacheListener> {
+  #queries: QueryStore
+
+	  constructor(public config: QueryCacheConfig = {}) {
+	    super()
+	    this.#queries = new Map<string, Query>()
+	  }
+
+	  add(query: Query<any, any, any, any>): void {
+	    if (!this.#queries.has(query.queryHash)) {
+	      this.#queries.set(query.queryHash, query)
+
+	      this.notify({
+	        type: 'added',
+	        query,
+	      })
+	    }
+	  }
+
+	  notify(event: QueryCacheNotifyEvent) {
+	    notifyManager.batch(() => {
+	      this.listeners.forEach((listener) => {
+		    listener(event)
+      })
+    })
+  }
+```
+
+- query를 인자로 받습니다.
+- 내부에 있는 queries의 객체 안에 프로퍼티인 queryHash가 없을 경우
+- 현재 queries 객체의 키는 받은 인자의 queryHash가 값에는 query가 저장됩니다.
+- notify 매소드가 type 'added'를 실행합니다.
+
+> queryHash가 무엇인지 알아야할 것 같습니다. add 매소드와 연관있는 build 매소드를 살펴봅시다.
+
+**2. QueryCache.build()**
+
+```tsx
+export class QueryCache extends Subscribable<QueryCacheListener> {
+  #queries: QueryStore
+
+  constructor(public config: QueryCacheConfig = {}) {
+	super()
+	this.#queries = new Map<string, Query>()
+  }
+
+  build<TQueryFnData, TError, TData, TQueryKey extends QueryKey>(
+    client: QueryClient,
+    options: WithRequired<
+      QueryOptions<TQueryFnData, TError, TData, TQueryKey>,
+      'queryKey'
+    >,
+    state?: QueryState<TData, TError>,
+  ): Query<TQueryFnData, TError, TData, TQueryKey> {
+    const queryKey = options.queryKey
+    const queryHash =
+      options.queryHash ?? hashQueryKeyByOptions(queryKey, options)
+    let query = this.get<TQueryFnData, TError, TData, TQueryKey>(queryHash)
+
+    if (!query) {
+      query = new Query({
+        cache: this,
+        queryKey,
+        queryHash,
+        options: client.defaultQueryOptions(options),
+        state,
+        defaultOptions: client.getQueryDefaults(queryKey),
+      })
+      this.add(query)
+    }
+
+    return query
+  }
+```
+
+> 이 코드에 비밀이 숨어 있었습니다.
+
+build 매소드를 살펴보면 useQuery 훅을 사용할때 queryKey가 필수일 수 있도록 타입이 지정되어있군요!! 단계별로 정리해보겠습니다.
+
+- queryHash가 null이라면 hashQueryKeyByOption 함수의 인자로 queryKey와 options를 넣어 반환 값을 queryHash의 값에 할당해줍니다.
+- `queryHash`이  `queriesMap`의 프로퍼티로 저장된 `Query` 인스턴스를 조회합니다.
+- `Query` 인스턴스가 존재한다면 바로 반환하고 존재하지 않는다면 새로 생성해서 캐시에 등록 후 반환합니다.
+
+위의 build 매소드를 통해 알 수 있는 것은 **동일한 queryhash 값이 존재한다면 해당 값을 재활용함으로 서버에게 보내는 요청을 줄일 수 있게 하는 것입니다.** 또한 빌드 매소드를 통해 알게 된 것은 사용할 때 string[]의 형태로 전달한 querykey가 이곳에서 어떤 알고리즘을 통해 queryHash의 변수에 등록된다는 것입니다.
+
+> 여기서 잠깐! hashQueryKeyByOptions 함수 구현체를 살펴보겠습니다.
+
+```tsx
+export function hashQueryKeyByOptions<TQueryKey extends QueryKey = QueryKey>(
+  queryKey: TQueryKey,
+  options?: Pick<QueryOptions<any, any, any, any>, "queryKeyHashFn">,
+): string {
+  const hashFn = options?.queryKeyHashFn || hashKey;
+  return hashFn(queryKey);
+}
+```
+
+인자로 querykey와 options를 받습니다. options 인자는 Pick 유틸 타입으로 해당 객체의 queryKeyHashFn 프로퍼티에 대한 타입을 지정할 수 있습니다. 일반적으로 useQuery를 사용할때 queryKeyHashFn을 옵션으로 주지 않았는데...? 의문이 들었습니다.
+
+> 아래 코드를 살펴보니 그 이유를 바로 알 수 있었습니다. 널 병합 연산자가 있습니다. queryKeyHashFn이 없을 경우 hasKey 함수가 할당되고 결국 리턴값은 querykey를 변경한 string이 반환됩니다.
+
+> hashFn에 있는 hashKey를 살펴보시죠
+
+```tsx
+/**
+ * Default query & mutation keys hash function.
+ * Hashes the value into a stable hash.
+ */
+export function hashKey(queryKey: QueryKey | MutationKey): string {
+  return JSON.stringify(queryKey, (_, val) =>
+    isPlainObject(val)
+      ? Object.keys(val)
+          .sort()
+          .reduce((result, key) => {
+            result[key] = val[key];
+            return result;
+          }, {} as any)
+      : val,
+  );
+}
+```
+
+> 이 함수는 가장 먼저 분석했던 함수였는데 다시 돌아 만나게 됐습니다. 이 함수는 useQuery 내부의 배열 형태의 queryKey를 받아서 queryKey를 해쉬해주는 중요한 알고리즘이었군요! 다시 한단계 위로 올라가 봅시다.
+
+#### 4-4 다시 매소드로!!
+
+**3. QueryCache.remove()**
+쿼리키를 삭제하는 로직을 살펴봅시다.
+
+```tsx
+  remove(query: Query<any, any, any, any>): void {
+    const queryInMap = this.#queries.get(query.queryHash)
+
+    if (queryInMap) {
+      query.destroy()
+
+      if (queryInMap === query) {
+        this.#queries.delete(query.queryHash)
+      }
+
+      this.notify({ type: 'removed', query })
+    }
+  }
+```
+
+쿼리 캐시 Map에서 queryHash 프로퍼티를 가지고 와서 queryInMap에 할당합니다. 만약 존재하면 query.destory()를 진행합니다. 이건 query 클래스의 매소드입니다. 확인해보시죠
+
+```tsx
+export class Query<
+  TQueryFnData = unknown,
+  TError = DefaultError,
+  TData = TQueryFnData,
+  TQueryKey extends QueryKey = QueryKey,
+> extends Removable{
+	...
+	destroy(): void {
+	    super.destroy()
+	    this.cancel({ silent: true })
+  }}
+```
+
+super.destory()를 통해 상위의 매소드를 사용하고 있음을 확인했습니다. 그럼 상위 클래스를 이동해보겠습니다.
+
+```tsx
+import { isServer, isValidTimeout } from "./utils";
+
+export abstract class Removable {
+  gcTime!: number;
+  #gcTimeout?: ReturnType<typeof setTimeout>;
+
+  destroy(): void {
+    this.clearGcTimeout();
+  }
+
+  protected scheduleGc(): void {
+    this.clearGcTimeout();
+
+    if (isValidTimeout(this.gcTime)) {
+      this.#gcTimeout = setTimeout(() => {
+        this.optionalRemove();
+      }, this.gcTime);
+    }
+  }
+
+  protected updateGcTime(newGcTime: number | undefined): void {
+    // Default to 5 minutes (Infinity for server-side) if no gcTime is set
+    this.gcTime = Math.max(
+      this.gcTime || 0,
+      newGcTime ?? (isServer ? Infinity : 5 * 60 * 1000),
+    );
+  }
+
+  protected clearGcTimeout() {
+    if (this.#gcTimeout) {
+      clearTimeout(this.#gcTimeout);
+      this.#gcTimeout = undefined;
+    }
+  }
+
+  protected abstract optionalRemove(): void;
+}
+```
+
+추상화된 클래스입니다. 즉 destroy 함수는 반환값이 없고 결국 clearGcTimeout 매소드를 호출합니다. 해당 함수는 결국 gcTime가 있을 경우 Web API이 clearTimeout 매소드로 타이머를 설정하고 이후 undefined를 할당하여 메모리를 삭제합니다. 진짜 신기하네요. 그렇게 삭제 메소드도 알아보았습니다.
+
+### 코드 분석 결과
+
+> 리액트쿼리를 활용할 경우 반드시 queryKey와 queryFn을 객체에 담아 useQuery 훅에 인자로 넣어줘야합니다. 이후 queryKey는 내부적으로 hashKey 유틸함수로 들어가게 되고 반환값이 queryHash라는 변수에 담깁니다. 그리고 QueryCache.build() 매소드를 통해 현재 queryClient의 동일한 queryHash가 없을 경우 Map에 등록합니다.
+
+## 그래서 prefetchQuery는 어떻게 동작하는걸까요?!
+
+### 코드 분석
+
+QueryClient.ts를 살펴봅시다. QueryClient 클래스 내부 매소드로 prefetchQuery가 존재합니다. 해당 매소드를 확인해봅시다.
+
+```tsx
+  prefetchQuery<
+    TQueryFnData = unknown,
+    TError = DefaultError,
+    TData = TQueryFnData,
+    TQueryKey extends QueryKey = QueryKey,
+  >(
+    options: FetchQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
+  ): Promise<void> {
+    return this.fetchQuery(options).then(noop).catch(noop)
+  }
+```
+
+prefetchQuery는 fetchQuery를 활용하여 구현되었음을 확인했습니다.
+
+> noop이란 no operation의 약어로 Promise 객체로 반환하지 않겠다는 의미입니다. 또한 에러를 던지지 않는다고 코드에 작성되어있네요.
+
+그럼 공식문서에 나와있는대로 **prefetchQuery와 fetchQuery의 차이점이 반환값의 유무와 에러의 유무라고 했는데 더욱 와닿는 것 같습니다.** PrefetchQuery를 통해 데이터를 미리 가지고 저장해놓은 후, useQuery로 저장된 데이터를 가지고 오는 방식 자체가 Fallback 역할을 수행하기에 반환값과 에러가 필요없다고 생각이 듭니다.
+
+> 그럼 fetchQuery를 살펴봅시다.
+
+```tsx
+  fetchQuery<
+    TQueryFnData,
+    TError = DefaultError,
+    TData = TQueryFnData,
+    TQueryKey extends QueryKey = QueryKey,
+    TPageParam = never,
+  >(
+    options: FetchQueryOptions<
+      TQueryFnData,
+      TError,
+      TData,
+      TQueryKey,
+      TPageParam
+    >,
+  ): Promise<TData> {
+    const defaultedOptions = this.defaultQueryOptions(options)
+
+    // https://github.com/tannerlinsley/react-query/issues/652
+    if (defaultedOptions.retry === undefined) {
+      defaultedOptions.retry = false
+    }
+
+    const query = this.#queryCache.build(this, defaultedOptions)
+
+    return query.isStaleByTime(defaultedOptions.staleTime)
+      ? query.fetch(defaultedOptions)
+      : Promise.resolve(query.state.data as TData)
+  }
+```
+
+1. 우선 QueryClient 클래스 내부의 defaultQueryOptions 함수에 options을 넣어 인스턴스의 options를 defaultQueryOptions으로 할당합니다.
+2. retry 기본값을 false로 할당하는 로직이 있습니다.
+3. 위에서 살펴본 queryCache의 매소드 build를 사용하여 `Query` 인스턴스가 존재한다면 바로 반환하고 존재하지 않는다면 새로 생성해서 캐시에 등록 후 반환합니다.
+
+prefetch는 어떻게 쿼리키를 저장하는지를 알려주는 코드입니다.
+
+```tsx
+const query = this.#queryCache.build(this, defaultedOptions);
+```
+
+> 정리해보면 prefetchQuery는 반환값과 에러를 던져주지 않는 fetchQuery 매소드를 사용하는 것이었고 해당 fetchQuery는 생성자 함수에서 만들었던 queryCache 인스턴스의 매소드인 build 매소드를 사용하여 queryHash의 값이 없을 경우 쿼리키를 해싱하여 값을 변수에 할당한 이후 `this(new Map<string, Query>)`에 해싱된 쿼리키를 추가해주고 있습니다.
+
+### 코드 분석 결과
+
+prefetchQuery는 fetchQuery를 래핑해서 구현된 것이며 차이로는 반환값의 유무와 에러 알림 유무입니다. 또한 fetchQuery의 코드를 살펴본 결과 queryCache 클래스의 build 매소드를 사용하여 인자로 들어온 쿼리키를 JS의 Map 객체에 저장하는 것을 확인했습니다.
+
+## 구조화된 모습
+
+여러 블로그를 통해 살펴본 결과 아래 이미지가 구현된 코드를 가장 적절하게 시각화해주었다고 생각하였습니다. 하나의 QueryClient, QueryCache가 있고 그 안에 hashMap 객체 안에 여러 Query가 존재하는 것을 표현하고 있습니다.
+![](https://velog.velcdn.com/images/sharphand1/post/41a6a046-31f4-4891-bcfc-ef275e056d4e/image.png)
+
+이미지 출처 : https://fe-developers.kakaoent.com/2023/230720-react-query/
+
+## 마무리하며
+
+돈워리 프로젝트 LCP 단축을 prefetchQuery를 활용하여 미리 데이터를 가지고 오는 방식을 사용해봤습니다. "prefetchQuery 함수를 사용하면 queryFn의 반환값을 가진 queryKey가 어딘가..에 캐싱된다" 정도로 알고 있었고 어딘가가 어디있지 찾아보며 정리해보며 마법이 아니라 결국 JS의 Map에 쿼리키가 캐싱되는 것을 알게 됐습니다.
+
+> 긴 글 읽어주셔서 감사힙니다.
+
+## 참고 자료
+
+- 카카오 기술 블로그 : https://fe-developers.kakaoent.com/2023/230720-react-query/
+- [https://react.dev/reference/react/useSyncExternalStore](https://react.dev/reference/react/useSyncExternalStore)
+- [https://tkdodo.eu/blog/inside-react-query](https://tkdodo.eu/blog/inside-react-query)
+- [https://www.timegambit.com/blog/digging/react-query/01](https://www.timegambit.com/blog/digging/react-query/01)
+- [https://www.timegambit.com/blog/digging/react-query/02](https://www.timegambit.com/blog/digging/react-query/02)
+- 클래스 학습 링크 : https://ko.javascript.info/class#ref-773

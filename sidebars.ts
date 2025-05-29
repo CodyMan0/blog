@@ -12,19 +12,50 @@ const sidebars: SidebarsConfig = {
         keywords: ["스터디", "노트", "스터디 노트"],
       },
       items: [
-        // {
-        //   type: "category",
-        //   label: "Docker & Kubernetes",
-        //   items: [
-        //     "study/docker-kubernetes/overview",
-        //     "study/docker-kubernetes/image-and-container",
-        //     "study/docker-kubernetes/volume",
-        //     "study/docker-kubernetes/container-and-networking",
-        //   ],
-        // },
-        // "study/swr",
-        // "study/llm",
-        "study/pre-commit",
+        {
+          type: "category",
+          label: "Network",
+          items: ["study/network/http-1"],
+        },
+        {
+          type: "category",
+          label: "OS",
+          items: ["study/os/http-1", "study/os/docker"],
+        },
+        {
+          type: "category",
+          label: "Algorithm",
+          items: ["study/os/http-1"],
+        },
+        {
+          type: "category",
+          label: "Framework",
+          items: [
+            "study/framework/virtaul-dom",
+            "study/framework/spa",
+            "study/framework/react-beyond-the-basic",
+          ],
+        },
+        {
+          type: "category",
+          label: "Tanstack-query",
+          items: ["study/react-query/prefetch-query"],
+        },
+        {
+          type: "category",
+          label: "Test Code",
+          items: [
+            "study/test-code/is-not-difficult-to-write-test-code",
+            "study/test-code/tdd-1",
+          ],
+        },
+        {
+          type: "category",
+          label: "Web Browser",
+          items: ["study/web-browser/critical-rendering-path"],
+        },
+        "study/cdn-effect",
+        "study/fsd-1",
       ],
     },
     {
@@ -36,7 +67,7 @@ const sidebars: SidebarsConfig = {
         description: "마주했던 문제를 해결한 내용을 적어놓는 곳입니다.",
         keywords: ["트러블슈팅"],
       },
-      items: ["troubleshooting/automation"],
+      items: ["troubleshooting/automation", "troubleshooting/lcp"],
     },
     {
       type: "category",
