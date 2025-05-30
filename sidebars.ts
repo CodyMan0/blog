@@ -54,6 +54,11 @@ const sidebars: SidebarsConfig = {
           label: "Web Browser",
           items: ["study/web-browser/critical-rendering-path"],
         },
+        {
+          type: "category",
+          label: "Security",
+          items: ["study/security/xss"],
+        },
         "study/cdn-effect",
         "study/fsd-1",
       ],
