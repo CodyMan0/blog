@@ -58,6 +58,7 @@ const config: Config = {
           postsPerPage: 1,
           blogSidebarCount: "ALL",
           onUntruncatedBlogPosts: "ignore",
+          blogPostComponent: "@theme/BlogPostPage",
         },
         theme: {
           customCss: "./src/css/custom.css",
