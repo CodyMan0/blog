@@ -28,6 +28,16 @@ function reverseSidebarItems(items) {
 }
 
 const config: Config = {
+  i18n: {
+    defaultLocale: "ko",
+    locales: ["ko", "en"],
+    localeConfigs: {
+      ko: {
+        label: "한국어",
+        htmlLang: "ko",
+      },
+    },
+  },
   title: "이주영 블로그",
   favicon: "img/favicon.ico",
   url: "https://lee2022.com/",
@@ -157,6 +167,10 @@ const config: Config = {
         {
           href: "https://github.com/CodyMan0",
           label: "GitHub",
+          position: "right",
+        },
+        {
+          type: "localeDropdown",
           position: "right",
         },
       ],

@@ -1,0 +1,18 @@
+{
+  "title": {
+    "message": "Since 2022",
+    "description": "The title in the navbar"
+  },
+  "item.label.지식 학습": {
+    "message": "지식 학습",
+    "description": "Navbar item with label 지식 학습"
+  },
+  "item.label.회고": {
+    "message": "회고",
+    "description": "Navbar item with label 회고"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  }
+}

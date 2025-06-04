@@ -1,0 +1,86 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.docSidebar.category.Study": {
+    "message": "Study",
+    "description": "The label for category Study in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Study.link.generated-index.title": {
+    "message": "스터디",
+    "description": "The generated-index page title for category Study in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Study.link.generated-index.description": {
+    "message": "공부하다가 정리한 내용들을 모아두는 곳입니다.",
+    "description": "The generated-index page description for category Study in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Network": {
+    "message": "Network",
+    "description": "The label for category Network in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.OS": {
+    "message": "OS",
+    "description": "The label for category OS in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Algorithm": {
+    "message": "Algorithm",
+    "description": "The label for category Algorithm in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Framework": {
+    "message": "Framework",
+    "description": "The label for category Framework in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Tanstack-query": {
+    "message": "Tanstack-query",
+    "description": "The label for category Tanstack-query in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Test Code": {
+    "message": "Test Code",
+    "description": "The label for category Test Code in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Web Browser": {
+    "message": "Web Browser",
+    "description": "The label for category Web Browser in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Security": {
+    "message": "Security",
+    "description": "The label for category Security in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Security.link.generated-index.title": {
+    "message": "Security",
+    "description": "The generated-index page title for category Security in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Security.link.generated-index.description": {
+    "message": "웹 보안에 대한 내용을 정리한 곳입니다.",
+    "description": "The generated-index page description for category Security in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Linux": {
+    "message": "Linux",
+    "description": "The label for category Linux in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Troubleshooting": {
+    "message": "Troubleshooting",
+    "description": "The label for category Troubleshooting in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Troubleshooting.link.generated-index.title": {
+    "message": "Troubleshooting",
+    "description": "The generated-index page title for category Troubleshooting in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Troubleshooting.link.generated-index.description": {
+    "message": "마주했던 문제를 해결한 내용을 적어놓는 곳입니다.",
+    "description": "The generated-index page description for category Troubleshooting in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Reading": {
+    "message": "Reading",
+    "description": "The label for category Reading in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Reading.link.generated-index.title": {
+    "message": "Reading",
+    "description": "The generated-index page title for category Reading in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.Reading.link.generated-index.description": {
+    "message": "기술서적 읽고 정리한 내용을 모아두는 곳입니다.",
+    "description": "The generated-index page description for category Reading in sidebar docSidebar"
+  }
+}
