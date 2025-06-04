@@ -15,7 +15,7 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Network",
-          items: ["study/network/http-1"],
+          items: ["study/network/http-1", "study/network/lecture-1"],
         },
         {
           type: "category",
@@ -57,10 +57,25 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Security",
-          items: ["study/security/xss"],
+          items: [
+            {
+              type: "category",
+              label: "Linux",
+              items: ["study/security/linux-1"],
+            },
+            "study/security/xss",
+          ],
+          link: {
+            type: "generated-index",
+            title: "Security",
+            description: "웹 보안에 대한 내용을 정리한 곳입니다.",
+            keywords: ["스터디", "웹", "보안"],
+          },
         },
         "study/cdn-effect",
         "study/fsd-1",
+        "study/db-1",
+        "study/mono-repo",
       ],
     },
     {

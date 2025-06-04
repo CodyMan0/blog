@@ -1,0 +1,210 @@
+---
+title: DB에 대한 호기심
+sidebar_position: 1
+last_update:
+  date: 5/30/2025
+description: DB 상당히 중요하다.
+tags: [DB]
+draft: true
+---
+
+## 서론
+
+웹 개발에서 비지니스를 하는데 중요한 것이 무엇일까에 대한 고민을 해보는 요즘이다. 지금 상황에서 난 프론트엔드이지만 아무래도 데이터라고 생각이 든다. 그래서 DB를 학습하고 정부 과제를 해야하는 상황 주도적으로 인증 부분을 다 개발해보기로 했다.
+
+## 본론
+
+### Primary Key
+
+### Foreign Key
+
+### 테이블 정규화란?
+
+데이터 중복을 줄이고, 데이터의 무결성을 유지하기 위해 DB 테이블 구조화하는 과정
+
+정규화 기본 단계
+
+1. 1NF (제1정규형)
+
+- 모든 속성은 원자값을 가져야 한다. (이건 모든 개발에 통용되는 것 같다.)
+
+2. 2NF (제2정규형)
+
+- 1NF를 만족하고, 기본키를 '부분 종속성'이 없어야 하낟.
+- 기본키가복합키일 때, 기 중 일부에만 종속적인 속성이 있으면 안됨.
+
+2NF를 예제를 통해 알아보자
+
+| **주문ID** | **상품ID** | **상품명** | **단가** | **고객명** |
+| ---------- | ---------- | ---------- | -------- | ---------- |
+| 101        | A1         | 사과       | 500      | 철수       |
+| 101        | B2         | 바나나     | 300      | 철수       |
+| 102        | A1         | 사과       | 500      | 영희       |
+
+상품명, 단가 → 상품ID에만 종속됨 (부분 종속)
+고객명 -> 주문 ID에만 종속
+
+각 종속되는 테이블로 분리할 수 있다.
+
+그럼 정규화해보면!! 아래와 같이 두개의 테이블로 나눌 수 있다.
+
+🔹 테이블 1: 주문\_상품(주문ID, 상품ID, 수량 등)
+
+| 주문ID | 상품ID |
+| ------ | ------ |
+| 101    | A1     |
+| 101    | B2     |
+| 102    | A1     |
+
+🔹 테이블 2: 상품(상품ID → 상품명, 단가)
+| 상품ID | 상품명 | 단가 |
+| ---- | --- | --- |
+| A1 | 사과 | 500 |
+| B2 | 바나나 | 300 |
+
+🔹 테이블 3: 주문(주문ID → 고객명)
+
+| 주문ID | 고객명 |
+| ------ | ------ |
+| 101    | 철수   |
+| 102    | 영희   |
+
+3. 3NF (제3정규형)
+
+- 2NF를 만족하고, 이행적 종속성이 없어야 한다.
+  A -> B , B -> C 이면 A -> C로 논리적으로 생각 가능. 그래서 이를 분리해야 함.
+
+### DB 정규화 코스 내용
+
+정규화는 DB 효율성, 일관성, 정확성을 증가시키기 위한 DB 디자인임. 데이터 관리와 비즈니스 변화에 대응할 수 있게 하기 위함임.
+
+- 왜 정규화가 필요함?
+  - 추가시 이상 현상
+  - 삭제시 이상 현상
+
+DB 정규화를 알기 위해선 Keys에 대해 먼저 알아야함
+
+### Keys
+
+[관계형 모델에서의 키의 종류](http://geeksforgeeks.org/types-of-keys-in-relational-model-candidate-super-primary-alternate-and-foreign/)
+관계형 DB에서는 키가 핵심 개념 중 하나이다. 키는 데이터의 무결한지 유일한지 그리고 효과적으로 접근할 수 있게 해준다. 테이블에서 행을 유일하게 식별하기 위해 사용된다.
+
+#### 왜 DBMS에서 키가 필요한가?
+
+우선 DBMS가 무엇인가? DBMS는 데이터를 저장하고 다루기 위한 시스템 소프트웨어인데 예를 들어 Mysql, PostgreSQL, MongoDB가 있다.
+아무튼 키는 디비 시스템에서 중요하다.
+
+- 유일성 : 테이블의 행이 유일하다는 것을 알 수 있게 한다.
+- 데이터 무결성 : 데이터 중복을 막아준다.
+- 데이터 효율적으로 검색 : 빠르게 데이터를 가지고 올 수 있게 함.
+
+#### 키의 종류
+
+1. Super Key
+
+| STUD\*NO | STUD_NAME | ADDRESS |
+| -------- | --------- | ------- |
+| 1        | kun       | seoul   |
+| 2        | juyoung   | seoul   |
+
+하나 컬럼 및 여러 조합의 컬럼을 활용하여 행을 식별할 수 있게 해주는 키이다.
+![](https://media.geeksforgeeks.org/wp-content/uploads/20230314093236/keys-in-dbms.jpg)
+
+2. Candidate Key
+
+| STUD\*NO | STUD_NAME | ADDRESS |
+| -------- | --------- | ------- |
+| 1        | kun       | seoul   |
+| 2        | juyoung   | seoul   |
+
+행을 유일하다고 판단할 수 있는 키를 의미한다. 위에서는 이름은 중복될 수 있지만 학번은 후보키가 될 수 있다고 본다.
+
+3. Primary Key
+
+Candidate Key에서 Primary Key를 사용할 수 있다.
+특징이 존재함.
+
+- priamry key is a unique key
+- null일 수 없다.
+- primary key를 제외하고 다른 컬럼이 있어야한다. composite Priamry key로 구성은 가능하다.
+- 데이터베이스는 일반적으로 기본 키(Primary Key)를 기준으로 메모리에서 행(row)을 정렬하여, 기본 키를 사용한 빠른 레코드 접근이 가능하도록 저장한다.
+
+4. Alternate key
+
+AK는 후보키 중에 선택되지 않은 primary key를 의미한다.
+
+- Alternate key는 secondary key라고도 불려진다.
+- 대안키는 PK 아닌 하나 이상의 컬럼으로 구성되어있다.
+
+5. Foreign Key
+   Foreign Key는 다른 테이블의 primary key를 참조하는 attribute를 말한다.
+   | STUD\*NO | TEACHER_NO | COURSE_NO |
+   | -------- | --------- | ------- |
+   | 1 | 005 | C001 |
+   | 2 | 006 | C007 |
+
+여기서 STUD_NO은 foreign key이다. 왜냐하면 SUTD_NO은 STUDENT 테이블에 primary key이기 때문.
+
+Primary Key와 다르게 Foreign key는 복사된 값을 포함하거나 null일 수 있다.
+
+6. Composite Key
+   두 컬럼 이상 합쳐야 해당 row가 유일하다고 식별될때 사용할 수 있다.
+
+결론
+관계형 디비에서 키는 데이터를 관리하는데 효과적인 방법이다. 잘 쓰면 대박임.
+
+### Functional dependency
+
+DBMS에서 Funtional Dependency는 중요한 개념인데 각 테이블 안에 컬럼 간의 관계를 묘사하는데 사용된다. FD는 DB에서 데이터의 질을 유지하는데 도움됨
+
+https://www.geeksforgeeks.org/what-is-functional-dependency-in-dbms/
+
+![](https://media.geeksforgeeks.org/wp-content/uploads/20250116121541620377/determinant.webp)
+
+복잡해보이지만 의존성을 표현하는 방법을 알려준다 .
+
+| STUD\*NO | TEACHER_NO |
+| -------- | ---------- |
+| 1        | 005        |
+| 2        | 006        |
+
+| TEACHER_NO | TEACHER_NAME |
+| ---------- | ------------ |
+| 005        | kun          |
+| 006        | juyoung      |
+
+여기서 TEACHER_NO를 foreign key로 사용하여 다른 테이블의 Name을 가지고 와서 사용하고 있다면 이를 TEACHER_NO -> TEACHER_NAME이라고 표현한다. 그리고 이를 TEACHER_NAME는 TEACHER_NO에 의존성을 가지고 있다고 표현한다.
+
+#### 타입
+
+1. Trivial Functional Dependency
+   X → Y이고, Y가 X에 포함돼 있으면 자명한 종속 FD라고 함
+2. Non-trivial Functional Dependency
+   X → Y이고, Y가 X에 포함돼 있지 않으면 비자명한 종속 FD라고 함. 이를 정규화를 통해 분해해야할 중요한 조건이라고 판단할 수 있는 근거가 됨.
+3. Multivalued Dependency
+   예를 들어 직원이 여러 개의 전화번호와 여러 개의 이메일 주소를 가질 수 있는 경우를 말함.
+   직원 ID ->-> 전화번호
+   직원 ID ->-> 이메일
+
+4. Semi Non Trivial Functional Dependencies
+   X -> Y, X와 Y에 공통된 속성이 존재할 떄를 의미함
+   (A, B) → B B가 겹침
+
+5. Transitive Functional Dependency
+   A -> B이고 B -> C이면, A -> C로 간접적으로 종속되는 경우. 중간 매개 속성(B)을 통해 종속되는 것을 말함. (학번 -> 학과 코드 / 학과 코드 -> 학과 이름 == 학번 -> 학과 이름)
+   **이런 종속성은 반드시 제거해야하는구나?!**
+
+#### DBMS에서 FD의 이점
+
+1. 중복 데이터 방지
+2. 데이터 무결성 확보
+3. 에러 감소
+4. 시간과 비용 감소
+5. 규칙과 행동을 정의할 수 있는 기준 제시
+6. Poor DB 다자인 이행할 수 있게 함.
+
+## 결론
+
+## 참고 문헌
+
+1. [geeksforgeeks DB 정규화 코스](https://www.geeksforgeeks.org/introduction-of-database-normalization/)
