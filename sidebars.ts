@@ -58,11 +58,18 @@ const sidebars: SidebarsConfig = {
           type: "category",
           label: "Security",
           items: [
+            "study/security/jump-in",
+            {
+              type: "category",
+              label: "OAuth",
+              items: ["study/security/o-auth"],
+            },
             {
               type: "category",
               label: "Linux",
-              items: ["study/security/linux-1"],
+              items: ["study/security/linux"],
             },
+
             "study/security/xss",
           ],
           link: {
