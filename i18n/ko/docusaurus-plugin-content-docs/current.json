@@ -82,5 +82,9 @@
   "sidebar.docSidebar.category.Reading.link.generated-index.description": {
     "message": "기술서적 읽고 정리한 내용을 모아두는 곳입니다.",
     "description": "The generated-index page description for category Reading in sidebar docSidebar"
+  },
+  "sidebar.docSidebar.category.OAuth": {
+    "message": "OAuth",
+    "description": "The label for category OAuth in sidebar docSidebar"
   }
 }

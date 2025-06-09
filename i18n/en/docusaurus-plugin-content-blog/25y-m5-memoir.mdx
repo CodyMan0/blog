@@ -1,0 +1,128 @@
+---
+title: May Retrospective
+authors: me
+description: "Still going in June!! I’ll apply maintainable frontend architecture and review the outcomes."
+tags: [retrospective]
+keywords: [retrospective, futurism labs, weekly retrospective, growth]
+date: 2025-05-31
+---
+
+## Introduction
+
+Last month, I focused on designing a frontend that is easy to maintain and aimed to apply it throughout May. My reflections and questions around _"How can we build software that is easy to maintain?"_ have converged on the concept of OOP. You might wonder if OOP belongs in frontend development—but the more I studied, the more I saw its applicability in React. There’s been a wealth of valuable insights, and I’ve taken the time to digest and internalize them. It’s become a solid foundation for writing clean code!
+
+### May Action Points
+
+- [ ] Write the second FSD blog post
+- [ ] Learn and apply unit/integration testing
+- [x] Object-Oriented Programming (Finished 1st reading of _Clean Coders_)
+- [x] Refactor using encapsulation for maintainability (ongoing)
+- [ ] Start a Next.js side project (working on fillsLog)
+- [x] Define and document our user privilege policy
+- [x] Set up backend CI/CD for container auto-deployment to EB
+
+**Bonus items completed:**
+
+- [x] First backend API modification and deployment
+- [x] Added automatic deletion of login records beyond a certain timeframe
+- [x] Renamed backend role from "User" to "Client"
+
+May had many holidays, offering more time to study. I dove into GitHub Actions, Docker, OOP, and read half of _The Art of Unit Testing_. I hope June shows the results of May’s inputs.
+
+> One key insight: "**Frontend developers also need to understand OOP.**" I’ll explore why in the future.
+
+## Main Content
+
+### Building Key Features and Embracing Fundamentals
+
+This month was dedicated to implementing core features of the Vision System and honing development fundamentals. By applying what I knew, I tried to improve the internal developer experience and build things that benefit the company. I realized I enjoy helping teammates and clients more than writing React itself. This broadened my perspective—maybe it doesn't always have to be React.
+
+### Protecting Sensitive Data - Roles & Privileges
+
+Previously, the app had just two roles: `ADMIN` and `USER`. All internal members had admin access, which was risky considering the sensitive data.
+
+> What if this data were misused?
+
+With growing concern over frequent hacking incidents, I proposed a change. Admin privileges would now be restricted to executives, and staff would receive custom, limited roles.
+
+We implemented RBAC (Role-Based Access Control), inspired by AWS IAM policies:
+
+```json
+{
+  "role": "admin",
+  "privileges": ["read:domain", "write:domain", "delete:domain"]
+}
+```
+
+I built a custom React hook `usePrivilege()` to check user access, and used a utility `hasPrivilege()` that supports logical modes ("and"/"or") for complex permission checks.
+
+We wrapped UI elements in a `<PrivilegeGate />` component that conditionally renders or disables children based on privileges, optionally showing tooltips or overlays.
+
+Later, we automated syncing frontend privileges from backend roles via a Node script that generates `privileges.ts` before builds using `prebuild`.
+
+### 2. Fix What Hurts
+
+During the privilege feature buildout, we noticed our backend API was overly segmented:
+
+- `/members/administrators/all`
+- `/members/staff/all`
+- ... and so on
+
+We refactored them into unified endpoints:
+
+- `GET /members/all?role=`
+- `GET /members?role=&id=`
+
+This made frontend code simpler. The backend (FastAPI) now delegates to different services based on `role`. We then automated deployment to AWS Elastic Beanstalk with GitHub Actions for `develop` and `main` branches, removing the need for manual zip uploads.
+
+### 3. Helping Teammates Sleep
+
+On May 21st, a concern came up: frequent overseas customer messages (often late at night) were exhausting the team. We brainstormed proactive ways to reduce this burden.
+
+We decided to generate weekly/monthly reports that summarize account statuses, reducing back-and-forth. I proposed an automated snapshot/report feature and created the proposal. The team loved it—I felt great doing something helpful and meaningful.
+
+### 4. Eye-Opening OOP
+
+Since April, I’ve studied how to build maintainable software. Everything kept pointing to OOP. I rewatched _Clean Coders_ lectures and realized more with each pass. The latter half (TDD) was harder to digest, but I plan to revisit it.
+
+### 5. Secure Coding & Career Direction
+
+> With major hacks in crypto lately, I decided to take security seriously as a frontend developer.
+
+Two notable attacks:
+
+1. **Bybit Hack (Feb 2025)** - $1.5B in ETH stolen, attributed to Lazarus Group
+2. **WazirX Hack (July 2024)** - $234.9M in crypto stolen, also tied to Lazarus
+
+I improved security in our Vision System project by:
+
+- Storing refresh tokens as HttpOnly (not accessible via JS)
+- Adding privilege-based auth logic
+
+Security isn't just backend. Understanding browser behaviors and vulnerabilities helps us build resilient systems. I'm starting to study XSS, CSRF, and OAuth in depth.
+
+## Conclusion
+
+May was about building maintainable systems (OOP, tests), and improving security. I realized I might enjoy protecting users and companies from threats more than just building UIs. To do that, I need to become a true frontend expert.
+
+> In June, I’ll dive deeper into frontend security threats, past incidents, and detailed mitigations.
+
+Thanks for reading. Let’s all keep pushing forward!
+
+## June Action Points
+
+### Development
+
+- [ ] Implement monthly report generation and save (help teammates sleep!)
+- [ ] Establish and follow design system process
+- [ ] Read _Object-Oriented Programming: Misunderstood and True_
+- [ ] Finish _The Art of Unit Testing_ and apply to frontend logic
+- [ ] Run and share insights from Next.js study
+- [ ] Expand mindset through network study
+- [ ] Study PostgreSQL
+
+### Security
+
+- [ ] Learn about XSS and summarize insights
+- [ ] Learn about CSRF and summarize insights
+- [ ] Study OAuth thoroughly and document findings
