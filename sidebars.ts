@@ -54,7 +54,7 @@ const sidebars: SidebarsConfig = {
           label: "Web Browser",
           items: [
             "study/web-browser/critical-rendering-path",
-            "study/web-browser/critical-rendering-path-2",
+            "study/web-browser/critical-rendering-path-navigation",
           ],
         },
         {
