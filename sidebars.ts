@@ -52,7 +52,10 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Web Browser",
-          items: ["study/web-browser/critical-rendering-path"],
+          items: [
+            "study/web-browser/critical-rendering-path",
+            "study/web-browser/critical-rendering-path-2",
+          ],
         },
         {
           type: "category",
@@ -62,7 +65,7 @@ const sidebars: SidebarsConfig = {
             {
               type: "category",
               label: "OAuth",
-              items: ["study/security/o-auth"],
+              items: ["study/security/o-auth/start"],
             },
             {
               type: "category",
