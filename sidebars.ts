@@ -15,18 +15,18 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "Network",
-          items: ["study/network/http-1", "study/network/lecture-1"],
+          items: [
+            "study/network/http-1",
+            "study/network/lecture-1",
+            "study/network/dns",
+          ],
         },
         {
           type: "category",
           label: "OS",
           items: ["study/os/http-1", "study/os/docker"],
         },
-        {
-          type: "category",
-          label: "Algorithm",
-          items: ["study/os/http-1"],
-        },
+
         {
           type: "category",
           label: "Framework",

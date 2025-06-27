@@ -36,22 +36,22 @@ Filter에는 두 가지
 1. 수집 필터
 2. 검색 필터
 
--> 데이터가 많기에 필터링을 잘해야함. 이게 실력이라고 함.
+-> 데이터가 많기에 필터링을 잘해야함. 이게 실₩력이라고 함.
 
 ### DNS 조회
 
-https://www.naver.com을 탐색하면
+우선 MDN에서는 아래와 같은 수준으로 정리가 되어있다.
 
-만약 접근했다면 -> Yes / No
+https://www.naver.com을 유저가 검색 창에 입력했을 때, 사전에 방문한 기록이 있다면 사용자의 디바이스 캐시에서 빠르게 IP를 취득해서 HTML을 요청하고 아니라면 그때 DNS 조회가 이루어진다.
+여기서 주체는 브라우저인데 브라우저가 DNS를 요청한다.네임 서버에서 처리되고 IP 주소로 응답한다.
+요청 이후에는 IP 일정 기간 캐시된다고 한다.
 
-Yes : ??
-No : DNS 조회가 이루어짐.
+이정도의 정보 밖에 없어 GPT와 이야기해보면서 지식을 견고하게 해보려고 한다. GPT있어서 너무 좋다.
 
-주체는 브라우저!! DNS 조회를 요청한다. 최종적으로는 네임 서버에서 처리되고 IP 주소로 응답한다. 요청 이후에는 IP 일정 기간 (얼마 정도?) 캐시된다. 캐시는 어딨는거야?
+이번 기회에 DNS 정확히 파보자!
 
-DNS 조회는 호스트 하나당 한번 수행. 여러 호스트에 정적 에셋 자원이 위치하고 있으면 여러 DNS 조회가 일어나 모바일 네트워크 환경에 성능 문제 발생 가능성 있음.
+### TCP 핸드 셰이크
 
-###TCP 핸드 셰이크
 IP를 알게 되면!!
 
 또 주체는 브라우저!
@@ -73,6 +73,7 @@ SYN - SYN-ACK, ACK로 불림.
 
 ## 참고
 
+- DNS 관련 널널한 개발자님 영상 : https://www.youtube.com/watch?v=XXzxetbAIfA
 - 가장 쉬운 웹개발 with Boaz 영상 : https://www.youtube.com/watch?v=T2WqQcqssoE&list=PLpq56DBY9U2AZEPhHAbG7ZbfrXvqW1bX4&index=4
 - MDN : https://developer.mozilla.org/ko/docs/Web/Performance/Critical_rendering_path
 - CRP web.dev : https://web.dev/learn/performance/understanding-the-critical-path?hl=ko:
