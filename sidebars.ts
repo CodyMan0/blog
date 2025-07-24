@@ -34,6 +34,8 @@ const sidebars: SidebarsConfig = {
             "study/framework/virtaul-dom",
             "study/framework/spa",
             "study/framework/react-beyond-the-basic",
+            "study/framework/zustand",
+            "study/framework/nextjs",
           ],
         },
         {
@@ -108,7 +110,11 @@ const sidebars: SidebarsConfig = {
         description: "기술서적 읽고 정리한 내용을 모아두는 곳입니다.",
         keywords: ["독서", "기술서적"],
       },
-      items: ["reading/object-oriented-programming", "reading/unit-test"],
+      items: [
+        "reading/object-oriented-programming",
+        "reading/unit-test",
+        "reading/logical-tech",
+      ],
     },
   ],
 };

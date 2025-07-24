@@ -1,0 +1,54 @@
+---
+title: next.js 제대로 알아보자. 우선 렌더링 방식부터 다시 정리해보자 (1)
+sidebar_position: 5
+last_update:
+  date: 07/22/2025
+description: 온보딩 과제에 필요한 지식 소화하기
+tags: [학습]
+---
+
+## 서론
+Next.js의 렌더링에 대해 조금 더 정확히 알아야할 것 같다고 느꼈다. 
+하나씩 소화해보자.
+
+클라이언트 컴포넌트 렌더링과 서버 컴포넌트 렌더링에 대한 다이브 (딥다이브는 실무 경험을 해보고 작성 예정 / 8월 회고 예정)
+
+
+## 본론
+### Server Component 렌더링
+
+- Rendering work은 무엇으로 나눠지나 : Route Segment, Suspense
+
+[서버]
+1. 리액트가 SC를 RSC Payload로 렌더링한다.
+- RSC의 구성 요소 
+  - SC 렌더된 결과물
+  - 빈자리 표시 (클라 컴포넌트의 JS 위치)
+  - Props (SC -> CC)
+
+2. Next.js가 SCP를 활용, CC JS Instuction 사용! 두개로 HTMl을 렌더링
+
+
+[클라이언트]
+1. HTML을 즉시 보여준다.
+2. RSC 페이로드가 재조정하는데 사용된다. (CC와 SC를 구성하는데 사용됨. -> 이게 가상돔임. -> 이게 실제 돔을 업데이트 하는 과정에 포함됨.)
+3. Hydrate 과정이 있다. (JS intruction을 가지고 와서 User interaction이 가능하게 해줌)
+
+### 과거의 SSR
+과거에는 페이지 단위의 SSR 및 Hydration이어서 병목시간이 많았음. 이를 컴포넌트 단위로 분리해서 해결해서 성능을 개선하도록 했음.
+
+
+### page.tsx에서 'use client' 선언하면?
+### 왜 Client Componenet에서 Server Component를 import 해서 호출하면 Error가 발생할까? 
+### Partial Pre Rendering이 해결하는 문제
+### next.js 렌더링 방식 중간 총정리
+### Streaming 렌더링이 해결한 문제
+
+
+### 내가 소화한 내용 (공식 문서 + 강의)
+
+## 결론
+
+## 참고
+1. 개발 블로그 https://hmos.dev/recent-server-side-rendering#js-%EB%A1%9C%EB%93%9C
+2. Wikipedia : Chunked transfer encoding (https://en.wikipedia.org/wiki/Chunked_transfer_encoding)
