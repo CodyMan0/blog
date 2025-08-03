@@ -114,6 +114,7 @@ const sidebars: SidebarsConfig = {
         "reading/object-oriented-programming",
         "reading/unit-test",
         "reading/logical-tech",
+        "reading/problem-solving",
       ],
     },
   ],
