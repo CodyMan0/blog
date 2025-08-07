@@ -99,7 +99,22 @@ const sidebars: SidebarsConfig = {
         description: "마주했던 문제를 해결한 내용을 적어놓는 곳입니다.",
         keywords: ["트러블슈팅"],
       },
-      items: ["troubleshooting/automation", "troubleshooting/lcp"],
+      items: [
+        "troubleshooting/automation",
+        "troubleshooting/lcp",
+
+        {
+          type: "category",
+          label: "실무 테스트 적용 기록",
+          items: ["troubleshooting/test-code/test-1"],
+          link: {
+            type: "generated-index",
+            title: "Security",
+            description: "웹 보안에 대한 내용을 정리한 곳입니다.",
+            keywords: ["스터디", "웹", "보안"],
+          },
+        },
+      ],
     },
     {
       type: "category",
