@@ -31,11 +31,22 @@ const sidebars: SidebarsConfig = {
           type: "category",
           label: "Framework",
           items: [
-            "study/framework/virtaul-dom",
-            "study/framework/spa",
-            "study/framework/react-beyond-the-basic",
+            {
+              type: "category",
+              label: "Nextjs",
+              items: ["study/framework/nextjs/nextjs"],
+            },
+            {
+              type: "category",
+              label: "Reactjs",
+              items: [
+                "study/framework/reactjs/renderToStaticMarkup",
+                "study/framework/reactjs/react-beyond-the-basic",
+                "study/framework/reactjs/spa",
+                "study/framework/reactjs/virtaul-dom",
+              ],
+            },
             "study/framework/zustand",
-            "study/framework/nextjs",
           ],
         },
         {
@@ -57,6 +68,7 @@ const sidebars: SidebarsConfig = {
           items: [
             "study/web-browser/critical-rendering-path",
             "study/web-browser/critical-rendering-path-navigation",
+            "study/web-browser/image-load",
           ],
         },
         {
@@ -100,8 +112,9 @@ const sidebars: SidebarsConfig = {
         keywords: ["트러블슈팅"],
       },
       items: [
-        "troubleshooting/automation",
         "troubleshooting/lcp",
+        "troubleshooting/package-association",
+        "troubleshooting/flutter-web",
 
         {
           type: "category",
@@ -109,9 +122,20 @@ const sidebars: SidebarsConfig = {
           items: ["troubleshooting/test-code/test-1"],
           link: {
             type: "generated-index",
-            title: "Security",
+            title: "실무 테스트 적용 기록",
             description: "웹 보안에 대한 내용을 정리한 곳입니다.",
             keywords: ["스터디", "웹", "보안"],
+          },
+        },
+        {
+          type: "category",
+          label: "AI의 파도를 제대로 타보자",
+          items: ["troubleshooting/ai/ai"],
+          link: {
+            type: "generated-index",
+            title: "AI의 파도를 제대로 타보자",
+            description: "AI에 대한 내용을 정리한 곳입니다.",
+            keywords: ["스터디", "AI"],
           },
         },
       ],
