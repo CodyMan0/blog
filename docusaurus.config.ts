@@ -155,7 +155,7 @@ const config: Config = {
       },
     ],
     navbar: {
-      title: "Since 2022",
+      title: "나만의 온실",
       items: [
         {
           type: "docSidebar",
