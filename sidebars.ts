@@ -154,6 +154,25 @@ const sidebars: SidebarsConfig = {
         "reading/unit-test",
         "reading/logical-tech",
         "reading/problem-solving",
+        "reading/co-growing",
+        "reading/scrum-master",
+      ],
+    },
+    {
+      type: "category",
+      label: "etc",
+      link: {
+        type: "generated-index",
+        title: "기타 자기 계발",
+        description: "일상에서 꾸준히 성장하고 있는 분야를 정리하는 곳입니다.",
+        keywords: ["자기 계발", "기타"],
+      },
+      items: [
+        {
+          type: "category",
+          label: "드럼",
+          items: ["etc/drum-25-09-12"],
+        },
       ],
     },
   ],
