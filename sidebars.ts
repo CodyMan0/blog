@@ -156,7 +156,7 @@ const sidebars: SidebarsConfig = {
       items: [
         "reading/object-oriented-programming",
         "reading/unit-test",
-        "reading/logical-tech",
+        "reading/logic-of-everything",
         "reading/problem-solving",
         "reading/co-growing",
         "reading/scrum-master",
