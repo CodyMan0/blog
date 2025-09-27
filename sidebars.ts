@@ -100,6 +100,10 @@ const sidebars: SidebarsConfig = {
         "study/fsd-1",
         "study/db-1",
         "study/mono-repo",
+        "study/uncontrol-control-component",
+        "study/request-animation-frame",
+        "study/browser-stack-context",
+        "study/containing-block",
       ],
     },
     {

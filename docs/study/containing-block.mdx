@@ -1,0 +1,44 @@
+---
+title: CSS - 컨테이닝 블록을 명확히 알아서 불필요하게 해매지말자
+sidebar_position: 1
+last_update:
+  date: 9/23/2025
+description: position에 따라 다른 컨테이닝 블록이 설정된다고?
+tags: [browser, css]
+draft: true
+---
+
+## 서론
+
+## 본론
+
+- 컨테이닝 블록이란?
+
+말 그대로 감싸고 있는 블록을 말한다. 가장 가까운 상위 블록이 주로 컨테이닝 블록이겠지만 css의 position을 활용하면 컨테이닝 블록을 자유롭게 변경하고 의도할 수 있다. 해당 개념을 모르면 의도하지 않은 width와 height을 가지고 올 수 있다.
+
+- position에 따라 달라지는 컨테이닝 블록
+
+1. position이 static, relative, sticky라면 블록 컨테이너 (inline-block, block, list-item) 혹은 가장 가까우면서 서식 맥락을 형성하는 조상 (table, flex, grid)의 콘텐츠 영역 경게를 따라 형성된다.
+   -> 블록 컨테이너는 오키 이해했다. 그런데 서식 맥락은 뭐지? table과 flex 그리고 grid는 서식 맥락을 형성해?
+   -> 서식 맥락
+
+1.1 Block formatting context를 알아보자.
+BFC는 웹 페이지의 CSS 렌더링의 한 부분이다. block context는 아래의 하나라도 해당될 때 생긴다.
+
+- `html`을 만날 때
+- float가 none이 아닌 요소를 만날 때
+- position이 absolute이거나 fixed인 요소를 만날 때
+- display: inline-block인 요소를 만날 때
+- Table cells을 만날 때
+- Table caption를 만날 때
+- display : table에 의해 만들어진 요소를 만날 때
+- block 요소인데 overflow 속성 값이 visible이나 clip이 아닌 요소를 만날 때
+- contain: layout 혹은 content, paint인 요소를 만날 때
+- display:flex 하위 직계 요소를 만날 때
+- display:grid 하위 직계 요소를 만날 때
+
+## 결론
+
+## 참고
+
+- [MDN 문서](https://developer.mozilla.org/ko/docs/Web/API/Window/requestAnimationFrame)
