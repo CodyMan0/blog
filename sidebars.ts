@@ -160,6 +160,7 @@ const sidebars: SidebarsConfig = {
         "reading/problem-solving",
         "reading/co-growing",
         "reading/scrum-master",
+        "reading/mckinsey-framework",
       ],
     },
     {
