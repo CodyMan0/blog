@@ -33,19 +33,17 @@ const sidebars: SidebarsConfig = {
           items: [
             {
               type: "category",
-              label: "Nextjs",
-              items: ["study/framework/nextjs/nextjs"],
-            },
-            {
-              type: "category",
-              label: "Reactjs",
+              label: "Next / React",
               items: [
-                "study/framework/reactjs/renderToStaticMarkup",
-                "study/framework/reactjs/react-beyond-the-basic",
-                "study/framework/reactjs/spa",
-                "study/framework/reactjs/virtaul-dom",
+                "study/framework/next/nextjs",
+                "study/framework/react/renderToStaticMarkup",
+                "study/framework/react/react-beyond-the-basic",
+                "study/framework/react/spa",
+                "study/framework/react/virtaul-dom",
+                "study/framework/react/uncontrol-control-component",
               ],
             },
+
             "study/framework/zustand",
           ],
         },
@@ -100,7 +98,7 @@ const sidebars: SidebarsConfig = {
         "study/fsd-1",
         "study/db-1",
         "study/mono-repo",
-        "study/uncontrol-control-component",
+
         "study/request-animation-frame",
         "study/browser-stack-context",
         "study/containing-block",
