@@ -41,6 +41,7 @@ const sidebars: SidebarsConfig = {
                 "study/framework/react/spa",
                 "study/framework/react/virtaul-dom",
                 "study/framework/react/uncontrol-control-component",
+                "study/framework/react/optimization-input-rendering",
               ],
             },
 
@@ -98,7 +99,7 @@ const sidebars: SidebarsConfig = {
         "study/fsd-1",
         "study/db-1",
         "study/mono-repo",
-
+        "study/sql-1",
         "study/request-animation-frame",
         "study/browser-stack-context",
         "study/containing-block",

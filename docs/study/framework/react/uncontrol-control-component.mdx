@@ -26,6 +26,11 @@ draft: true
 - 유용하게 사용되고 있는 라이브러리
 
   - React Hook Form
+    - 철학
+      1. Uncontrolled 우선
+      2. Proxy 기반의 부분 구독한다.
+    - 소스 코드를 통해 어떤 부분에 성능이 최적화되었는지 파악
+    - 조금 더 이해
 
 - 나의 생각
 
@@ -54,15 +59,163 @@ draft: true
 
 ### 유용하게 사용되고 있는 라이브러리 ( React Hook Form )
 
-두 방식의 장점만 취하려는 노력, 즉 라이브러리의 역할을 설명합니다.
+React Hook Form은 기본적으로 비제어(uncontrolled) 방식을 사용하지만, 필요할 때만 제어(controlled) 방식을 쓸 수 있도록 설계되었습니다.
 
-"제어 방식은 너무 피곤하고, 비제어 방식은 기능이 부족한데 어쩌죠?"
+```tsx
+ ref: (ref: HTMLInputElement | null): void => {
+        if (ref) {
+          register(name, options);
+          field = get(_fields, name);
 
-그래서 등장한 것이 React Hook Form 같은 '운전 보조 시스템'입니다.
+          const fieldRef = isUndefined(ref.value)
+            ? ref.querySelectorAll
+              ? (ref.querySelectorAll('input,select,textarea')[0] as Ref) || ref
+              : ref
+            : ref;
+          const radioOrCheckbox = isRadioOrCheckbox(fieldRef);
+          const refs = field._f.refs || [];
 
-평소에는 '비제어' 방식처럼 스스로 운전하게 놔둬서 편하지만(성능 좋음), 차선 이탈 같은 꼭 필요한 순간에는 '제어' 방식처럼 경고등을 켜주는(유효성 검사) 똑똑한 도구입니다.
+          if (
+            radioOrCheckbox
+              ? refs.find((option: Ref) => option === fieldRef)
+              : fieldRef === field._f.ref
+          ) {
+            return;
+          }
 
-Why?: 라이브러리의 존재 이유를 '문제 해결'의 관점에서 설명하여 필요성을 자연스럽게 어필할 수 있습니다. useForm은 React Hook Form 라이브러리의 핵심 기능이니, 라이브러리 이름을 명확히 밝혀주는 게 좋습니다.
+          set(_fields, name, {
+            _f: {
+              ...field._f,
+              ...(radioOrCheckbox
+                ? {
+                    refs: [
+                      ...refs.filter(live),
+                      fieldRef,
+                      ...(Array.isArray(get(_defaultValues, name)) ? [{}] : []),
+                    ],
+                    ref: { type: fieldRef.type, name },
+                  }
+                : { ref: fieldRef }),
+            },
+          });
+
+          updateValidAndValue(name, false, undefined, fieldRef);
+        } else {
+          field = get(_fields, name, {});
+
+          if (field._f) {
+            field._f.mount = false;
+          }
+
+          (_options.shouldUnregister || options.shouldUnregister) &&
+            !(isNameInFieldArray(_names.array, name) && _state.action) &&
+            _names.unMount.add(name);
+        }
+      },
+```
+
+핵심: DOM 엘리먼트의 ref를 직접 저장합니다. React state가 아닌 \_fields 객체에 저장되므로 리렌더링이 발생하지 않습니다.
+
+```tsx
+export default function getFieldValue(_f: Field["_f"]) {
+  const ref = _f.ref;
+
+  if (isFileInput(ref)) {
+    return ref.files;
+  }
+
+  if (isRadioInput(ref)) {
+    return getRadioValue(_f.refs).value;
+  }
+
+  if (isMultipleSelect(ref)) {
+    return [...ref.selectedOptions].map(({ value }) => value);
+  }
+
+  if (isCheckBox(ref)) {
+    return getCheckboxValue(_f.refs).value;
+  }
+
+  return getFieldValueAs(isUndefined(ref.value) ? _f.ref.value : ref.value, _f);
+}
+```
+
+핵심: 값이 필요할 때 DOM에서 직접 읽어옵니다 (ref.value, ref.files 등). React state를 거치지 않으므로 매우 빠릅니다.
+
+```tsx
+let _formValues = _options.shouldUnregister
+  ? ({} as TFieldValues)
+  : (cloneObject(_defaultValues) as TFieldValues);
+```
+
+핵심: `\_formValues`는 일반 변수(let)로 선언됩니다. React state가 아닙니다! 이 값은 내부적으로만 사용되며 리렌더링을 트리거하지 않습니다.
+
+#### 2️⃣ 제어 방식: Controller/useController (옵션)
+
+```tsx
+const value = useWatch({
+  control,
+  name,
+  defaultValue: defaultValueMemo,
+  exact: true,
+}) as FieldPathValue<TFieldValues, TName>;
+```
+
+핵심: useWatch를 통해 값을 React state로 구독합니다. 값이 변경되면 컴포넌트가 리렌더링됩니다.
+
+```tsx
+const onChange = React.useCallback(
+  (event: any) =>
+    _registerProps.current.onChange({
+      target: {
+        value: getEventValue(event),
+        name: name as InternalFieldName,
+      },
+      type: EVENTS.CHANGE,
+    }),
+  [name],
+);
+```
+
+핵심: onChange를 통해 값을 수동으로 업데이트합니다. 제어 컴포넌트처럼 작동하지만, 내부적으로는 React Hook Form의 메커니즘을 활용합니다.
+
+#### 3️⃣ 선택적 구독: Proxy 패턴 (성능 최적화)
+
+```tsx
+for (const key in formState) {
+  Object.defineProperty(result, key, {
+    get: () => {
+      const _key = key as keyof FormState<TFieldValues> & keyof ReadFormState;
+
+      if (control._proxyFormState[_key] !== VALIDATION_MODE.all) {
+        control._proxyFormState[_key] = !isRoot || VALIDATION_MODE.all;
+      }
+
+      localProxyFormState && (localProxyFormState[_key] = true);
+      return formState[_key];
+    },
+  });
+}
+```
+
+핵심: JavaScript Proxy(정확히는 Object.defineProperty)를 사용하여:
+formState.errors를 읽으면 → \_proxyFormState.errors = true로 표시
+이후 errors가 변경될 때만 해당 컴포넌트가 리렌더링됨
+사용하지 않는 속성(예: isDirty)이 변경되어도 리렌더링되지 않음
+
+| 측면               | 비제어 방식                           | 제어 방식                        | 코드 위치                            |
+| ------------------ | ------------------------------------- | -------------------------------- | ------------------------------------ |
+| 기본 값 읽기       | ✅ DOM ref에서 직접 (`getFieldValue`) | ❌                               | `getFieldValue.ts`                   |
+| 내부 상태          | ✅ `_formValues` (let 변수)           | ❌                               | `createFormControl.ts:139`           |
+| 리렌더링           | ✅ 최소화 (Proxy로 선택적 구독)       | ⚠️ 필요할 때만                   | `getProxyFormState.ts`               |
+| 제어 컴포넌트 지원 | ❌                                    | ✅ `Controller`, `useController` | `controller.tsx`, `useController.ts` |
+| 외부 values        | ❌                                    | ✅ `props.values` 지원           | `useForm.ts:155`                     |
+
+성능: 대부분의 경우 리렌더링 없이 DOM에서 직접 값을 읽음
+유연성: MUI 같은 제어 컴포넌트도 Controller로 지원
+최적화: Proxy 패턴으로 필요한 formState만 구독
+선택의 자유: 비제어(register) 또는 제어(Controller) 중 선택 가능
+이것이 React Hook Form이 "비제어와 제어의 좋은 방식을 채택했다"고 말하는 이유입니다! 기본은 비제어로 성능을 챙기되, 필요할 때는 제어 방식도 쓸 수 있는 하이브리드 접근입니다. 🚀
 
 ### 나의 생각
 

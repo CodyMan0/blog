@@ -1,0 +1,71 @@
+---
+title: 제어/비제어 Input 성능 비교
+sidebar_position: 7
+last_update:
+  date: 10/09/2025
+description: react-hook-form 성능 때문에 쓰는거야?
+tags: [react, react-hook-form]
+draft: true
+---
+
+## 개요
+
+- react-hook-form 무엇 때문에 사용할까?
+  - 성능 때문에?
+    - 비교
+      - 환경 구축
+      - 인풋 100 / 500 / 1000 / 10000개일때 제어/비제어 INP 비교
+  - react에서 제공해주는 Controller 컴포넌트를 사용하면 어떻게 되는거지?
+
+## 성능을 비교해보자
+
+### 인풋이 100개 일때
+
+control : INP (Interaction Next Paint) 43ms
+uncontrol : INP (Interaction Next Paint) 40ms
+
+### 인풋이 500개 일때
+
+control : INP (Interaction Next Paint) 91ms
+uncontrol : INP (Interaction Next Paint) 67ms
+
+### 인풋이 1000개 일때
+
+control : INP (Interaction Next Paint) 321ms
+uncontrol : INP (Interaction Next Paint) 183ms
+
+### 인풋이 10000개 일때
+
+control : INP (Interaction Next Paint) 21480ms
+uncontrol : INP (Interaction Next Paint) 2240ms
+
+| 비교 항목            | 제어 방식 (Controlled)            | 비제어 / RHF 방식           |
+| -------------------- | --------------------------------- | --------------------------- |
+| 입력 반응 속도       | ⚠️ 느림 (렌더마다 state 업데이트) | ✅ 빠름 (DOM 직접 업데이트) |
+| 렌더링 비용          | 전체 리렌더                       | Proxy로 부분 구독           |
+| 코드 복잡도          | 높음 (sync 유지 필요)             | 낮음                        |
+| 상태 추적            | React state                       | ref + Proxy                 |
+| MUI 등 외부 컴포넌트 | 자연스러움                        | `Controller` 필요           |
+| 대규모 폼에 적합성   | ❌ 성능 저하                      | ✅ 매우 적합                |
+
+핵심 해석
+
+상대 격차가 N이 커질수록 확대
+
+100개: +7.5% (40ms vs 43ms)
+
+500개: +26%
+
+1,000개: +43%
+
+10,000개: 약 10배 차이 (2.24s vs 21.48s)
+
+성장률(스케일링) 패턴 차이
+
+Controlled: N 증가에 따라 비용이 가속됨(리렌더 전파 + 재조정 비용이 누적 → 체감상 준-제곱형).
+
+Uncontrolled(RHF): 증가하긴 하지만 완만함(입력은 DOM이 처리, RHF는 필요한 구독만).
+
+### 만약 보이지 않는 영역 언마운트 처리한다면? shouldUnregister
+
+## 끝
