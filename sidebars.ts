@@ -41,6 +41,7 @@ const sidebars: SidebarsConfig = {
                 "study/framework/react/spa",
                 "study/framework/react/virtaul-dom",
                 "study/framework/react/uncontrol-control-component",
+                "study/framework/react/optimization-input-rendering",
               ],
             },
 
