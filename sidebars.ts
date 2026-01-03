@@ -95,6 +95,17 @@ const sidebars: SidebarsConfig = {
             keywords: ["스터디", "웹", "보안"],
           },
         },
+        {
+          type: "category",
+          label: "Programming Language",
+          items: [
+            {
+              type: "category",
+              label: "javascript",
+              items: ["study/programming-language/javascript/has-own-property"],
+            },
+          ],
+        },
         "study/cdn-effect",
         "study/fsd-1",
         "study/db-1",
