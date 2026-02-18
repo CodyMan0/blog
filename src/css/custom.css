@@ -52,13 +52,13 @@
     --docsearch-key-shadow:
       inset 0 -2px 0 0 #cdcde6, inset 0 0 1px 1px #fff, 0 1px 2px 1px #1e235a66;
     --docsearch-muted-color: #969faf;
-    --ifm-color-primary: #2e8555;
-    --ifm-color-primary-dark: #29784c;
-    --ifm-color-primary-darker: #277148;
-    --ifm-color-primary-darkest: #205d3b;
-    --ifm-color-primary-light: #33925d;
-    --ifm-color-primary-lighter: #359962;
-    --ifm-color-primary-lightest: #3cad6e;
+    --ifm-color-primary: #2196f3;
+    --ifm-color-primary-dark: #1e87db;
+    --ifm-color-primary-darker: #1c7fcf;
+    --ifm-color-primary-darkest: #1768aa;
+    --ifm-color-primary-light: #3da1f5;
+    --ifm-color-primary-lighter: #49a8f6;
+    --ifm-color-primary-lightest: #6ebbf8;
     --ifm-code-font-size: 95%;
     --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   }
@@ -90,13 +90,13 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
 
-    --ifm-color-primary: #25c2a0;
-    --ifm-color-primary-dark: #21af90;
-    --ifm-color-primary-darker: #1fa588;
-    --ifm-color-primary-darkest: #1a8870;
-    --ifm-color-primary-light: #29d5b0;
-    --ifm-color-primary-lighter: #32d8b4;
-    --ifm-color-primary-lightest: #4fddbf;
+    --ifm-color-primary: #64b5f6;
+    --ifm-color-primary-dark: #4ba8f4;
+    --ifm-color-primary-darker: #3f9ff3;
+    --ifm-color-primary-darkest: #1a85ef;
+    --ifm-color-primary-light: #7dc2f8;
+    --ifm-color-primary-lighter: #89c8f9;
+    --ifm-color-primary-lightest: #b2dcfb;
     --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
   }
 
@@ -172,6 +172,267 @@ kbd {
   }
 }
 
+/* Sky background for landing */
+.sky-bg {
+  background: url("/img/sky-bg.jpg") center bottom / cover no-repeat;
+  min-height: calc(100vh - var(--ifm-navbar-height));
+}
+
+html[data-theme="dark"] .sky-bg {
+  background: url("/img/sky-bg.jpg") center bottom / cover no-repeat;
+  filter: brightness(0.3) saturate(0.6);
+  position: relative;
+}
+
+html[data-theme="dark"] .sky-bg > * {
+  filter: brightness(3.3) saturate(1.7);
+}
+
+/* Cloud landing page */
+@keyframes cloud-bob {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.cloud-bob {
+  animation: cloud-bob 4s ease-in-out infinite;
+}
+
+/* Real cloud shape */
+.cloud-shape {
+  position: relative;
+  background: rgba(255, 255, 255, 0.92);
+  width: 160px;
+  height: 80px;
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+  transition: filter 0.2s ease;
+}
+
+.cloud-shape:hover {
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.22));
+}
+
+.cloud-shape::before,
+.cloud-shape::after {
+  content: "";
+  position: absolute;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 50%;
+}
+
+.cloud-shape::before {
+  width: 70px;
+  height: 70px;
+  top: -30px;
+  left: 22px;
+}
+
+.cloud-shape::after {
+  width: 50px;
+  height: 50px;
+  top: -22px;
+  right: 24px;
+}
+
+html[data-theme="dark"] .cloud-shape,
+html[data-theme="dark"] .cloud-shape::before,
+html[data-theme="dark"] .cloud-shape::after {
+  background: rgba(30, 40, 55, 0.9);
+}
+
+html[data-theme="dark"] .cloud-shape {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+}
+
+/* Cloud content */
+.cloud-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+}
+
+.cloud-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ifm-color-content, var(--ifm-font-color-base)) !important;
+  letter-spacing: -0.02em;
+}
+
+.cloud-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.cloud-link {
+  font-size: 11px;
+  color: var(--ifm-color-content-secondary, var(--ifm-font-color-secondary)) !important;
+  transition: color 0.15s;
+}
+
+.cloud-link:hover {
+  color: var(--ifm-color-primary) !important;
+}
+
+/* Mobile small cloud */
+.cloud-shape-sm {
+  width: 100%;
+  height: 70px;
+  border-radius: 35px;
+}
+
+.cloud-shape-sm::before {
+  width: 55px;
+  height: 55px;
+  top: -24px;
+  left: 18px;
+}
+
+.cloud-shape-sm::after {
+  width: 40px;
+  height: 40px;
+  top: -18px;
+  right: 20px;
+}
+
+/* Cloud interaction */
+.cloud-shape {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cloud-shape:hover {
+  transform: scale(1.05);
+}
+
+.cloud-shape:active {
+  transform: scale(0.95);
+  transition: transform 0.08s ease-in;
+}
+
+/* Cloud page transition */
+@keyframes cloud-expand {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.85;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(6);
+    opacity: 1;
+  }
+}
+
+@keyframes plane-enter {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px) scale(0.8);
+  }
+  30% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  70% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(30px) scale(0.8);
+  }
+}
+
+@keyframes loading-slide {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.cloud-transition-overlay {
+  position: fixed;
+  top: var(--cloud-y);
+  left: var(--cloud-x);
+  width: 100vmax;
+  height: 100vmax;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  animation: cloud-expand 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+html[data-theme="dark"] .cloud-transition-overlay {
+  background: rgba(20, 28, 40, 0.98);
+}
+
+/* Plane loading screen */
+.cloud-transition-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  opacity: 0;
+  animation: fade-in 0.2s ease 0.5s forwards;
+  pointer-events: none;
+}
+
+@keyframes fade-in {
+  to { opacity: 1; }
+}
+
+.cloud-transition-loading .plane-icon {
+  animation: plane-enter 0.8s ease-in-out 0.5s both;
+}
+
+.cloud-transition-loading .plane-icon img {
+  width: 64px;
+  height: 64px;
+}
+
+.loading-bar-track {
+  width: 120px;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+html[data-theme="dark"] .loading-bar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.loading-bar-fill {
+  height: 100%;
+  background: var(--ifm-color-primary);
+  border-radius: 2px;
+  animation: loading-slide 0.8s ease 0.5s forwards;
+}
+
 /* Mobile */
 @media screen and (max-width: 575px) {
   /* Search navbar local */
@@ -182,3 +443,4 @@ kbd {
     }
   }
 }
+

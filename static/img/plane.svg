@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- Body -->
+  <ellipse cx="60" cy="62" rx="38" ry="14" fill="#5ba3d9"/>
+  <ellipse cx="60" cy="62" rx="38" ry="14" fill="url(#bodyGrad)"/>
+  <!-- Nose -->
+  <ellipse cx="98" cy="62" rx="8" ry="10" fill="#4a93c9"/>
+  <!-- Tail fin -->
+  <path d="M22 62 L10 38 L28 55 Z" fill="#4a93c9"/>
+  <path d="M22 62 L14 42 L28 57 Z" fill="#5ba3d9"/>
+  <!-- Top wing -->
+  <path d="M50 48 L70 20 L78 22 L65 48 Z" fill="#4a93c9"/>
+  <path d="M52 48 L68 24 L74 25 L64 48 Z" fill="#6bb3e9"/>
+  <!-- Bottom wing -->
+  <path d="M50 76 L70 104 L78 102 L65 76 Z" fill="#4a93c9"/>
+  <path d="M52 76 L68 100 L74 99 L64 76 Z" fill="#6bb3e9"/>
+  <!-- Windows -->
+  <circle cx="45" cy="60" r="3" fill="#e8f4fd"/>
+  <circle cx="55" cy="59" r="3" fill="#e8f4fd"/>
+  <circle cx="65" cy="59" r="3" fill="#e8f4fd"/>
+  <circle cx="75" cy="60" r="3" fill="#e8f4fd"/>
+  <!-- Engine trail -->
+  <ellipse cx="16" cy="62" rx="6" ry="4" fill="#d0e8f7" opacity="0.6"/>
+  <ellipse cx="6" cy="62" rx="4" ry="3" fill="#d0e8f7" opacity="0.3"/>
+  <!-- Gradient -->
+  <defs>
+    <linearGradient id="bodyGrad" x1="22" y1="48" x2="22" y2="76">
+      <stop offset="0%" stop-color="#7cc3f0" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#3a7cb8" stop-opacity="0.2"/>
+    </linearGradient>
+  </defs>
+</svg>
