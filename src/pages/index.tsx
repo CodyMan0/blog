@@ -17,13 +17,15 @@ function MailIcon({ className }: { className?: string }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.8"
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
     >
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <polyline points="22,6 12,13 2,6" />
+      <line x1="2" y1="20" x2="8" y2="13" opacity="0.4" />
+      <line x1="22" y1="20" x2="16" y2="13" opacity="0.4" />
     </svg>
   );
 }
@@ -44,7 +46,7 @@ const categories: Category[] = [
   {
     label: "AI",
     href: "/docs/category/ai",
-    children: [{ label: "AI 시대의 흐름", href: "/docs/ai/ai-wave" }],
+    children: [],
   },
   {
     label: "금융",
@@ -56,10 +58,6 @@ const categories: Category[] = [
     href: "/docs/category/트러블슈팅",
     children: [
       { label: "LCP 개선", href: "/docs/troubleshooting/lcp" },
-      {
-        label: "패키지 연관성",
-        href: "/docs/troubleshooting/package-association",
-      },
     ],
   },
   {
@@ -67,7 +65,7 @@ const categories: Category[] = [
     href: "/docs/category/기본기",
     children: [
       { label: "HTTP 기초", href: "/docs/study/network/http-1" },
-      { label: "Next.js", href: "/docs/study/framework/next/nextjs" },
+      { label: "DNS", href: "/docs/study/network/dns" },
       {
         label: "렌더링 경로",
         href: "/docs/study/web-browser/critical-rendering-path",
