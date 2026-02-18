@@ -4,12 +4,61 @@ const sidebars: SidebarsConfig = {
   docSidebar: [
     {
       type: "category",
-      label: "Study",
+      label: "AI",
       link: {
         type: "generated-index",
-        title: "스터디",
-        description: "공부하다가 정리한 내용들을 모아두는 곳입니다.",
-        keywords: ["스터디", "노트", "스터디 노트"],
+        title: "AI",
+        description: "AI 시대의 흐름을 타며 배운 것들을 정리합니다.",
+        keywords: ["AI", "인공지능", "머신러닝"],
+      },
+      items: ["ai/ai-wave"],
+    },
+    {
+      type: "category",
+      label: "금융",
+      link: {
+        type: "generated-index",
+        title: "금융",
+        description: "금융에 대한 학습과 인사이트를 정리합니다.",
+        keywords: ["금융", "Finance", "투자"],
+      },
+      items: ["finance/intro"],
+    },
+    {
+      type: "category",
+      label: "트러블슈팅",
+      link: {
+        type: "generated-index",
+        title: "트러블슈팅",
+        description: "마주했던 문제를 해결한 내용을 적어놓는 곳입니다.",
+        keywords: ["트러블슈팅", "문제해결"],
+      },
+      items: [
+        "troubleshooting/lcp",
+        "troubleshooting/package-association",
+        "troubleshooting/flutter-web",
+        {
+          type: "category",
+          label: "실무 테스트 적용 기록",
+          items: ["troubleshooting/test-code/test-1"],
+          link: {
+            type: "generated-index",
+            title: "실무 테스트 적용 기록",
+            description: "실무에서 테스트 코드를 적용한 기록입니다.",
+            keywords: ["테스트", "실무"],
+          },
+        },
+      ],
+    },
+    {
+      type: "category",
+      label: "기본기",
+      link: {
+        type: "generated-index",
+        title: "기본기",
+        description:
+          "프론트엔드 개발자로서 탄탄하게 다져야 할 기본기를 정리합니다.",
+        keywords: ["기본기", "프론트엔드", "CS"],
       },
       items: [
         {
@@ -26,7 +75,6 @@ const sidebars: SidebarsConfig = {
           label: "OS",
           items: ["study/os/http-1", "study/os/docker"],
         },
-
         {
           type: "category",
           label: "Framework",
@@ -44,7 +92,6 @@ const sidebars: SidebarsConfig = {
                 "study/framework/react/optimization-input-rendering",
               ],
             },
-
             "study/framework/zustand",
           ],
         },
@@ -85,7 +132,6 @@ const sidebars: SidebarsConfig = {
               label: "Linux",
               items: ["study/security/linux"],
             },
-
             "study/security/xss",
           ],
           link: {
@@ -102,7 +148,9 @@ const sidebars: SidebarsConfig = {
             {
               type: "category",
               label: "javascript",
-              items: ["study/programming-language/javascript/has-own-property"],
+              items: [
+                "study/programming-language/javascript/has-own-property",
+              ],
             },
           ],
         },
@@ -118,48 +166,10 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Troubleshooting",
+      label: "독서",
       link: {
         type: "generated-index",
-        title: "Troubleshooting",
-        description: "마주했던 문제를 해결한 내용을 적어놓는 곳입니다.",
-        keywords: ["트러블슈팅"],
-      },
-      items: [
-        "troubleshooting/lcp",
-        "troubleshooting/package-association",
-        "troubleshooting/flutter-web",
-
-        {
-          type: "category",
-          label: "실무 테스트 적용 기록",
-          items: ["troubleshooting/test-code/test-1"],
-          link: {
-            type: "generated-index",
-            title: "실무 테스트 적용 기록",
-            description: "웹 보안에 대한 내용을 정리한 곳입니다.",
-            keywords: ["스터디", "웹", "보안"],
-          },
-        },
-        {
-          type: "category",
-          label: "AI의 파도를 제대로 타보자",
-          items: ["troubleshooting/ai/ai"],
-          link: {
-            type: "generated-index",
-            title: "AI의 파도를 제대로 타보자",
-            description: "AI에 대한 내용을 정리한 곳입니다.",
-            keywords: ["스터디", "AI"],
-          },
-        },
-      ],
-    },
-    {
-      type: "category",
-      label: "Reading",
-      link: {
-        type: "generated-index",
-        title: "Reading",
+        title: "독서",
         description: "기술서적 읽고 정리한 내용을 모아두는 곳입니다.",
         keywords: ["독서", "기술서적"],
       },
@@ -178,7 +188,7 @@ const sidebars: SidebarsConfig = {
       label: "etc",
       link: {
         type: "generated-index",
-        title: "기타 자기 계발",
+        title: "기타",
         description: "일상에서 꾸준히 성장하고 있는 분야를 정리하는 곳입니다.",
         keywords: ["자기 계발", "기타"],
       },

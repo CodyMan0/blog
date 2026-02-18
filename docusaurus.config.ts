@@ -101,7 +101,7 @@ const config: Config = {
       {
         name: "keywords",
         content:
-          "프론트엔드 개발자, 이주영, Brian, 주도적인 개발자, 사이드 프로젝트, 자동화, 문서화, 협업, 프로젝트 품질, 지속적 학습, 개발자 경험, 사회 기여, 개발자 성장, 블로그, 기술 블로그, 웹 개발, 자바스크립트, 리액트, 프론트엔드 기술, 웹 퍼포먼스, SEO, 검색 엔진 최적화, 웹 접근성, UI/UX, CSS, HTML, 웹 디자인, 프로그래밍, 코딩, 개발자 블로그, 기술 공유, 개발자 커뮤니티, 최신 기술, 개발자 도구, 오픈 소스, 코드 리뷰, 테스트 자동화, 프론트엔드 프레임워크, 웹 표준, 웹 보안, 웹 최적화, 프론트엔드 아키텍처, 웹 애플리케이션, 프론트엔드 성능, 웹 트렌드, 웹 개발 팁, 개발자 네트워킹, 기술 세미나, 기술 컨퍼런스, Frontend Developer, Jeongmin Lee, Evan, Bleeding Edge, New Technology, External Activities, Side Projects, Automation, Documentation, Collaboration, Project Quality, Continuous Learning, Developer Experience, Social Contribution, Developer Growth, Blog, Tech Blog, Web Development, JavaScript, React, Frontend Technology, Web Performance, SEO, Search Engine Optimization, Web Accessibility, UI/UX, CSS, HTML, Web Design, Programming, Coding, Developer Blog, Tech Sharing, Developer Community, Latest Technology, Developer Tools, Open Source, Code Review, Test Automation, Frontend Framework, Web Standards, Web Security, Web Optimization, Frontend Architecture, Web Application, Frontend Performance, Web Trends, Web Development Tips, Developer Networking, Tech Seminar, Tech Conference",
+          "프론트엔드 개발자, 이주영, Ju young Lee, 소프트웨어 엔지니어, AI, 금융, 트러블슈팅, 프론트엔드 기본기, 사이드 프로젝트, 자동화, 문서화, 협업, 지속적 학습, 개발자 성장, 블로그, 기술 블로그, 웹 개발, 자바스크립트, 리액트, 프론트엔드 기술, 웹 퍼포먼스, SEO, UI/UX, CSS, HTML, 프로그래밍, 개발자 블로그, 기술 공유, 오픈 소스, 테스트 자동화, 프론트엔드 프레임워크, 웹 보안, 프론트엔드 아키텍처, Frontend Developer, Ju young Lee, Software Engineer, AI, Finance, Troubleshooting, Web Development, JavaScript, React, Next.js, TypeScript, Web Performance, Tech Blog, Developer Blog, Open Source, Frontend Architecture",
       },
       {
         name: "description",
@@ -161,7 +161,7 @@ const config: Config = {
           type: "docSidebar",
           sidebarId: "docSidebar",
           position: "left",
-          label: "지식 학습",
+          label: "관심사",
         },
         { to: "/blog", label: "회고", position: "left" },
         {
