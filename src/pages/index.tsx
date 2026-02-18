@@ -56,7 +56,10 @@ const categories: Category[] = [
     href: "/docs/category/트러블슈팅",
     children: [
       { label: "LCP 개선", href: "/docs/troubleshooting/lcp" },
-      { label: "패키지 연관성", href: "/docs/troubleshooting/package-association" },
+      {
+        label: "패키지 연관성",
+        href: "/docs/troubleshooting/package-association",
+      },
     ],
   },
   {
@@ -65,17 +68,16 @@ const categories: Category[] = [
     children: [
       { label: "HTTP 기초", href: "/docs/study/network/http-1" },
       { label: "Next.js", href: "/docs/study/framework/next/nextjs" },
-      { label: "렌더링 경로", href: "/docs/study/web-browser/critical-rendering-path" },
+      {
+        label: "렌더링 경로",
+        href: "/docs/study/web-browser/critical-rendering-path",
+      },
     ],
   },
   {
     label: "회고",
     href: "/blog",
-    children: [
-      { label: "2월 회고", href: "/blog/26y-m2-memoir" },
-      { label: "1월 회고", href: "/blog/26y-m1-memoir" },
-      { label: "1분기 회고", href: "/blog/25y-q1-memoir" },
-    ],
+    children: [],
   },
 ];
 
@@ -162,7 +164,7 @@ export default function Home() {
         history.push(href);
       }, 1500);
     },
-    [history]
+    [history],
   );
 
   return (
@@ -176,10 +178,12 @@ export default function Home() {
           <>
             <div
               className="cloud-transition-overlay"
-              style={{
-                "--cloud-x": `${transition.x}px`,
-                "--cloud-y": `${transition.y}px`,
-              } as React.CSSProperties}
+              style={
+                {
+                  "--cloud-x": `${transition.x}px`,
+                  "--cloud-y": `${transition.y}px`,
+                } as React.CSSProperties
+              }
             />
             <div className="cloud-transition-loading">
               <div className="plane-icon">
@@ -217,7 +221,8 @@ export default function Home() {
             <p
               className="text-sm lg:text-base"
               style={{
-                color: "var(--ifm-color-content-secondary, var(--ifm-font-color-secondary))",
+                color:
+                  "var(--ifm-color-content-secondary, var(--ifm-font-color-secondary))",
               }}
             >
               기여에 집중하는 프론트엔드 개발자
@@ -277,7 +282,8 @@ export default function Home() {
             <p
               className="text-sm"
               style={{
-                color: "var(--ifm-color-content-secondary, var(--ifm-font-color-secondary))",
+                color:
+                  "var(--ifm-color-content-secondary, var(--ifm-font-color-secondary))",
               }}
             >
               기여에 집중하는 프론트엔드 개발자
