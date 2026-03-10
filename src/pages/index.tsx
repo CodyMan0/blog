@@ -306,10 +306,14 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 gap-3 w-full">
-            {categories.map((cat) => (
+            {categories.map((cat, i) => (
               <div
                 key={cat.label}
-                className="cloud-shape cloud-shape-sm cursor-pointer"
+                className={`cloud-shape cloud-shape-sm cursor-pointer ${
+                  i === categories.length - 1 && categories.length % 2 === 1
+                    ? "col-span-2 max-w-[50%] justify-self-center"
+                    : ""
+                }`}
                 onClick={() => history.push(cat.href)}
               >
                 <div className="cloud-content">

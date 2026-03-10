@@ -289,23 +289,9 @@ html[data-theme="dark"] .cloud-shape {
 
 /* Mobile small cloud */
 .cloud-shape-sm {
-  width: 100%;
-  height: 70px;
-  border-radius: 35px;
-}
-
-.cloud-shape-sm::before {
-  width: 55px;
-  height: 55px;
-  top: -24px;
-  left: 18px;
-}
-
-.cloud-shape-sm::after {
-  width: 40px;
-  height: 40px;
-  top: -18px;
-  right: 20px;
+  transform: scale(0.75);
+  transform-origin: center center;
+  margin: -10px 0;
 }
 
 /* Cloud interaction */
