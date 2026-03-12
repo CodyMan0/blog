@@ -46,7 +46,19 @@ const config: Config = {
   organizationName: "codyMan0", // Usually your GitHub org/user name.
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
-  plugins: [tailwindPlugin],
+  plugins: [
+    tailwindPlugin,
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "career",
+        path: "career",
+        routeBasePath: "career",
+        sidebarPath: "./sidebarsCareer.ts",
+        showLastUpdateTime: true,
+      },
+    ],
+  ],
   presets: [
     [
       "@docusaurus/preset-classic",
@@ -164,6 +176,11 @@ const config: Config = {
           label: "관심사",
         },
         { to: "/blog", label: "회고", position: "left" },
+        {
+          to: "/career",
+          label: "커리어",
+          position: "left",
+        },
         {
           href: "https://github.com/CodyMan0",
           label: "GitHub",

@@ -73,6 +73,14 @@ const categories: Category[] = [
     ],
   },
   {
+    label: "커리어",
+    href: "/career",
+    children: [
+      { label: "퓨쳐리즘랩스", href: "/career/futurism-labs/overview" },
+      { label: "오픈닥터", href: "/career/opendoctor/overview" },
+    ],
+  },
+  {
     label: "회고",
     href: "/blog",
     children: [],
@@ -82,9 +90,10 @@ const categories: Category[] = [
 const positions = [
   { top: "4%", left: "4%" },
   { top: "2%", right: "4%" },
-  { bottom: "16%", left: "2%" },
-  { bottom: "14%", right: "2%" },
-  { bottom: "0%", left: "50%", ml: "-80px" },
+  { bottom: "20%", left: "2%" },
+  { bottom: "18%", right: "2%" },
+  { bottom: "2%", left: "20%" },
+  { bottom: "2%", right: "20%" },
 ];
 
 function CloudNode({

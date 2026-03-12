@@ -1,0 +1,38 @@
+---
+slug: /
+title: 커리어
+description: 프론트엔드 개발자 이주영의 커리어 여정
+---
+
+# 이주영 | 프론트엔드 개발자
+
+기여에 집중하는 프론트엔드 개발자입니다. 프론트엔드에 국한되지 않고, 필요하면 백엔드·CI/CD·기획까지 직접 합니다.
+
+## 커리어 타임라인
+
+| 기간 | 회사 | 역할 | 핵심 성과 |
+|---|---|---|---|
+| 2025.7 ~ 현재 | [오픈닥터](/career/opendoctor/overview) | 프론트엔드 개발자 | Flutter→Next.js 마이그레이션, SEO 클릭 7.5배↑ |
+| 2024.6 ~ 2025.7 | [퓨쳐리즘랩스](/career/futurism-labs/overview) | 프론트엔드 개발자 (1인) | 사내 솔루션 구축, 리포트 자동화 99.6%↓ |
+
+## 기술 스택
+
+### 주력
+- **Frontend**: React, Next.js, TypeScript
+- **Styling**: TailwindCSS, CSS Modules
+- **상태관리**: Zustand, TanStack Query
+- **테스트**: Vitest, Storybook
+
+### 활용 가능
+- **Backend**: FastAPI, Node.js
+- **Infra**: GitHub Actions, AWS (EB, Amplify)
+- **Mobile**: Flutter-web, Dart
+
+## 이 공간의 목적
+
+회고에서 나온 성과를 STAR 기법으로 정제하여 경력 기술서로 쌓아가는 공간입니다.
+
+- [퓨쳐리즘랩스](/career/futurism-labs/overview) — 가상자산 스타트업 경험
+- [오픈닥터](/career/opendoctor/overview) — 메디컬 부동산 플랫폼 경험
+- [경력 기술서 가이드](/career/career-description) — STAR 기법과 작성 팁
+- [커리어 인사이트](/career/insights/resume-tips) — 이직, 면접 관련 배움
