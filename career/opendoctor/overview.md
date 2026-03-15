@@ -1,6 +1,8 @@
 ---
 title: 오픈닥터
 description: 메디컬 부동산 플랫폼에서의 경험
+last_update:
+  date: 2026-03-15
 ---
 
 # 오픈닥터

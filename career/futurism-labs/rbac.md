@@ -1,6 +1,8 @@
 ---
 title: RBAC 권한 시스템
 description: AWS IAM 참고한 역할 기반 접근 제어 설계 및 구현
+last_update:
+  date: 2026-03-15
 ---
 
 # RBAC 권한 시스템

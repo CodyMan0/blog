@@ -74,7 +74,7 @@ const categories: Category[] = [
   },
   {
     label: "커리어",
-    href: "/career",
+    href: "/career/intro",
     children: [
       { label: "퓨쳐리즘랩스", href: "/career/futurism-labs/overview" },
       { label: "오픈닥터", href: "/career/opendoctor/overview" },

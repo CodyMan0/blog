@@ -1,6 +1,8 @@
 ---
 title: OPN 디자인 시스템 구축
 description: Storybook 기반 디자인 시스템과 QA 프로세스 설계
+last_update:
+  date: 2026-03-15
 ---
 
 # OPN 디자인 시스템 구축

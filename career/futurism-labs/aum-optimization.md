@@ -1,6 +1,8 @@
 ---
 title: AUM 그래프 성능 최적화
 description: API 변경 + 해시맵 최적화로 LCP 200ms 미만 달성
+last_update:
+  date: 2026-03-15
 ---
 
 # AUM 그래프 성능 최적화

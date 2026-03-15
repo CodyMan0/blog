@@ -1,6 +1,8 @@
 ---
 title: Flutter-web → Next.js 마이그레이션
 description: SEO 노출 2.8배↑, 클릭 7.5배↑ 달성
+last_update:
+  date: 2026-03-15
 ---
 
 # Flutter-web → Next.js 점진적 마이그레이션

@@ -1,6 +1,8 @@
 ---
 title: 퓨쳐리즘랩스
 description: 가상자산 스타트업에서의 1년 1개월
+last_update:
+  date: 2026-03-15
 ---
 
 # 퓨쳐리즘랩스

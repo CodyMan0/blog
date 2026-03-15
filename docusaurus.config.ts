@@ -177,7 +177,7 @@ const config: Config = {
         },
         { to: "/blog", label: "회고", position: "left" },
         {
-          to: "/career",
+          to: "/career/intro",
           label: "커리어",
           position: "left",
         },
