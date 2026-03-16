@@ -13,7 +13,6 @@ const sidebars: SidebarsConfig = {
       items: [
         { type: "doc", id: "futurism-labs/vision-system", customProps: { status: "wip" } },
         { type: "doc", id: "futurism-labs/report-automation", customProps: { status: "wip" } },
-        { type: "doc", id: "futurism-labs/aum-optimization", customProps: { status: "wip" } },
         { type: "doc", id: "futurism-labs/rbac", customProps: { status: "wip" } },
       ],
     },
