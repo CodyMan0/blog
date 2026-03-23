@@ -575,6 +575,20 @@ html[data-theme="dark"] .loading-bar-track {
   line-height: 1.4;
 }
 
+/* Floating CTA button */
+@keyframes floating-pulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(196, 98, 45, 0.4); }
+  50% { box-shadow: 0 4px 28px rgba(196, 98, 45, 0.6); }
+}
+
+.floating-cta:hover {
+  transform: scale(1.05) !important;
+}
+
+.floating-cta:active {
+  transform: scale(0.95) !important;
+}
+
 /* Career MVC accordion animation */
 details.career-mvc-details {
   overflow: hidden;
