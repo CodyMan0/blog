@@ -177,11 +177,6 @@ const config: Config = {
         },
         { to: "/blog", label: "회고", position: "left" },
         {
-          to: "/career/intro",
-          label: "커리어",
-          position: "left",
-        },
-        {
           href: "https://github.com/CodyMan0",
           label: "GitHub",
           position: "right",
