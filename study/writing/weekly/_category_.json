@@ -1,0 +1,10 @@
+{
+  "label": "주간 회고",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "title": "글쓰기 주간 회고",
+    "description": "한 주 작성한 PRD에서 추출한 글쓰기 학습을 정리합니다.",
+    "keywords": ["writing", "글쓰기", "PRD", "주간회고"]
+  }
+}

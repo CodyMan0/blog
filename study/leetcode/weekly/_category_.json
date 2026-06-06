@@ -1,0 +1,10 @@
+{
+  "label": "주간 회고",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "title": "LeetCode 주간 회고",
+    "description": "한 주 동안 푼 문제와 그 주에 배운 영어 표현을 함께 정리합니다.",
+    "keywords": ["leetcode", "coding-test", "주간회고"]
+  }
+}

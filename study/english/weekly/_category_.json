@@ -1,0 +1,10 @@
+{
+  "label": "주간 회고",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "title": "영어 주간 회고",
+    "description": "한 주 동안 익힌 표현·실수·다음 주 목표를 정리합니다.",
+    "keywords": ["english", "study", "주간회고"]
+  }
+}

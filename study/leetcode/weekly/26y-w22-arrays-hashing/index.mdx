@@ -1,0 +1,71 @@
+---
+draft: true
+title: "Week 22 — Arrays & Hashing 시작"
+sidebar_label: "W22 · Arrays & Hashing"
+date: 2026-05-25
+tags: [leetcode, arrays-hashing]
+---
+
+# Week 22 — Arrays & Hashing 시작
+
+> 첫 주는 가볍게. 해시맵으로 빈도 세는 감각 익히기.
+
+## This Week's English (정철엔진 Day __)
+
+| 표현 | 용례 |
+|---|---|
+| _"Let me walk you through..."_ | Used when starting a problem explanation |
+| _"edge case"_ | Boundary condition (empty input, single element, duplicates) |
+| _"trade-off"_ | Comparing time vs space complexity |
+
+---
+
+## Problems Solved
+
+### 1. Two Sum — Easy
+
+> Let me walk you through my approach. I used a hash map to store
+> each number's complement as I iterate. For each element `n`, I check
+> if `target - n` already exists in the map. This brings the time
+> complexity down from O(n²) to O(n), at the cost of O(n) extra space.
+
+```ts
+function twoSum(nums: number[], target: number): number[] {
+  const seen = new Map<number, number>();
+  for (let i = 0; i < nums.length; i++) {
+    const complement = target - nums[i];
+    if (seen.has(complement)) return [seen.get(complement)!, i];
+    seen.set(nums[i], i);
+  }
+  return [];
+}
+```
+
+**Reflection (KR)**:
+brute force로 시작했다가 해시맵으로 바꾸면서 *"공간을 사서 시간을 얻는다"*
+는 trade-off를 처음 의식적으로 느꼈음.
+
+---
+
+### 2. (다음 문제)
+
+설명...
+
+```ts
+// code
+```
+
+**Reflection (KR)**:
+...
+
+---
+
+## Pattern Takeaway
+
+Arrays & Hashing 패턴은 **"빈도 / 존재 여부를 O(1)로 알고 싶을 때"** 신호.
+loop 안에서 `array.includes(x)` 같은 O(n) 체크가 보이면 해시맵 후보.
+
+## Next Week
+
+- Two Pointers 패턴 진입 (Valid Palindrome, 3Sum)
+- 영어: 정철엔진 Day __ ~ Day __
