@@ -25,6 +25,7 @@ export function Header() {
 
   const name = lang === "en" ? siteConfig.nameEn : siteConfig.name;
   const writingLabel = lang === "en" ? "Writing" : "회고";
+  const mapLabel = lang === "en" ? "Work" : "기여 지도";
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
@@ -42,6 +43,14 @@ export function Header() {
           >
             {writingLabel}
           </Link>
+          <a
+            href={siteConfig.dashboardUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-md px-3 py-1.5 text-muted transition-colors hover:bg-card hover:text-foreground"
+          >
+            {mapLabel}
+          </a>
           <Link
             href={toggleHref}
             aria-label={lang === "en" ? "한국어로 보기" : "View in English"}
