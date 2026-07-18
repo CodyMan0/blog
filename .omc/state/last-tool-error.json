@@ -1,0 +1,7 @@
+{
+  "tool_name": "mcp__chrome-devtools__navigate_page",
+  "tool_input_preview": "{\"url\":\"https://career.lee2022.com/login\",\"type\":\"url\"}",
+  "error": "Error: The selected page has been closed. Call list_pages to see open pages.",
+  "timestamp": "2026-07-18T04:23:02.444Z",
+  "retry_count": 1
+}

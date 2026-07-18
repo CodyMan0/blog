@@ -1,0 +1,180 @@
+@import "tailwindcss";
+
+/* next-themes(class 전략)와 연동: html.dark 일 때 dark: 유틸 활성화 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --accent: #2563eb;
+  --card: #fafafa;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --muted: #a1a1aa;
+  --border: #262626;
+  --accent: #60a5fa;
+  --card: #141414;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-card: var(--card);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* ---------- Article (.prose) ---------- */
+.prose {
+  color: var(--foreground);
+  line-height: 1.8;
+  font-size: 1.02rem;
+}
+.prose > * + * {
+  margin-top: 1.25rem;
+}
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  font-weight: 700;
+  line-height: 1.3;
+  scroll-margin-top: 6rem;
+}
+.prose h2 {
+  font-size: 1.5rem;
+  margin-top: 2.75rem;
+  padding-top: 0.25rem;
+}
+.prose h3 {
+  font-size: 1.2rem;
+  margin-top: 2rem;
+}
+.prose h4 {
+  font-size: 1.05rem;
+  margin-top: 1.5rem;
+}
+.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+.prose a:hover {
+  text-decoration-thickness: 2px;
+}
+.prose h2 a,
+.prose h3 a,
+.prose h4 a {
+  color: inherit;
+  text-decoration: none;
+}
+.prose ul,
+.prose ol {
+  padding-left: 1.4rem;
+}
+.prose ul {
+  list-style: disc;
+}
+.prose ol {
+  list-style: decimal;
+}
+.prose li + li {
+  margin-top: 0.4rem;
+}
+.prose blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.2rem 0 0.2rem 1rem;
+  color: var(--muted);
+  font-style: normal;
+}
+.prose img {
+  border-radius: 0.6rem;
+  border: 1px solid var(--border);
+  margin-inline: auto;
+  max-width: 100%;
+  height: auto;
+}
+.prose hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2.5rem 0;
+}
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  display: block;
+  overflow-x: auto;
+}
+.prose th,
+.prose td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+.prose th {
+  background: var(--card);
+  font-weight: 600;
+}
+/* inline code */
+.prose :not(pre) > code {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.35rem;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.88em;
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+/* ---------- Code blocks (rehype-pretty-code / shiki dual theme) ---------- */
+.prose pre {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+.prose pre code {
+  display: grid;
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+.prose pre code .line {
+  padding: 0 0.1rem;
+}
+/* dual theme: 라이트는 --shiki-light, 다크는 --shiki-dark */
+code[data-theme*=" "] span {
+  color: var(--shiki-light);
+}
+.dark code[data-theme*=" "] span {
+  color: var(--shiki-dark);
+}
+[data-rehype-pretty-code-figure] [data-highlighted-line] {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}

@@ -1,0 +1,504 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1784347730778,
+  "projectRoot": "/Users/juyoung/dev/my-work/blog",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": ">=18.0",
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "react",
+        "version": "19.0.0",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "19.0.0",
+        "category": "frontend"
+      }
+    ],
+    "packageManager": "pnpm",
+    "runtime": "Node.js 18.0"
+  },
+  "build": {
+    "buildCommand": "until [ -d /Users/juyoung/dev/my-work/blog/node_modules/next ]; do sleep 3; done\necho \"install done → build 시작\"\npnpm build 2>&1 | tail -30",
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": "pnpm start",
+    "scripts": {
+      "prepare": "husky",
+      "docusaurus": "docusaurus",
+      "start": "docusaurus start",
+      "build": "docusaurus build",
+      "swizzle": "docusaurus swizzle",
+      "deploy": "docusaurus deploy",
+      "clear": "docusaurus clear",
+      "serve": "docusaurus serve",
+      "write-translations": "docusaurus write-translations",
+      "write-heading-ids": "docusaurus write-heading-ids",
+      "typecheck": "tsc",
+      "post": "tsx scripts/writePost.ts",
+      "formatting": "prettier --write '**/*.{ts,tsx}' --ignore-unknown"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs",
+      "scripts",
+      "src",
+      "static"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "blog": {
+      "path": "blog",
+      "purpose": null,
+      "fileCount": 3,
+      "lastAccessed": 1784347730694,
+      "keyFiles": [
+        "_case-study-backlog.md",
+        "authors.yml",
+        "tags.yml"
+      ]
+    },
+    "build": {
+      "path": "build",
+      "purpose": "Build output",
+      "fileCount": 6,
+      "lastAccessed": 1784347730696,
+      "keyFiles": [
+        "404.html",
+        "index.html",
+        "robots.txt",
+        "sitemap.xml"
+      ]
+    },
+    "career": {
+      "path": "career",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1784347730718,
+      "keyFiles": [
+        "career-description.md",
+        "intro.mdx"
+      ]
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 1,
+      "lastAccessed": 1784347730718,
+      "keyFiles": [
+        "tags.yml"
+      ]
+    },
+    "i18n": {
+      "path": "i18n",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1784347730718,
+      "keyFiles": []
+    },
+    "plugins": {
+      "path": "plugins",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1784347730719,
+      "keyFiles": [
+        "tailwind-config.cjs"
+      ]
+    },
+    "private": {
+      "path": "private",
+      "purpose": null,
+      "fileCount": 5,
+      "lastAccessed": 1784347730720,
+      "keyFiles": [
+        "00_경험-마스터.md",
+        "01_3년차-FE-루브릭-갭분석.md",
+        "02_기여-전체목록-회사노션근거.md",
+        "성과대시보드-react.html",
+        "성과대시보드.html"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 0,
+      "lastAccessed": 1784347730720,
+      "keyFiles": []
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 0,
+      "lastAccessed": 1784347730721,
+      "keyFiles": []
+    },
+    "static": {
+      "path": "static",
+      "purpose": "Static files",
+      "fileCount": 3,
+      "lastAccessed": 1784347730722,
+      "keyFiles": [
+        "robots.txt"
+      ]
+    },
+    "study": {
+      "path": "study",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1784347730723,
+      "keyFiles": [
+        "intro.mdx",
+        "routine.mdx"
+      ]
+    },
+    "work-logs": {
+      "path": "work-logs",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1784347730724,
+      "keyFiles": []
+    },
+    "build/assets": {
+      "path": "build/assets",
+      "purpose": "Static assets",
+      "fileCount": 0,
+      "lastAccessed": 1784347730726,
+      "keyFiles": []
+    },
+    "build/docs": {
+      "path": "build/docs",
+      "purpose": "Documentation",
+      "fileCount": 0,
+      "lastAccessed": 1784347730729,
+      "keyFiles": []
+    },
+    "src/components": {
+      "path": "src/components",
+      "purpose": "UI components",
+      "fileCount": 7,
+      "lastAccessed": 1784347730733,
+      "keyFiles": [
+        "CareerMVC.tsx",
+        "Giscus.tsx",
+        "InterestCards.tsx"
+      ]
+    },
+    "src/lib": {
+      "path": "src/lib",
+      "purpose": "Library code",
+      "fileCount": 1,
+      "lastAccessed": 1784347730733,
+      "keyFiles": [
+        "utils.ts"
+      ]
+    },
+    "src/pages": {
+      "path": "src/pages",
+      "purpose": "Page components",
+      "fileCount": 1,
+      "lastAccessed": 1784347730733,
+      "keyFiles": [
+        "index.tsx"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "docusaurus.config.ts",
+      "accessCount": 8,
+      "lastAccessed": 1784348371965,
+      "type": "file"
+    },
+    {
+      "path": "src/pages/index.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1784348892042,
+      "type": "file"
+    },
+    {
+      "path": "blog/26y-m5-memoir/index.mdx",
+      "accessCount": 3,
+      "lastAccessed": 1784348640271,
+      "type": "file"
+    },
+    {
+      "path": "blog/26y-m3-memoir/index.mdx",
+      "accessCount": 2,
+      "lastAccessed": 1784349783736,
+      "type": "file"
+    },
+    {
+      "path": "cos-mobile.png",
+      "accessCount": 1,
+      "lastAccessed": 1784189291269,
+      "type": "file"
+    },
+    {
+      "path": "cos-mobile2.png",
+      "accessCount": 1,
+      "lastAccessed": 1784189432138,
+      "type": "file"
+    },
+    {
+      "path": "cos-drawer.png",
+      "accessCount": 1,
+      "lastAccessed": 1784189469030,
+      "type": "file"
+    },
+    {
+      "path": "cos-redesign.png",
+      "accessCount": 1,
+      "lastAccessed": 1784210022773,
+      "type": "file"
+    },
+    {
+      "path": "cos-desktop.png",
+      "accessCount": 1,
+      "lastAccessed": 1784210047480,
+      "type": "file"
+    },
+    {
+      "path": "cos-list.png",
+      "accessCount": 1,
+      "lastAccessed": 1784210734742,
+      "type": "file"
+    },
+    {
+      "path": "cos-jd.png",
+      "accessCount": 1,
+      "lastAccessed": 1784211541422,
+      "type": "file"
+    },
+    {
+      "path": "cos-detail.png",
+      "accessCount": 1,
+      "lastAccessed": 1784211929702,
+      "type": "file"
+    },
+    {
+      "path": "cos-jdlist.png",
+      "accessCount": 1,
+      "lastAccessed": 1784213930780,
+      "type": "file"
+    },
+    {
+      "path": "private/00_경험-마스터.md",
+      "accessCount": 1,
+      "lastAccessed": 1784347810176,
+      "type": "file"
+    },
+    {
+      "path": "src/theme/Root.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1784348743304,
+      "type": "file"
+    },
+    {
+      "path": "blog/24y-m7-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349539460,
+      "type": "file"
+    },
+    {
+      "path": "blog/25y-m1-hanghae-mid-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349545578,
+      "type": "file"
+    },
+    {
+      "path": "blog/25y-m10-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349553159,
+      "type": "file"
+    },
+    {
+      "path": "blog/25y-m11-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349556924,
+      "type": "file"
+    },
+    {
+      "path": "blog/25y-m3-hanghae-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349565748,
+      "type": "file"
+    },
+    {
+      "path": "blog/25y-m4-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349568196,
+      "type": "file"
+    },
+    {
+      "path": "blog/25y-m5-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349574491,
+      "type": "file"
+    },
+    {
+      "path": "blog/25y-m6-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349580236,
+      "type": "file"
+    },
+    {
+      "path": "i18n/en/docusaurus-plugin-content-blog/25y-m1-hanghae-mid-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349581940,
+      "type": "file"
+    },
+    {
+      "path": "i18n/en/docusaurus-plugin-content-blog/24y-m7-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349607673,
+      "type": "file"
+    },
+    {
+      "path": "i18n/en/docusaurus-plugin-content-blog/25y-m10-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349614900,
+      "type": "file"
+    },
+    {
+      "path": "i18n/en/docusaurus-plugin-content-blog/25y-m3-hanghae-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349619388,
+      "type": "file"
+    },
+    {
+      "path": "i18n/en/docusaurus-plugin-content-blog/25y-m11-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349633975,
+      "type": "file"
+    },
+    {
+      "path": "i18n/en/docusaurus-plugin-content-blog/25y-m6-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349671748,
+      "type": "file"
+    },
+    {
+      "path": "i18n/en/docusaurus-plugin-content-blog/25y-m4-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349682865,
+      "type": "file"
+    },
+    {
+      "path": "i18n/en/docusaurus-plugin-content-blog/25y-m5-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349702997,
+      "type": "file"
+    },
+    {
+      "path": "blog/25y-m7-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349749218,
+      "type": "file"
+    },
+    {
+      "path": "blog/25y-m8-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349754913,
+      "type": "file"
+    },
+    {
+      "path": "blog/25y-m9-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349762838,
+      "type": "file"
+    },
+    {
+      "path": "blog/25y-q1-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349766572,
+      "type": "file"
+    },
+    {
+      "path": "blog/26y-m1-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349772542,
+      "type": "file"
+    },
+    {
+      "path": "blog/26y-m2-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349777577,
+      "type": "file"
+    },
+    {
+      "path": "i18n/en/docusaurus-plugin-content-blog/25y-m7-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349802820,
+      "type": "file"
+    },
+    {
+      "path": "i18n/en/docusaurus-plugin-content-blog/25y-m8-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349814714,
+      "type": "file"
+    },
+    {
+      "path": "i18n/en/docusaurus-plugin-content-blog/25y-m9-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349828651,
+      "type": "file"
+    },
+    {
+      "path": "i18n/en/docusaurus-plugin-content-blog/26y-m1-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349838614,
+      "type": "file"
+    },
+    {
+      "path": "i18n/en/docusaurus-plugin-content-blog/26y-m3-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349845051,
+      "type": "file"
+    },
+    {
+      "path": "i18n/en/docusaurus-plugin-content-blog/26y-m2-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349869502,
+      "type": "file"
+    },
+    {
+      "path": "i18n/en/docusaurus-plugin-content-blog/25y-q1-memoir/index.mdx",
+      "accessCount": 1,
+      "lastAccessed": 1784349898111,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}
