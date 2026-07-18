@@ -1,0 +1,137 @@
+---
+title: 🐤 August 2025 Retrospective
+authors: me
+description: "A lot happened this month, and I made a point to document all of it."
+tags: [retrospective]
+keywords: [retrospective, contribution, probation]
+date: 2025-09-06
+---
+
+## Introduction
+
+I joined the `OpenDoctor Product Team` in July, completed onboarding, and from August onward took on the internal solution migration work in earnest.
+I've been dipping into the DB and backend code whenever I can to understand the business logic, but the complexity has left me feeling lost more than once.
+Thankfully, with the help of my colleagues and my senior mentor, I've been adapting quickly. 🙏🏼
+
+The biggest thing I took away from working through August was a sharp sense of urgency around two skills: **building the right features fast and accurately**, and **learning to estimate and stick to a schedule**.
+Our team runs sprint planning meetings on a two-week cadence.
+Every estimated timeline I shared in August ended up taking somewhere between 1.5x and 2x as long in practice.
+I made a firm commitment to close that gap — it's the **core goal** for the rest of my probationary period.
+My PO gave me a clear direction for tackling this problem, and I'm genuinely grateful for that. I plan to drill it deliberately over the weeks ahead.
+
+The reasons behind the schedule slippage are layered.
+In this post I want to use an Issue Tree to work through the problem structurally, and share what I'm planning to do differently in September as a result.
+
+## 1. Git — From Theory to Practice
+
+I've used Git before, but this month hit differently — it was the first time I really felt how much depth the tool has and how much it matters in real collaboration. Concepts I only knew in the abstract finally clicked through actual day-to-day work.
+
+**OpenDoctor's Branching and Merge Strategy**
+
+![img alt="model"](/img/study/opn_git.png)
+
+Our team runs a streamlined version of git-flow.
+
+- **main**: Holds the source code currently running in production.
+- **develop**: The branch where features destined for the next release accumulate.
+- **feature**: Used for large-scope work that combines multiple pieces — for example, a full page redesign that requires component work, layout changes, and new functionality all at once. In those cases we create a dedicated feature branch and then cut smaller `feat/` or `fix/` branches inside it.
+
+Individual working branches get merged into feature or develop after code review. At a scheduled time, the develop code is merged into main and deployed.
+
+**Learning the Hard Way: Why git reflog is Priceless**
+
+I had a truly terrifying moment where I wiped out three days of work on a calendar component — and all the related functionality — in one fell swoop.
+I was cleaning up a tangled branch situation and accidentally deleted the working branch.
+In that desperate moment, the `git reflog` command saved my life.
+
+> git reflog records every movement of the HEAD pointer — commits, branch switches, resets — locally.
+> That log lets you trace the "footprints" of a commit that seemed to vanish, and recover it.
+
+**Example: accidentally dropping a colleague's commit**
+
+```zsh
+$ git log --pretty=oneline
+fdf4fc3344e67ab068f836878b6c4951e3b15f3d colleague's commit
+cac0cab538b970a37ea1e769cbbde608743bc96d my commit
+```
+
+Suppose you accidentally delete the colleague's commit.
+
+```zsh
+$ git log --pretty=oneline
+cac0cab538b970a37ea1e769cbbde608743bc96d my commit
+```
+
+Use reflog to surface the missing commit.
+
+```zsh
+$ git reflog
+1a410ef HEAD@{0}: reset: moving to cac0cab
+fdf4fc3 HEAD@{1}: commit: 동료의 커밋
+```
+
+Once I confirmed the colleague's commit (`fdf4fc3`) was recorded at `HEAD@{1}`,
+`git switch -c <new-branch-name> fdf4fc3` let me create a new branch from that commit and bring the work back to life.
+Recovering three full days of work that way really drove home how critical it is to know your Git commands. I'll cover git merge vs. rebase internals and other mishaps in a separate technical post.
+
+## 2. Failed Estimates — Digging Into the Root Causes
+
+> To answer "why do I keep missing my deadlines?", I used the Issue Tree framework I learned during onboarding to break the problem down structurally.
+
+![img alt="model"](/img/study/opn_mece_try_1.jpeg)
+
+**I split the problem into the Planning phase and the Execution phase, and identified where I was falling short in each.**
+
+- **Planning phase problems**
+
+1. Not accounting for non-development time: I was estimating purely in coding hours, ignoring two weeks' worth of meetings, reviews, and other overhead.
+2. Not sizing up existing code first: When modifying or improving a feature, I was drafting timelines without actually gauging the complexity of the existing code I'd be touching.
+
+- **Execution phase problems**
+
+1. Being too passive with questions: When I got stuck trying to understand how something was already built, I wasn't asking for help aggressively enough, so I bled time I didn't need to lose.
+2. Weak testing habits: I wasn't thorough enough about edge cases after implementing a feature, which led to unexpected rework surfacing at the QA stage.
+
+Armed with these four findings, I want to make my estimates more accurate and my execution more complete in the next sprint.
+During the team retrospective, my PO offered some grounded advice: "Assume twice the time a developer estimates, three times if they're still getting up to speed — then work to close that gap."
+I'm going to lean into that rule.
+
+## 3. Peer Feedback — Fuel for Growth
+
+A little over a month in, we had a mid-probation feedback session. Personally, I see not being afraid of feedback — and treating it as a growth opportunity — as one of my strongest traits.
+
+In the warm atmosphere my PO created, each colleague took a turn sharing feedback using the **CSS (Continue / Stop / Start)** framework.
+
+![img alt="model"](/img/study/opn_feedback.png)
+
+I was genuinely moved to receive feedback this valuable. When you work alone, honest, specific feedback is something you desperately miss — having it now means a lot.
+Reading through it, I had a clear insight: turning this feedback into a work checklist was the natural next move. So I built one. I believe that if I keep this checklist properly maintained, most of the issues surfaced in the feedback are solvable — which is why I'm sharing it here.
+
+This was the kind of feedback I had longed for but could never get as a solo developer. To make sure none of it slipped through the cracks, I immediately turned it into a concrete **work checklist**.
+
+![img alt="model"](/img/study/opn_checklist.png)
+
+> People around me call me a "power J" (heavy planner in MBTI terms), but I've learned that without building tangible systems like this, old habits are nearly impossible to break.
+
+My commitment for the rest of the year: keep refining this checklist steadily, and grow into the kind of colleague who's easy to work with.
+
+---
+
+## Closing Thoughts
+
+August was a precious stretch of time — learning through trial and error what it actually means to work as part of a team.
+My sincere thanks again to everyone who helped me along the way. I'm looking forward to showing up as a better colleague in September.
+
+- **September Action Points**
+
+**Development**
+
+- [ ] Burn through the migration features to the new internal solution fast (goal: no more reliance on the old solution by October)
+- [ ] Read through the Toss Clean Code official docs once (September)
+- [ ] Start paying attention to and experimenting with configurations like CLAUDE.MD or .cursorrules
+
+**Other (Communication)**
+
+- [ ] Before each sprint kickoff, try actually breaking work into pieces first so I can share a clear schedule
+- [ ] Read Barbara Minto's *The Pyramid Principle* and write up one takeaway from September
+- [ ] Read *Growing Together* and apply at least one insight from it

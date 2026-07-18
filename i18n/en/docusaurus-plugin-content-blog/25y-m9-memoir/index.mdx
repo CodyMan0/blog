@@ -1,0 +1,147 @@
+---
+title: 🐤 September 2025 Retrospective
+authors: me
+description: "Contributing is the only way forward."
+tags: [retrospective, writing]
+keywords: [retrospective]
+date: 2025-10-07
+---
+
+## Introduction
+
+![img alt="work-1"](/img/study/retro-bg.png)
+
+**Development**
+
+- [x] Focus on migrating to the new in-house solution (target: complete switchover by end of October)
+- [ ] Read through the Toss Clean Code official documentation
+- [ ] Explore and experiment with productivity tools like claude.md and .cursorrule
+
+**Other (Communication)**
+
+- [x] Before each sprint kickoff, break down tasks in detail to share a clearer timeline
+- [x] Read *The Pyramid Principle* by Barbara Minto and organize my thoughts on September's experiences
+- [x] Read *Growing Together* and apply one insight to my work
+
+It's already been two months since I joined. September was a month of learning how to work *together* inside a product team.
+There were times I missed edge cases because I was too eager to ship features quickly, and moments where syncing with teammates got bumpy.
+But through our weekly team retrospectives, we were able to surface issues together and come up with concrete action points. In this post, I want to share the trial and error I went through in September, and talk about how I plan to improve going into October.
+
+## What I Accomplished in the First Two Months
+
+Even though I was still in the probationary period, there were some things I could be proud of. **Here's a snapshot from the team's Notion page.**
+
+![img alt="work-1"](/img/study/opn-work-1.png)
+
+I shipped 32 features of varying sizes. Along the way, there were moments I got lost trying to figure out whether a bug was on the frontend or backend — but thanks to my teammates' help, I was able to quickly pinpoint the cause and work through things one by one.
+
+One of the experiences I had wanted most from my previous job was working with **legacy code**.
+Thankfully, it wasn't the kind of legacy that leaves you completely hopeless —
+but being handed a project that involved modifying code written by teammates in the past gave me a challenge at just the right difficulty level.
+It made the work a lot more fun, and I'm genuinely excited that Q4 brings an opportunity to grow further by running a new project in parallel with this one.
+In Q4, I want to document these experiences well as concrete achievements, and use the rest of October and November to buckle down on studying.
+
+> Starting in October, we'll actively encourage the team to adopt the new solution, and gradually phase out the old one!
+
+## Efforts to Work Better *Together*
+
+### 1. Working Toward Predictability: Estimating Timelines
+
+About two months ago, I implemented a feature to export a specific screen as a PDF — supporting both single and bulk exports.
+
+During sprint planning, I estimated "a comfortable one week" — but it ended up taking three.
+Sure, I flagged the delay quickly in daily standups,
+but given how heavy that ticket was, I wish I had taken the time after sprint planning to clearly spec out the requirements and share them with the PO separately.
+
+> Taking that three-times-over-estimate as a lesson, I tried two different approaches in September.
+
+#### Team Initiative: Development Spec Meetings
+
+Led by one of my fellow frontend developers, we started holding "development spec meetings."
+
+![img alt="work-2"](/img/study/opn-work-2.png)
+
+As shown in the image above, each of us would bring our assigned tasks, re-estimate the timeline, and align on implementation across the team.
+Through one of these sessions, we were able to realistically adjust the "Customer Management — Filter by Agent" feature from an initial estimate of "4 hours" to "2 days."
+
+From the next meeting onward, we decided to dig into specific implementation approaches based on the planning documents.
+The upside is that we can sharpen our estimates; the downside is that meetings might run longer. For now, we've decided to try it together as a team and find the most efficient approach.
+
+#### Personal Initiative: Weekly Pre-Planning
+
+I started setting aside time on weekends to prepare for the upcoming sprint meeting.
+Laying out detailed timelines for each task ahead of time made me noticeably more confident and clear when sharing estimates in the actual meeting.
+
+### 2. Finding a Better Way to Request QA — with the Reviewer in Mind
+
+Our team doesn't have a dedicated QA team, so the workflow is: developer does a first pass, then requests QA from the PO or designer.
+I had an experience this month that made me rethink how I was handling that hand-off.
+
+#### 2-1. The Anti-Pattern: "They're busy, so I'll batch everything into one QA request"
+
+Our PO currently wears many hats — PO, agile coach, designer — and is incredibly busy.
+With that in mind, I made a misjudgment on the "Listing Page Design Overhaul" task I worked on in September.
+
+I broke what was a fairly large ticket down into 4 sub-tasks like this:
+
+![img alt="work-3"](/img/study/opn-work-3.png)
+
+It looks simple at four items, but in reality these involved tangled complexity — filter application, individual/bulk reset, design system component implementation, and more.
+
+My biggest mistake was waiting until I'd finished tasks 2, 3, and 4 before requesting QA all at once (excluding task 1).
+I hesitated to bother the PO with small, frequent requests because I knew she was busy.
+But the result was that for about 8 days, the PO had zero visibility into where my work stood —
+and then got hit with a massive QA request all at once, which caused a lot of confusion. There were plenty of bugs too.
+
+The feature did land okay in the end,
+but this became a key discussion point at our sprint retrospective.
+Afterward, the PO recommended a book called *Growing Together*, and I found some answers in it.
+
+#### 2-2. The Fix: "They're busy, so I'll slice smaller and share faster"
+
+<img src="/img/study/opn-work-4.png" width="400px" alt="" />
+
+> p. 198 — Deliver value to your customer every day.
+
+Reading that line, something clicked: "Oh, I need to focus on creating value every single day."
+And here, "customer" means not just the end user, but also the internal teammates waiting on my output.
+So I committed to sharing what I'd built with teammates on a daily basis.
+
+To make that work, I realized I needed to automate Amplify's Preview feature.
+I proposed the idea to a fellow developer, who generously helped set up the automation.
+Now, every time I open a PR, a preview environment is automatically spun up with a URL ready to share.
+Starting with the "Send Listing" page, I began sharing incremental results in smaller chunks.
+
+> **But then another problem came up.**
+
+**The core of the issue was confusion caused by not sharing upfront *how I had split the work* with the QA reviewer.**
+
+![img alt="work-3"](/img/study/opn-work-3.png)
+
+I had broken the work into 4 tasks in my own head,
+but I never shared that breakdown with the PO ahead of time.
+From the reviewer's side, getting Slack messages like "can you check task 3?" or "can you check task 4?" with no context is bound to be disorienting.
+It naturally raises questions like: how thorough should the QA be? Why aren't tasks 1, 2, and 4 included yet?
+
+> I realized my approach wasn't making things easier for my teammate — it was actually creating more cognitive overhead for her.
+
+**So starting in October, here's what I'm going to try:**
+
+When I judge a feature to be large,
+I'll first break it down into detailed sub-tickets,
+then after the daily standup, sync separately with the QA reviewer to share the context before diving into development.
+There's no single right answer, but I want to keep searching for the approach that fits our team best.
+
+> Ultimately, the key is *consideration* for the teammates you work *together* with. I always need to keep in mind that leadership is far busier than I am, and that teammates may already have their hands full with their own work.
+
+## Closing Thoughts
+
+September was a continuous cycle of "fail fast, get feedback, learn."
+Through that process, I started to understand what it means to grow together inside a team. I'm genuinely grateful to my teammates once again. Heading into October, I want to make sure that working with me feels a little more comfortable for the people around me.
+And to get there, I ultimately need to back it up with better engineering skills. Time to refocus and get back to studying.
+
+**October Action Points**
+
+- [ ] Study Next.js to migrate existing in-house code to SSR (2-week intensive)
+- [ ] Learn basic SQL
+- [ ] Study Flutter Web for the OpenDoctor web/app migration

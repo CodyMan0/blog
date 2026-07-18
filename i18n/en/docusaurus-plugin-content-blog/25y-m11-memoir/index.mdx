@@ -1,0 +1,232 @@
+---
+title: 🌱 November 2025 Retrospective
+authors: me
+description: "OpenDoctor will grow 100x next year. So will I!"
+tags: [retrospective, writing]
+keywords: [retrospective]
+date: 2025-12-10
+---
+
+## Introduction
+
+![img alt="autumn-night"](/img/study/autumn-night.jpeg)
+
+Looking back on November 2025, it was the month I truly began to understand the product — right after my probationary period at OpenDoctor ended and things got real.
+I spent time reading through the legacy code line by line, tracking down the business logic buried inside it.
+Even though the codebase was written in Dart, I found it genuinely fun to trace the meaning within the language and piece it all together.
+I think the unfamiliarity actually made it more engaging.
+
+The OpenDoctor product is currently undergoing a full-scale overhaul.
+The driving forces are usability issues and growing user demand, and the target we've set for addressing them is **SEO/AEO optimization**.
+
+The current OpenDoctor web product is built with Flutter.
+I'd always thought of Flutter as a framework for building mobile apps, but it turns out you can pass a single flag to the Flutter compiler telling it to target the web, and it handles the rest.
+
+> But there's a catch.
+
+**A product built with Flutter is rendered in an extreme Client Side Rendering mode.** That makes the SEO optimization we're aiming for very difficult.
+
+The existing product has countless features — including many hidden ones — and changing the wheels on a moving carriage is no small feat.
+So we agreed on an alternative approach: use PostMessage to formally resolve CORS while simultaneously pursuing SEO in parallel with Next.js.
+
+## Migrating to Next.js Incrementally
+
+Swapping the wheels on a moving carriage called for a careful strategy.
+To achieve SEO optimization without ever taking the existing product offline, we devised a **gradual migration strategy**.
+
+![img alt="work-3"](/img/study/opn-env.png)
+
+> The architecture above was designed collaboratively with the team.
+
+The previous setup was a flutter-web → React environment. When the very first developer who built the flutter-web layer left the company and a new developer joined, maintaining the flutter-web code turned out to be quite a challenge.
+
+So the new developer had been building redesigned UIs by using postMessage to bring a new Document with React components into the flutter-web layer and render them there.
+
+Through architecture discussions, we realized that wrapping everything at the top level with Next.js would let us capture the SEO we needed while migrating incrementally.
+The benefits of adding that Next.js wrapper at the top were: **maintaining the existing product while establishing an SSR environment**, **adding static and dynamic metadata**, and **fetching data server-side to generate static/dynamic Sitemaps**.
+
+There was a tradeoff, though — managing inter-process message communication through PostMessage would add complexity during migration. But we judged the benefits to outweigh the costs and finalized the architecture shown in the image above.
+
+> With this strategy in place, we set up the environment and updated the domain configuration.
+
+**As-is**
+
+- Existing flutter-web: https://www.opndoctor.com/
+- React: https://somegthingReact.opndoctor.com/
+
+**To-be**
+
+- Next.js: https://www.opndoctor.com/
+- Existing flutter-web: https://somethingOriginal.opndoctor.com/
+- React: https://somegthingReact.opndoctor.com/
+
+> We kicked off the deployment in the early hours of the morning and finished without incident. But unexpected problems were waiting for us on the other side.
+
+## Problems After Deployment and How We Solved Them
+
+The deployment itself was a success, but the ripple effects of such a complex architectural change surfaced immediately. We ran into three issues we hadn't anticipated.
+
+### Problem 1: Auth token not carried over — reports not showing up
+
+**What happened**
+
+Right after deployment, support requests poured in about reports. Users had paid for a report, but it wasn't displaying. One of our core features is a location analysis report: you select a region and get a detailed report on clinics and pharmacies in that area. The report page was implemented using Next.js Server Components, which meant network calls weren't visible in the browser, making debugging tricky. Fortunately, Sentry let us catch the error — and it was a **403**.
+
+**Root cause**
+
+> **The token wasn't being passed when navigating from the OpenDoctor web to the report page.**
+
+One of OpenDoctor's architectural quirks is that the report lives as a completely independent project.
+When navigating from flutter-web to the report page, the auth info was shared by writing a cookie, like this:
+
+```dart
+const domain = '.opndoctor.com';
+html.document.cookie = 'token=$token; domain=$domain; path=/; secure; SameSite=Strict';
+```
+
+The token is packed into a cookie for the navigation — and the root cause was that we had changed the flutter-web domain during migration.
+
+**Domain configuration at migration time (the problematic state):**
+
+- Next.js: https://www.opndoctor.com/
+- Existing flutter-web: https://\*\*.amplify.com/
+- React: https://\*\*.opndoctor.com/
+- Report: https://\*\*.opndoctor.com/
+
+We had moved the flutter-web domain from https://www.opndoctor.com to https://\*\*.amplify.com, which meant the token set in flutter-web could no longer reach the report page.
+
+Cookie sharing scope is determined by the `domain` attribute. With `domain='.opndoctor.com'` in the code, cookies are shared across `opndoctor.com` and all its subdomains (`www.opndoctor.com`, `report.opndoctor.com`, etc.) — but not across a completely different domain like `*.amplify.com`.
+
+The `SameSite=Strict` setting compounded the issue. `SameSite=Strict` only sends cookies on same-site requests, so cookies won't be sent in cross-domain requests at all. Even if it had been `SameSite=Lax` — which would allow cookies on GET requests from other sites — the `domain` mismatch meant the cookie fundamentally couldn't be read.
+
+**Fix**
+
+We unified everything under the same domain family:
+
+- Next.js: https://www.opndoctor.com/
+- Existing flutter-web: https://\*\*.opndoctor.com/
+- React: https://\*\*.opndoctor.com/
+- Report: https://\*\*.opndoctor.com/
+
+**Result**
+
+The auth token passed through cleanly and reports displayed correctly again.
+This incident gave me a much deeper understanding of how domain changes can affect authentication flows.
+
+### Problem 2: Repurchasing a report shows a 404?
+
+**What happened:** After repurchasing a report, users were seeing a 404 page — and KakaoTalk support messages flooded in.
+
+**Root cause**
+
+Digging into the cause, the core issue was a URL rendering bug — something I'd never encountered before.
+This had never been a problem until we wrapped flutter-web with Next.js at the top level.
+The key issue was that when the URL changed inside flutter-web, the logic that passed that URL up to the parent Next.js was dropping the `?` before query strings and the `#` before URL hashes.
+
+**Fix**
+
+We added a utility function in flutter-web to properly build the full URL whenever it changed — including the query string and hash — and then pass that correctly-formed URL up to the parent Next.js.
+
+**Result**
+
+The page displayed correctly after repurchase. This made me appreciate how critical proper URL synchronization logic via PostMessage really is.
+
+### Problem 3: URL sync breaks after a page refresh
+
+**What happened**
+
+In the updated OpenDoctor web architecture, Next.js owns the top-level HTML and Flutter-web is embedded as a sub-document inside an iframe, communicating via the postMessage API.
+When a refresh was triggered inside the Flutter-web area, URLs would stop updating afterward.
+
+**Root cause**
+
+When Flutter-web calls `window.location.reload()` directly, only the iframe itself refreshes — severing the PostMessage communication channel with the parent (Next.js).
+After that, even when the URL changes inside Flutter-web, those changes can no longer be relayed to the parent Next.js, so Next.js's URL stops staying in sync.
+
+**Fix**
+
+Instead of refreshing directly from Flutter-web, we changed it to send a reload event to the parent (Next.js) via `IframeChildManager`.
+This way, the parent can handle the full-page refresh or control the URL, keeping the PostMessage communication channel intact and URL sync working correctly.
+
+**ASIS (the problem)**
+
+```dart
+void webReload() async {
+  window.location.reload()
+}
+```
+
+**TOBE (the fix)**
+
+```dart
+void webReload() async {
+  final manager = IframeChildManager();
+
+  const storage = FlutterSecureStorage();
+  final somthing_token = await storage.read(
+      key: "SOMETHING_TOKEN");
+
+  manager.send(
+    type: ParentIframeMessageType.message,
+    payload: {
+      'event': ChildIframeMessageEventType.reload.value,
+      'data': {
+        if (somthing_token != null) 'token': somthing_token,
+      },
+    },
+  );
+}
+```
+
+**Result**
+
+PostMessage communication persisted through refreshes and URL sync worked correctly again. I came away with a much stronger appreciation for managing communication between an iframe and its parent.
+
+## The Outcome: Results We Achieved
+
+Solving these problems one by one delivered results that exceeded our expectations.
+
+> **SEO impressions and clicks on the rise**
+
+![img alt="opn-seo"](/img/study/opn-seo.png)
+
+| Metric      | October (baseline) | November          | ~December 3 | Month-over-month (Oct → Nov) |
+| ----------- | ------------------ | ----------------- | ------------ | ---------------------------- |
+| Impressions | ~1,300             | ~2,000 (avg)      | ~3,700       | ~+180% **(2.8x)** 🔺         |
+| Clicks      | ~10                | ~25 (avg)         | ~75          | ~+650% **(7.5x)** 🔺         |
+
+Seeing the results show up visibly every time we made an improvement made this an incredibly exciting month.
+
+> **Technical wins**
+
+- Built an environment that allows parallel, page-by-page migration to Next.js
+- Laid the groundwork for SSR-based SEO optimization using Server Components
+- Devised and executed an incremental migration strategy
+- Gained hands-on experience managing complex cross-process architecture via PostMessage
+
+## Lessons Learned from Problem-Solving
+
+November was a month of deep focus. My heart was racing working in a new development environment and pushing through a meaningful project.
+
+The biggest lesson from this migration was just how hard it is to **change the wheels on a moving carriage**. Working through those three problems left me with a few things I now feel in my bones:
+
+> **1. How domain changes affect authentication flows**
+
+This came from solving **Problem 1**. Using cookie-based auth means you have to fully understand the rules around cross-domain cookie sharing. I experienced firsthand — not just in theory — how the `domain` attribute and `SameSite` setting ripple through the auth flow.
+
+> **2. How hard it is to debug Server Components**
+
+Not being able to see network calls in the browser taught me how important monitoring tools like Sentry really are.
+When debugging issues that originate server-side, traditional methods alone aren't enough.
+
+> **3. The complexity of incremental migration**
+
+Managing inter-process message communication through PostMessage was more complex than I'd expected.
+Resolving **Problem 2** and **Problem 3** taught me the subtleties of managing communication between an iframe and its parent.
+Things that seem simple — URL synchronization, refresh handling — can cause completely unexpected issues in a complex architecture.
+
+## Wrapping Up
+
+Now that I've found my footing, it's time to dig deeper, understand things properly, and make changes that actually hold up. The incremental migration is about 20% done at this point. From here, I want to start introducing unit tests and focus on building software that can evolve both safely and quickly.
+
+December is busy with year-end plans. But I'm not going to lose my head — I want to close out 2025 well and set myself up for 2026, taking a long, steady breath as I go.

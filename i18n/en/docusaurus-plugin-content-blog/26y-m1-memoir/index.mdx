@@ -1,0 +1,130 @@
+---
+title: 🌱 January 2026 Retrospective
+authors: me
+description: "Be more proactive at work"
+tags: [retrospective, writing]
+keywords: [retrospective]
+date: 2026-02-14
+---
+
+## Introduction
+
+Time flies. A month slips by before I even notice, so I've been making a deliberate effort to carve out time for retrospectives — but even that isn't easy. Still, I want to look back at January and turn any shortcomings into concrete improvements for February.
+
+> Four major things happened in January.
+
+1. **AI tool switch** — I moved from Cursor to Claude Code, and a task I'd estimated at 10 days got done in 5!
+2. **Internal solution usability research** — I talked directly with internal customers and collected 31 pain points. You only find out by asking.
+3. **Building it myself instead of outsourcing** — It started with "let me give it a shot." I shared a prototype I built over the weekend, and we decided not to outsource after all.
+4. **Leader feedback** — At the 6-month mark, I received feedback from my leader. The next challenge is to lead by example on AI adoption and actively push for more internal AX (AI Experience).
+
+### 1. Switching AI Tools and Feeling a 2x Productivity Boost
+
+Up through 2025 I was using Cursor. I wasn't really using MCP at all — I'd just toss a Figma screenshot at it and say "implement this." The results were unsurprisingly rough, but at the time that felt completely normal to me.
+
+Then a company-wide AI study group got started at OpenDoctor. Looking back, my skill level was honestly embarrassing, but I ended up joining as part of the dev team.
+
+The only reason I stuck with Cursor for three months was simple familiarity. Then my fellow developer Gyuseok proposed upgrading the entire dev team to the Max plan, it got approved, and I took that opportunity to switch to Claude. Shoutout to Gyuseok.
+
+I'd heard stories about "maximizing productivity with AI" but took them with a grain of salt. Actually using it myself, though — it was *clearly* different. Two big wow moments stood out. Neither was earth-shattering on its own, but for me they were a first-order shift.
+
+1. **Figma MCP integration:** It got good enough that I could essentially hand off publishing work to AI entirely. With our design system in place, once I gave it a skill built around publishing, it implemented things noticeably better. Connecting multiple MCPs helped the AI understand context much more accurately.
+2. **AI that can see across multiple projects:** Claude's `/add-dir` command lets me bring multiple project codebases into a single session, and I felt roughly a 3x improvement in throughput. We were mid-migration with a lot of iframe-based communication between projects, and being able to work across all of them at once made those integrations dramatically easier to build.
+
+> That first-order shift is what got me seriously applying AI to the migration work.
+
+![img alt="feedback"](/img/study/sign-up.png)
+![img alt="feedback"](/img/study/license.png)
+
+Here's a breakdown of what needed to be built, based on the Figma designs and PRD:
+
+#### Sign-up Feature
+
+1. Screen components (publishing)
+2. UI behavior (validation)
+3. Server communication
+4. Backend API modifications
+5. iframe-based auth communication with the existing Flutter-web app
+
+#### Medical License Verification Feature
+
+1. Screen components (publishing)
+2. UI behavior (e.g., showing a message after too many failed attempts)
+3. Server communication
+
+When I was using Cursor, I estimated this work at one sprint — 2 weeks, 10 working days. After six months at the company, I'd learned that splitting things up and adding it all together meant two weeks was realistic. And if something broke in another project partway through, it could easily run longer.
+
+> After switching to Claude and testing it out, everything was done in **2 days of implementation + 3 days of testing = 5 days total**.
+
+The estimated 10 days became 5, and I used the remaining 5 days to build even more complex core features. A few reasons this was possible:
+
+1. Figma MCP meant the AI could parse the UI directly
+2. With context from all three frontend projects communicating over iframes, unnecessary errors disappeared
+3. Our PO Seongwook's PRD really pulled its weight
+4. I switched to the new tool without resistance and got up to speed fast
+5. The company actively encouraged and supported AI adoption
+
+In February I want to push even harder, collect more lessons learned, and bring them back here.
+
+### 2. I Want to Redesign the Internal Solution for the Brokerage Team
+
+When I joined, my probationary project was migrating the Flutter-web internal solution to Next.js — work aimed at boosting efficiency for internal colleagues, a project that had been stuck in limbo before I arrived. Having a dedicated owner finally meant we could implement and deploy things one by one. As I wrote in my [September 2025 retrospective](https://lee2022.com/blog/25y-m9-memoir), we shipped 32 features and fully replaced the old solution.
+
+But there was a lingering problem: a buildup of frustration from internal users had eroded trust in the product. The complaints were that things took too long or didn't come out the way they were requested.
+
+Listening to both sides helped me understand the situation. I started coming in early, grabbing a coffee with colleagues to hear their concerns, and sharing what I learned with the product team. A real fix would take time, so I proposed a usability meeting to my team lead in a 1-on-1. About two months later, in January, we finally held it.
+
+I invited everyone from the brokerage team, and we walked through the solution together page by page, talking through every pain point. I was worried nobody would say anything — but everyone was eager to share. Button placements, unnecessary pages, unnecessary elements — things I never would have thought of on my own.
+
+In the end we collected **31 pain points**.
+
+![img alt="feedback"](/img/study/solution-feedback.png)
+
+None of it would have surfaced if we hadn't asked.
+In February, I want to fold this feedback into the product and contribute to making the brokerage team's day-to-day work more efficient.
+
+**What went well**
+
+- Proposing the usability meeting to my team lead in a 1-on-1
+- Genuinely expressing gratitude when people shared their frustrations
+
+**What I wish I'd done differently**
+
+- Scheduling the meeting more proactively and sooner
+- Neglecting to pay attention to the solution's rendering performance
+
+**February action points**
+
+- Lean on AI more aggressively for accurate, fast execution
+- Optimize solution rendering performance
+
+### 3. Don't Outsource It — Let Me Handle It Myself.
+
+We needed a new feature and a new web page. The outsourcing quote came in at 1.5 million KRW per language for i18n. That was steep. The dev team was swamped, so nobody had even worked up the nerve to ask them. So I went straight to the PO.
+
+> Q. What exactly needs to be built? Can you share even a rough version of the plan?
+
+> A. Of course!
+
+I got a quick summary, wrote a PRD with AI, and spent the weekend building it out.
+It wasn't perfect, but the basic skeleton was there — landing page, backend server (DB), solution, and admin panel.
+Apparently the outsourcing quote just for multilingual support on the landing page alone was 7.5 million KRW… how much could I save here?
+
+Experiencing it firsthand was equal parts surprising, unsettling, and exciting. The more I use it and contribute to the company, the more know-how I'll accumulate — and I'm genuinely looking forward to that.
+There are multiple projects on my plate, but taking initiative and pulling this work in was the right call. Whether I can wrap it up cleanly by April is the real question, though… Let's push hard in March. You've got this, Juyoung.
+
+### 4. Areas to Improve Based on the Product Team Leader's Mid-Year Assessment
+
+Six months in. I received my 6-month review from the PO in a 1-on-1.
+
+![img alt="feedback"](/img/study/leader-feedback.png)
+
+I was grateful for the kind words.
+I also got some verbal improvement points:
+Focus on leveraging AI to raise productivity, and lead by example with more internal trials and experimentation. Those are my next priorities.
+
+## Wrapping Up
+
+The keyword for January was **proactivity**. Switching AI tools, proposing the solution CRM usability meeting, building things myself instead of outsourcing — acting first without waiting is what produced results.
+
+For February, I hope to make it a month of actually executing on all the things I proactively committed to. I want to use AI more aggressively, rack up lessons learned faster, and keep asking the brokerage team what they need — steadily broadening the scope of where I can contribute.

@@ -1,0 +1,144 @@
+---
+title: 🌱 October 2025 Retrospective
+authors: me
+description: "OpenDoctor will grow 100x next year. So will I!"
+tags: [retrospective, writing]
+keywords: [retrospective]
+date: 2025-11-08
+---
+
+## Introduction
+
+![img alt="autumn"](/img/study/hero-2.jpeg)
+
+October was a meaningful month — I officially wrapped up my first three-month probationary period at OpenDoctor and started preparing for the next chapter.
+To close out that probation period, I ran a CSS (Continue, Stop, Start) retrospective together with our PO and the rest of the engineering team.
+
+The fact that everyone took time out of their schedules to reflect together on my individual growth was something I'm genuinely grateful for.
+The feedback gave me a chance to look at myself objectively over those three months and set a clear direction going forward.
+
+> I want to write this October retrospective by looking back at the action points I set last month.
+
+- **October action points**
+
+- [ ] Study Next.js for migrating existing in-house code to SSR (2-week intensive)
+- [x] Learn basic SQL
+- [ ] Study Flutter Web for the OpenDoctor web/app migration
+
+I set these three action points in my previous retrospective, but I couldn't check most of them off — there just wasn't much to show. I need to work on writing clearer, more focused monthly action points going forward.
+For November, I'll try to be more deliberate: specific goals, prioritized by what actually matters most.
+
+## CSS Retrospective with PO and the Engineering Team After Passing Probation
+
+The CSS retrospective ran in this order:
+
+- Continue (what's working well and should keep going)
+- Stop (what needs to change or improve)
+- Start (what's worth trying that we haven't done yet)
+
+Colleagues' names have been hidden. Here's the feedback, shared as images.
+
+![img alt="work-3"](/img/study/feedback-1.png)
+![img alt="work-3"](/img/study/feedback-2.png)
+![img alt="work-3"](/img/study/feedback-3.png)
+![img alt="work-3"](/img/study/feedback-4.png)
+
+> Here's the picture of myself that emerged after going through all the feedback.
+
+**Strengths worth building on**
+
+- Documentation-driven communication: actively using written docs to capture and share context and history
+- Proactive QA and ownership: taking responsibility for assigned work and driving QA independently
+- Receptive yet self-directed attitude: receiving feedback positively and actively seeking out work on my own
+
+**Areas to improve to become the kind of teammate people want to work with**
+
+- Debugging skills: I need to get faster at pinpointing where a bug lives when something goes wrong
+- Technical research: when evaluating tech stacks or doing research, I need to gather stronger evidence and communicate findings more clearly
+- Done over perfect: I tend to over-aim for perfection — I need to practice a "ship first, then iterate" cycle instead
+
+> My plan is to keep sharpening the strengths and, for the gaps, figure out the root causes and work on them intensively over the next two months.
+
+## A Technical Question: "Do We Actually Need to Move to Vercel Right Now?"
+
+One of the bigger technical debates in October centered on adopting Next.js SSR for OpenDoctor's web SEO and figuring out the right deployment environment.
+
+There was a view inside the team that "migrating to Vercel is a must for SEO optimization," but when I went back through the AWS Amplify documentation, I found myself questioning that premise.
+My thinking was: Amplify supports most of Next.js's core features — if Vercel offers something Amplify doesn't, is the absence of that thing actually a critical blocker for SEO optimization, which is our current goal?
+
+> So I looked up what each vendor supports and what it costs, then shared a summary with the team.
+
+**What Amplify does and doesn't support**
+
+> Amplify supports most of Next.js's core features.
+
+- Supported: SSR, SSG, time-based ISR, image optimization.
+- Not supported:
+  - On-demand ISR: event-driven instant revalidation isn't available; only time-based revalidation works.
+  - Next.js Streaming: the streaming pattern that renders a UI skeleton first isn't supported, which could put us at a disadvantage compared to Vercel for LCP under Core Web Vitals.
+  - Middleware performance: the feature works, but it runs on AWS Lambda@Edge, which carries a real cold-start risk compared to Vercel's Edge performance.
+
+**The cost and risk of migrating to Vercel**
+
+Jumping to Vercel purely based on feature parity has a real cost.
+
+1. Vendor lock-in: Vercel supports every Next.js feature, but that's because Next.js is tightly coupled to Vercel's infrastructure. For a team with a bit of a contrarian streak… that's something to weigh.
+2. Increased operational cost and complexity: spreading infrastructure across more vendors adds management overhead and cost.
+
+**Conclusion: build Next.js SSR on Amplify first and optimize from there**
+
+After reviewing whether Amplify's limitations would meaningfully hurt our Core Web Vitals scores, or whether on-demand ISR's real-time updates are actually essential to our business right now — the answer was "not yet."
+
+So my proposal was to first maximize SEO within Amplify — things like auditing image optimization and minimizing unnecessary dynamic rendering — and revisit a Vercel migration only if Core Web Vitals scores fall short of our targets or content freshness becomes critical.
+
+There was also a lot of feedback that writing monorepo build scripts is painful on Amplify, but since OpenDoctor isn't a monorepo, that was another reason to just push ahead with what Amplify can do.
+
+> I figured we'd learn what we needed to by going through it… Future us, you've got this.
+
+## Starting to Build the OPN Design System
+
+About three months in, I started seeing longer-horizon work I could contribute to — beyond just the immediate feature backlog.
+It was sparked by noticing that Seongwook, our PO and designer, was maintaining a separate OPN Design System file in Figma.
+
+But with so much already on the plate, a design system — important but not urgent — felt like a hard project to just dive into.
+
+So instead of jumping in with a simple "I'll do it!", I decided to first lay the groundwork to make this project realistically launchable.
+Before bringing it up formally in a sprint meeting, I did the following prep work:
+
+1. Design system research: analyzed examples from domestic and international design systems (Toss, LINE, etc.)
+2. OPN design system analysis: reviewed the Figma file the designer had been building
+3. Design system blueprint: estimated the development effort required, component by component
+4. Dev environment setup: initialized Storybook with a React base and configured the environment
+
+With that groundwork in place, I put "Design System Build" on the agenda for the sprint meeting.
+
+![img alt="work-3"](/img/study/opn-design-system.png)
+
+I know this project probably isn't the highest priority right now.
+So I talked it through with the designer and together we proposed an "intentional process" — one that wouldn't burden the existing sprint workload but would let us make steady, consistent progress.
+
+**Our lightweight process (start small, make it real)**
+
+- Regular design system component QA meetings: every Thursday at 3 PM, one hour for design system QA and sync
+- Minimum sprint target: implement at least two components per sprint, then QA them together in Storybook
+
+The plan is to run small cycles and incrementally complete the system. I'll check in on how it's going in next month's retrospective.
+
+> Late October 2025 — the start is small, but I think I'll look back on this with a smile next year. We started. That counts.
+
+> If you're a frontend developer who's been through building a design system before, please reach out in the comments or on LinkedIn… I could use the help.
+
+## Closing Thoughts
+
+October was a month filled with small wins and warm feedback from teammates.
+Looking back at who I was three months ago versus who I am now, I felt deep gratitude again for the people who fueled this growth.
+
+- **November action points**
+- [ ] Complete and share a Next.js POC (Proof of Concept) for the new OpenDoctor
+- [ ] Write a Naver Maps API guide for OpenDoctor
+
+  - Code snippets for 3–5 core features (e.g., placing markers, calculating distance).
+  - "Key problems and solutions" we've hit (or will hit) — e.g., coordinate system errors, marker loading optimization.
+  - Initial setup instructions and auth key management for new team members.
+
+- [ ] Learn code editor debugging tools and apply them in real work

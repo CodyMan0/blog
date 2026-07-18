@@ -1,0 +1,129 @@
+---
+title: 🌱 Retrospective — March & April 2026
+authors: me
+description: "In March and April, I successfully migrated OpenDoctor's web service from Flutter Web to Next.js"
+tags: [retrospective, writing]
+keywords: [retrospective]
+date: 2026-05-29
+---
+
+## Introduction
+
+March and April were two months where I was fully focused on migrating OpenDoctor's web service from Flutter Web to Next.js.
+In this retrospective, I want to wrap up the migration by sharing the problems our customers (doctors) and dev team faced, the solutions we came up with, and the results we achieved. I plan to write up the long-term outcomes six months from now.
+
+### Results first
+
+**Q. What got better for customers through the migration?**
+
+![img alt="migration_result"](/img/study/migration_result.png)
+
+> **A1.** [Doctor] New customers can now discover OpenDoctor through organic searches like _"Gangnam dermatology clinic location analysis."_
+>
+> - A1. [SEO] Google impressions/clicks increased **15.2x / 1.67x**
+>   - ※ Measurement baseline: comparing the 6.7-month periods before and after November 10
+> - A2. [SEO] FCP — a key SEO metric — improved **16x**
+
+> **A2.** [Doctor customers / internal customers] Customer feedback is now reflected in the product faster.
+>
+> - **Deployment frequency roughly doubled after migration**
+>   - ※ Measurement baseline: comparing the 6.7-month periods before and after November 10
+
+## The Problems
+
+> - Potential customers who have never heard of OpenDoctor have almost no way to find us through Naver or Google search.
+> - The OpenDoctor service was in an environment that made maintenance difficult.
+
+1. **Almost no search results related to OpenDoctor.**
+
+- There was **no pathway** for new customers to land on OpenDoctor pages through organic searches like _"Gangnam dermatology clinic location analysis"_
+- Monthly impressions were **stuck at 9,390** — only people who already knew the brand ("OpenDoctor" as a keyword) could find us
+  - Breaking that down: **313 impressions per day, with only about 10 actual clicks (visits) per day**
+
+1. **Feature changes took too long, making it hard to iterate actively.**
+
+- To modify the map section of OpenDoctor, you had to run three separate projects simultaneously.
+  - Changing one thing had ripple effects across multiple places
+- Tweaking the map UI on the dev server meant waiting 15–30 seconds to see the result. Ugh — so inefficient.
+
+## The Solution
+
+> Migrate from "Flutter" — which doesn't support SEO and which we're not deeply familiar with — to "Next.js." But instead of ripping it out all at once, we'd remove it incrementally.
+
+**Why not remove it all at once?**
+
+1. **It's a live service:** customers are using it in real time
+2. **Project scale:** multiple domains exist — location analysis, real estate listings, clinics, reports, and more
+
+**For these two reasons, we proceeded by gradually shrinking Flutter's footprint.**
+
+### How 1. [July 2025] Building an environment for incremental replacement
+
+Cheolhun set up an environment inside Flutter Web that allowed us to develop in React. The first two features we applied it to were:
+
+- Location consultation request
+- Property consultation request
+
+### How 2. [November 2025] Next.js as the top-level shell with a double iframe for SEO
+
+While we were chipping away at the migration piece by piece, SEO work for the community section had become urgent. The dev team had a discussion and ultimately decided to improve the architecture as shown in the diagram below.
+
+The design puts Next.js at the top level to handle SEO, while wrapping the existing Flutter app inside it — so users experience zero disruption.
+
+![img alt="asis-tobe"](/img/study/asis-tobe.png)
+
+### **How 3. [February 2026] Designing a work process to finish the migration**
+
+In a dev team meeting, we set a target of completing the migration by the end of March 2026. Over the previous three months, we'd completed about 50% of the planned migration scope. Meanwhile, AI tooling kept advancing, and I could clearly feel how much better the outputs were getting compared to before. So I shifted my approach and started thinking about how to get better results from AI.
+
+The answer I landed on was breaking tasks into smaller pieces that AI could understand more easily. Our project has a lot of context that AI doesn't know — for example, which parts are iframes, how state should be managed, and so on. So I started chopping work into smaller chunks and feeding in only the context relevant to each piece.
+
+Through this process, **I came to appreciate just how important it is to break a problem down clearly before asking AI. In the end, the planning has to be done by a human.**
+
+![img alt="work-list"](/img/study/work-list.png)
+
+### **How 4. [March 2026] Setting up a safety net so we could roll back if anything went wrong after deployment**
+
+![img alt="work-list"](/img/study/feature-flag.png)
+
+Near the finish line, there was one more important decision to make. Gyuseok suggested **introducing feature flags** so we could roll back quickly if a deployment caused issues, and we decided to move forward with the migration on that basis.
+
+In the deployed environment, we used environment variables to control whether users see the Next.js view or the Flutter view. In the dev environment, a toggle let us switch between the two views side by side to check for functional issues or anything missing. This made it much faster to verify that migrated UIs were correct and that no features had been left out.
+
+> That's how the migration came to a close — and here are the results.
+
+## Results
+
+- **[A1] SEO growth**
+
+  - **Total impressions:** **15.2x increase (+1,421%)** (9.73K → 148K)
+  - **Total clicks:** **1.67x increase (+67%)** (4.28K → 7.18K)
+    - ※ Measurement baseline: Google Search Console data comparing the same period (~6.7 months) before and after the Next.js architecture change (Nov 11, 2025)
+
+- **[A1]** Performance improvements
+  - FCP: 15.9s → 1.0s — **16x improvement**
+  - LCP: 18s → 5.4s — **3.4x improvement**
+- **[A2] ~2x increase in deployment frequency, enabling an immediate-response feedback loop**
+  - The migration dramatically improved frontend development productivity, proven by a substantial increase in actual deployment count. _(Based on AWS Amplify deployment logs, comparing the same 6.7-month period before and after the change)_ — **Before (Flutter environment):** **92** total deployments — **After (Next.js environment):** **180** total deployments — **approximately 2x increase** — **Result:** A smooth environment where customer requests are **reflected in the product the same day, with no bottleneck**
+
+## Closing Thoughts
+
+Working through this migration, I could genuinely feel AI lowering the difficulty of the work.
+
+Early in the migration, I was going through backend API DTOs and Entities myself, analyzing them, tracing how they translated to screen behavior, and implementing everything in Next.js by hand.
+
+By the midpoint, I had shifted to having AI analyze the DTOs, Entities, and screen design, discussing with it how to approach the Next.js implementation, and then having it build it out.
+The way I work was slowly but steadily changing.
+
+There's a lot of debate about how developers should grow in the age of AI — and honestly, I'm not sure what the right answer is.
+My provisional conclusion for the first half of 2026 is: understand yourself properly first, and sharpen your fundamentals.
+I want to get a better read on what I enjoy and what I don't, what I'm good at and where I fall short — and to do that in the context of actual work.
+I'm going to try keeping a conscious work journal and sharing it in retrospectives like this one, as a way of finding myself a little more clearly.
+
+Ultimately, this was a reminder that to stay flexible and adapt to a rapidly changing world, you need your own anchors — your own standards.
+
+> So in the second half of this year, I want to sort out "who I am" clearly enough to become someone who can make a real Impact at their company.
+
+There's also a big change coming to the dev team in May. A new engineering lead is joining, and I'm curious to see what shifts that brings. So the goal for May is to help them settle in — and to settle in ourselves, since we're all a bit on edge too.
+
+Rooting for everyone.
