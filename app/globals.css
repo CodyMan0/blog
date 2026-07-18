@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+/* Pretendard 는 app/layout.tsx 의 <link> 로 로드 (Tailwind v4 인라인과 @import 충돌 방지) */
+
 /* next-themes(class 전략)와 연동: html.dark 일 때 dark: 유틸 활성화 */
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -8,7 +10,7 @@
   --foreground: #171717;
   --muted: #6b7280;
   --border: #e5e7eb;
-  --accent: #2563eb;
+  --accent: #4f6bb0;
   --card: #fafafa;
 }
 
@@ -17,7 +19,7 @@
   --foreground: #ededed;
   --muted: #a1a1aa;
   --border: #262626;
-  --accent: #60a5fa;
+  --accent: #7ea2e0;
   --card: #141414;
 }
 
@@ -28,8 +30,20 @@
   --color-border: var(--border);
   --color-accent: var(--accent);
   --color-card: var(--card);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: "Pretendard Variable", var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --animate-fade-up: fade-up 0.5s ease-out forwards;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 html {
