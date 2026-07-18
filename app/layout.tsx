@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: `%s · ${siteConfig.name}`,
   },
   description: siteConfig.description,
-  keywords: siteConfig.keywords.ko,
+  keywords: [...siteConfig.keywords.ko],
   authors: [{ name: siteConfig.nameEn, url: siteConfig.url }],
   creator: siteConfig.nameEn,
   alternates: { canonical: "/", languages: { ko: "/", en: "/en" } },

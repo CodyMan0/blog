@@ -5,7 +5,7 @@ import { siteConfig } from "@/lib/config";
 export const metadata: Metadata = {
   title: `${siteConfig.nameEn} — ${siteConfig.taglineEn}`,
   description: siteConfig.descriptionEn,
-  keywords: siteConfig.keywords.en,
+  keywords: [...siteConfig.keywords.en],
   alternates: { canonical: "/en", languages: { ko: "/", en: "/en" } },
   openGraph: {
     type: "website",
