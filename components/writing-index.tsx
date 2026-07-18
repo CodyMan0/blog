@@ -1,10 +1,10 @@
 import { getAllPosts } from "@/lib/posts";
-import { PostList } from "@/components/post-list";
+import { PostsBrowser } from "@/components/posts-browser";
 import type { Lang } from "@/lib/config";
 
 const t = {
-  ko: { title: "회고", desc: "매달의 경험과 성장을 남깁니다." },
-  en: { title: "Writing", desc: "Monthly notes on how I work and grow." },
+  ko: { title: "글", desc: "회고 · 기술 · 영어 학습을 기록합니다." },
+  en: { title: "Writing", desc: "Notes, engineering, and English learning." },
 } as const;
 
 export function WritingIndex({ lang = "ko" }: { lang?: Lang }) {
@@ -15,7 +15,7 @@ export function WritingIndex({ lang = "ko" }: { lang?: Lang }) {
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{tx.title}</h1>
       <p className="mt-2 text-muted">{tx.desc}</p>
       <div className="mt-8">
-        <PostList posts={posts} lang={lang} />
+        <PostsBrowser posts={posts} lang={lang} />
       </div>
     </div>
   );

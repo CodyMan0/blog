@@ -3,8 +3,11 @@ import path from "node:path";
 import matter from "gray-matter";
 import readingTime from "reading-time";
 import type { Lang } from "./config";
+import { CATEGORIES, type Category } from "./categories";
 
 const CONTENT_DIR = path.join(process.cwd(), "content");
+
+export type { Category };
 
 export type PostMeta = {
   slug: string;
@@ -14,6 +17,7 @@ export type PostMeta = {
   date: string; // 원본 문자열 (표시용)
   dateValue: number; // 정렬용 타임스탬프
   tags: string[];
+  category: Category;
   draft: boolean;
   readingMinutes: number;
 };
@@ -28,6 +32,9 @@ function toMeta(lang: Lang, slug: string, raw: string): Post {
   const { data, content } = matter(raw);
   const date = String(data.date ?? "");
   const parsed = new Date(date).getTime();
+  const category: Category = CATEGORIES.includes(data.category as Category)
+    ? (data.category as Category)
+    : "회고";
   return {
     slug,
     lang,
@@ -36,6 +43,7 @@ function toMeta(lang: Lang, slug: string, raw: string): Post {
     date,
     dateValue: Number.isNaN(parsed) ? 0 : parsed,
     tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
+    category,
     draft: data.draft === true,
     readingMinutes: Math.max(1, Math.round(readingTime(content).minutes)),
     content,
