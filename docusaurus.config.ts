@@ -3,38 +3,6 @@ import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 import tailwindPlugin from "./plugins/tailwind-config.cjs";
 
-type TItem = {
-  type: string;
-  id: string;
-};
-
-function reverseBasedOnDate(items: Array<TItem>) {
-  return items.sort((a, b) => {
-    const dateA = a.id.split("/")[1];
-    const dateB = b.id.split("/")[1];
-    return dateB.localeCompare(dateA);
-  });
-}
-
-function reverseSidebarItems(items) {
-  const result = items.map((item) => {
-    if (item.type === "category") {
-      return { ...item, items: reverseBasedOnDate(item.items) };
-    }
-    return item;
-  });
-
-  return result;
-}
-
-// 스터디 섹션은 로컬(dev)에서만 노출하고 프로덕션 빌드(배포)에서는 숨깁니다.
-// 주의: study 문서를 전부 draft 처리하면 study 플러그인 인스턴스의 문서가 0개가 되어
-// 빌드가 getMainDocId 단계에서 크래시합니다. 따라서 프로덕션에서는 플러그인 자체와
-// 네비바 링크를 함께 제거해야 합니다. (SHOW_STUDY=true 로 강제 노출 가능)
-const showStudy =
-  process.env.SHOW_STUDY === "true" ||
-  (process.env.SHOW_STUDY !== "false" && process.env.NODE_ENV !== "production");
-
 const config: Config = {
   i18n: {
     defaultLocale: "ko",
@@ -54,49 +22,12 @@ const config: Config = {
   organizationName: "codyMan0", // Usually your GitHub org/user name.
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
-  plugins: [
-    tailwindPlugin,
-    [
-      "@docusaurus/plugin-content-docs",
-      {
-        id: "career",
-        path: "career",
-        routeBasePath: "career",
-        sidebarPath: "./sidebarsCareer.ts",
-        showLastUpdateTime: true,
-      },
-    ],
-    ...(showStudy
-      ? [
-          [
-            "@docusaurus/plugin-content-docs",
-            {
-              id: "study",
-              path: "study",
-              routeBasePath: "study",
-              sidebarPath: "./sidebarsStudy.ts",
-              showLastUpdateTime: true,
-            },
-          ],
-        ]
-      : []),
-  ],
+  plugins: [tailwindPlugin],
   presets: [
     [
       "@docusaurus/preset-classic",
       {
-        docs: {
-          sidebarPath: "./sidebars.ts",
-          showLastUpdateTime: true,
-          tags: "./tags.yml",
-          async sidebarItemsGenerator({
-            defaultSidebarItemsGenerator,
-            ...args
-          }) {
-            const sidebarItems = await defaultSidebarItemsGenerator(args);
-            return reverseSidebarItems(sidebarItems);
-          },
-        },
+        docs: false,
         blog: {
           showReadingTime: true,
           postsPerPage: 1,
@@ -106,6 +37,10 @@ const config: Config = {
         },
         theme: {
           customCss: "./src/css/custom.css",
+        },
+        gtag: {
+          trackingID: "G-EFSWE9J3R2",
+          anonymizeIP: true,
         },
         sitemap: {
           lastmod: "date",
@@ -191,23 +126,6 @@ const config: Config = {
     navbar: {
       title: "나만의 온실",
       items: [
-        {
-          type: "docSidebar",
-          sidebarId: "docSidebar",
-          position: "left",
-          label: "관심사",
-        },
-        ...(showStudy
-          ? [
-              {
-                type: "docSidebar" as const,
-                sidebarId: "studySidebar",
-                docsPluginId: "study",
-                position: "left" as const,
-                label: "스터디",
-              },
-            ]
-          : []),
         { to: "/blog", label: "회고", position: "left" as const },
         {
           href: "https://github.com/CodyMan0",
