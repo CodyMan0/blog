@@ -26,10 +26,10 @@ export function buildPostMetadata(lang: Lang, slug: string): Metadata {
       publishedTime: post.date,
       authors: [siteConfig.nameEn],
       tags: post.tags,
-      images: [{ url: siteConfig.avatar }],
+      images: [{ url: siteConfig.ogImage }],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: post.title,
       description: post.description,
     },

@@ -47,6 +47,8 @@ export const siteConfig = {
     ],
   },
   avatar: "/img/profile.png",
+  // 공유(OG/트위터) 미리보기 이미지 — 얼굴 대신 하늘 사진
+  ogImage: "/img/sky-bg.jpg",
   social: {
     github: "https://github.com/CodyMan0",
     linkedin: "https://www.linkedin.com/in/brian0",

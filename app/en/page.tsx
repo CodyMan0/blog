@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     title: `${siteConfig.nameEn} — ${siteConfig.taglineEn}`,
     description: siteConfig.descriptionEn,
-    images: [{ url: siteConfig.avatar, width: 512, height: 512, alt: siteConfig.nameEn }],
+    images: [{ url: siteConfig.ogImage, width: 1920, height: 1282, alt: siteConfig.nameEn }],
   },
 };
 
