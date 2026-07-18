@@ -7,7 +7,7 @@ import { PostArticle } from "@/components/post-article";
 type Params = { slug: string };
 
 export function generateStaticParams(): Params[] {
-  return getPostSlugs("ko").map((slug) => ({ slug }));
+  return getPostSlugs("en").map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -16,12 +16,12 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  return buildPostMetadata("ko", slug);
+  return buildPostMetadata("en", slug);
 }
 
 export default async function Page({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
-  const post = getPost("ko", slug);
+  const post = getPost("en", slug);
   if (!post) notFound();
-  return <PostArticle post={post} lang="ko" />;
+  return <PostArticle post={post} lang="en" />;
 }

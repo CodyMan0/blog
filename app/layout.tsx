@@ -17,9 +17,10 @@ export const metadata: Metadata = {
     template: `%s · ${siteConfig.name}`,
   },
   description: siteConfig.description,
+  keywords: siteConfig.keywords.ko,
   authors: [{ name: siteConfig.nameEn, url: siteConfig.url }],
   creator: siteConfig.nameEn,
-  alternates: { canonical: "/" },
+  alternates: { canonical: "/", languages: { ko: "/", en: "/en" } },
   openGraph: {
     type: "website",
     locale: "ko_KR",
@@ -69,6 +70,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="" />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
+        />
+      </head>
       <body className="flex min-h-full flex-col">
         <ThemeProvider>
           <Header />

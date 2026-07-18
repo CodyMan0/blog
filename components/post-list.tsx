@@ -1,14 +1,21 @@
 import Link from "next/link";
 import type { PostMeta } from "@/lib/posts";
+import { writingHref, type Lang } from "@/lib/config";
 import { formatShort } from "@/lib/format";
 
-export function PostList({ posts }: { posts: PostMeta[] }) {
+export function PostList({
+  posts,
+  lang = "ko",
+}: {
+  posts: PostMeta[];
+  lang?: Lang;
+}) {
   return (
     <ul className="flex flex-col">
       {posts.map((post) => (
         <li key={post.slug}>
           <Link
-            href={`/writing/${post.slug}`}
+            href={writingHref(lang, post.slug)}
             className="group flex items-baseline gap-4 border-b border-border py-3.5 transition-colors hover:border-accent"
           >
             <span className="w-16 shrink-0 font-mono text-sm tabular-nums text-muted">
