@@ -41,6 +41,11 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
+  verification: {
+    other: {
+      "naver-site-verification": "c0c4bc608b4c9f22fcd573cdbbb8bdec6544577e",
+    },
+  },
 };
 
 const personLd = {
