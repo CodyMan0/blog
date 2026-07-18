@@ -1,0 +1,208 @@
+---
+title: Docusaurus에서 Next.js App Router로 블로그 마이그레이션한 기록
+authors: me
+description: "MDX 파이프라인, i18n 라우팅, SEO, 301 리다이렉트, 그리고 배포에서 만난 진짜 함정들"
+tags: [마이그레이션, Next.js, 블로그, SEO]
+keywords: [Docusaurus, Next.js 마이그레이션, MDX, i18n, 301 리다이렉트, 블로그 SEO]
+date: 2026-07-18
+draft: true
+---
+
+개발 블로그를 Docusaurus v3에서 Next.js 16 App Router로 옮겼다. 글 17편 + 영문 번역 15편을 들고 이사하는 과정이었다. 왜 옮겼는지, 어떻게 구성했는지, 그리고 어디서 막혔는지를 순서대로 정리한다. 특히 마지막 "함정" 섹션은 나처럼 Vercel 배포 직전에 빌드가 터지는 사람에게 도움이 될 것이다.
+
+## 왜 옮겼나
+
+Docusaurus는 기술 문서 사이트에 최적화된 프레임워크다. 블로그 기능도 있지만, 레이아웃을 마음대로 바꾸려면 Swizzling이라는 방식으로 내부 컴포넌트를 꺼내야 한다. 커스터마이징할수록 Docusaurus가 제공하는 편의보다 내가 감수해야 할 제약이 커졌다.
+
+Next.js App Router로 오면 라우팅·레이아웃·SEO 제어권이 완전히 내 손에 들어온다. 대신 MDX 파이프라인, i18n, 사이트맵은 직접 만들어야 한다. 그 트레이드오프를 감수할 만하다고 판단했다.
+
+## 콘텐츠 파이프라인: MDX
+
+### 파일 구조
+
+```
+content/
+  ko/   ← 한국어 원문
+  en/   ← 영문 번역
+```
+
+MDX 파일은 `gray-matter`로 프론트매터를 파싱하고, `reading-time`으로 읽기 시간을 계산한다. 렌더링은 `next-mdx-remote/rsc`를 사용한다. RSC(React Server Components) 환경에서 동작하는 버전이라 `serialize` → `MDXRemote` 패턴이 아니라 단순히 `await compileMDX()`로 처리된다.
+
+```ts
+import { compileMDX } from 'next-mdx-remote/rsc'
+import remarkGfm from 'remark-gfm'
+import rehypeSlug from 'rehype-slug'
+import rehypeAutolinkHeadings from 'rehype-autolink-headings'
+import rehypePrettyCode from 'rehype-pretty-code'
+
+const { content, frontmatter } = await compileMDX({
+  source: rawMdx,
+  options: {
+    parseFrontmatter: true,
+    mdxOptions: {
+      remarkPlugins: [remarkGfm],
+      rehypePlugins: [
+        rehypeSlug,
+        [rehypeAutolinkHeadings, { behavior: 'wrap' }],
+        [rehypePrettyCode, { theme: 'github-dark' }],
+      ],
+    },
+  },
+})
+```
+
+코드 하이라이팅은 `rehype-pretty-code` + Shiki 조합이다. Prism 기반이던 Docusaurus에서 넘어오면서 테마도 깔끔하게 교체할 수 있었다.
+
+### Docusaurus 문법 제거
+
+Docusaurus MDX에서 HTML 주석을 `<!-- -->` 형태로 쓸 수 있었는데, Next.js MDX에서는 JSX 주석 `{/* */}`만 허용된다. 글 전체를 순회하며 치환하는 작업이 필요했다.
+
+## i18n 라우팅
+
+한국어를 루트(`/`)에, 영어를 `/en` 경로에 두는 방식으로 구성했다.
+
+```
+app/
+  layout.tsx          ← 공통 레이아웃
+  writing/[slug]/     ← 한국어 포스트
+  en/
+    writing/[slug]/   ← 영어 포스트
+```
+
+각 언어 라우트는 같은 컴포넌트를 재사용하고, `lang` prop 하나로 언어를 전달한다. 언어 토글 버튼은 현재 slug를 유지한 채 `/en/writing/slug` ↔ `/writing/slug`를 오가도록 만들었다.
+
+SEO를 위한 `hreflang` alternates는 각 페이지의 `generateMetadata`에서 주입했다.
+
+```ts
+alternates: {
+  languages: {
+    'ko': `/writing/${slug}`,
+    'en': `/en/writing/${slug}`,
+  },
+},
+```
+
+## SEO: 메타데이터·JSON-LD·사이트맵
+
+### Next Metadata API
+
+Next.js 13+의 `Metadata` 타입을 사용하면 `<head>` 를 직접 건드릴 필요가 없다. `generateMetadata` 함수에서 포스트 프론트매터를 읽어 제목·설명·OG 이미지를 동적으로 생성한다.
+
+### JSON-LD
+
+구조화 데이터는 `<script type="application/ld+json">` 태그로 직접 주입했다. 블로그 포스트에는 `BlogPosting`, 사이트 전체에는 `WebSite` + `Person` 스키마를 적용했다. 브레드크럼도 `BreadcrumbList`로 마크업했다.
+
+### sitemap.ts + robots.ts
+
+`app/sitemap.ts`에서 모든 포스트 slug를 읽어 URL 목록을 반환한다. 한국어와 영어 URL을 모두 포함하고, 각 항목에 `alternates.languages`로 hreflang을 명시했다.
+
+```ts
+// app/sitemap.ts (simplified)
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const posts = await getAllPosts('ko')
+  return posts.map((post) => ({
+    url: `https://example.com/writing/${post.slug}`,
+    lastModified: post.date,
+    alternates: {
+      languages: {
+        ko: `https://example.com/writing/${post.slug}`,
+        en: `https://example.com/en/writing/${post.slug}`,
+      },
+    },
+  }))
+}
+```
+
+## 기존 URL 보존: 301 리다이렉트
+
+Docusaurus는 기본적으로 `/blog/:slug` 경로를 쓴다. 새 블로그는 `/writing/:slug`로 바꿨다. SEO 관점에서 기존 URL이 죽으면 쌓아둔 백링크와 인덱스가 날아간다. `next.config.ts`에서 301 영구 리다이렉트로 처리했다.
+
+```ts
+// next.config.ts
+async redirects() {
+  return [
+    {
+      source: '/blog/:slug',
+      destination: '/writing/:slug',
+      permanent: true,
+    },
+    {
+      source: '/en/blog/:slug',
+      destination: '/en/writing/:slug',
+      permanent: true,
+    },
+  ]
+},
+```
+
+## 배포 함정들
+
+이 섹션이 이 글의 핵심이다. 로컬에서 잘 돌던 빌드가 Vercel에서 터지는 경우들이다.
+
+### 1. `vercel.json`에 프레임워크 명시
+
+Vercel은 레포를 자동으로 감지해 빌드 설정을 추론한다. 문제는 이 레포가 원래 Docusaurus였다는 점이다. Vercel 대시보드에는 아직 Docusaurus 빌드 설정(`npm run build` → `build/` 폴더)이 남아 있었다. Next.js 배포 후 다음 오류가 발생했다.
+
+```
+Error: No Output Directory named "build" found after the Build completed.
+```
+
+`vercel.json`에 프레임워크를 명시해서 해결했다.
+
+```json
+{
+  "framework": "nextjs"
+}
+```
+
+이 한 줄이 Vercel에게 "Next.js 프로젝트로 취급하라"고 명시적으로 알려준다.
+
+### 2. `as const`로 굳어버린 keywords 타입
+
+`siteConfig.ts`에서 메타데이터 기본값을 정의할 때 `as const`를 썼다.
+
+```ts
+export const siteConfig = {
+  keywords: ['Next.js', '블로그', '프론트엔드'],
+} as const
+```
+
+`as const`는 배열을 `readonly ['Next.js', '블로그', '프론트엔드']`로 고정한다. 그런데 Next.js의 `Metadata.keywords`는 `string[]`를 기대한다. 로컬 `tsc`에서는 통과했지만 Vercel 클린 빌드에서 타입 에러로 빌드가 실패했다.
+
+```ts
+// 에러: Type 'readonly string[]' is not assignable to type 'string[]'
+keywords: siteConfig.keywords,
+
+// 수정: 스프레드로 새 배열 생성
+keywords: [...siteConfig.keywords],
+```
+
+스프레드 한 번으로 `readonly` 제약이 풀린다.
+
+### 3. Tailwind v4 + `@import` 순서 충돌
+
+Tailwind v4는 `@import "tailwindcss"`를 CSS 파일 상단에 인라인으로 선언한다. 문제는 그 아래에 `@import url('...')` 형태의 폰트 임포트를 두면 CSS 파서가 규칙을 위반한다고 판단해 폰트가 로드되지 않는 것이다.
+
+```css
+/* 이렇게 하면 Tailwind v4에서 폰트가 안 로드됨 */
+@import "tailwindcss";
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+```
+
+CSS 규칙상 `@import`는 다른 규칙보다 앞에 와야 하는데, Tailwind v4가 `@import "tailwindcss"` 내부에서 레이어 규칙을 펼치는 방식이 이 순서를 깨뜨린다. 해결책은 폰트를 CSS `@import`가 아니라 `<link>` 태그로 로드하는 것이다.
+
+```tsx
+// app/layout.tsx
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+/>
+```
+
+CSS 레이어와 무관하게 브라우저가 직접 폰트 시트를 요청하므로 충돌이 없다.
+
+## 결론
+
+Docusaurus에서 Next.js App Router로의 마이그레이션은 "더 많은 제어권, 더 많은 책임"의 교환이다. MDX 파이프라인, 사이트맵, 리다이렉트를 직접 만드는 것이 번거롭지만, 레이아웃이나 라우팅에서 프레임워크 제약에 막히는 일이 사라졌다.
+
+이 글에서 다룬 세 가지 배포 함정—프레임워크 감지 오류, `readonly` 타입 불일치, Tailwind v4 `@import` 충돌—은 검색해서 바로 답이 나오지 않는 조합 문제였다. 같은 스택으로 마이그레이션하는 분들에게 이 기록이 시간을 아껴주길 바란다.

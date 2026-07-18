@@ -1,0 +1,213 @@
+---
+title: Migrating a Blog from Docusaurus to Next.js App Router
+authors: me
+description: "MDX pipeline, i18n routing, SEO, 301 redirects, and the real gotchas I hit during deployment"
+tags: [migration, Next.js, blog, SEO]
+keywords: [Docusaurus, Next.js migration, MDX, i18n, 301 redirect, blog SEO]
+date: 2026-07-18
+draft: true
+---
+
+I just migrated my dev blog from Docusaurus v3 to Next.js 16 App Router — 17 posts plus 15 English translations. Here's a full account of why I did it, how the pieces fit together, and where things broke. The "gotchas" section at the end is the real meat: three deployment failures that don't have a single clean answer on Stack Overflow.
+
+## Why Migrate
+
+Docusaurus is excellent for technical documentation sites. Its blog feature works, but customizing layouts requires Swizzling — ejecting internal components and taking over their maintenance. The more I customized, the more I was fighting the framework rather than using it.
+
+Moving to Next.js App Router puts routing, layouts, and SEO entirely in my hands. The cost is that MDX rendering, i18n, and sitemaps are no longer free — I have to build them. That tradeoff felt worth it.
+
+## Content Pipeline: MDX
+
+### File Structure
+
+```
+content/
+  ko/   ← Korean originals
+  en/   ← English translations
+```
+
+Frontmatter is parsed by `gray-matter`; reading time comes from the `reading-time` package. Rendering uses `next-mdx-remote/rsc` — the React Server Components variant, which means the old `serialize` → `MDXRemote` pattern is replaced by a single `await compileMDX()` call.
+
+```ts
+import { compileMDX } from 'next-mdx-remote/rsc'
+import remarkGfm from 'remark-gfm'
+import rehypeSlug from 'rehype-slug'
+import rehypeAutolinkHeadings from 'rehype-autolink-headings'
+import rehypePrettyCode from 'rehype-pretty-code'
+
+const { content, frontmatter } = await compileMDX({
+  source: rawMdx,
+  options: {
+    parseFrontmatter: true,
+    mdxOptions: {
+      remarkPlugins: [remarkGfm],
+      rehypePlugins: [
+        rehypeSlug,
+        [rehypeAutolinkHeadings, { behavior: 'wrap' }],
+        [rehypePrettyCode, { theme: 'github-dark' }],
+      ],
+    },
+  },
+})
+```
+
+Code highlighting is handled by `rehype-pretty-code` backed by Shiki. Coming from Docusaurus's Prism-based highlighter, the theme selection is much cleaner.
+
+### Stripping Docusaurus-isms
+
+Docusaurus MDX accepts HTML comments (`<!-- -->`). Next.js MDX only allows JSX comments (`{/* */}`). Every post needed a pass to replace them.
+
+## i18n Routing
+
+Korean lives at the root (`/`), English at `/en`. The route tree is duplicated:
+
+```
+app/
+  layout.tsx
+  writing/[slug]/     ← Korean posts
+  en/
+    writing/[slug]/   ← English posts
+```
+
+Both route branches share the same components, driven by a `lang` prop. The language toggle preserves the current slug as it switches between `/writing/slug` and `/en/writing/slug`.
+
+`hreflang` alternates are injected in each page's `generateMetadata`:
+
+```ts
+alternates: {
+  languages: {
+    'ko': `/writing/${slug}`,
+    'en': `/en/writing/${slug}`,
+  },
+},
+```
+
+## SEO: Metadata, JSON-LD, and Sitemap
+
+### Next Metadata API
+
+Next.js 13+ `Metadata` type handles `<head>` without manual JSX. `generateMetadata` reads post frontmatter and returns title, description, and OG image dynamically — no extra library needed.
+
+### JSON-LD
+
+Structured data is injected as a `<script type="application/ld+json">` tag. Each post gets a `BlogPosting` schema; the root layout carries `WebSite` + `Person`. Breadcrumbs use `BreadcrumbList`.
+
+### sitemap.ts + robots.ts
+
+`app/sitemap.ts` reads all post slugs and returns a URL list. Both Korean and English URLs are included, each with `alternates.languages` for hreflang:
+
+```ts
+// app/sitemap.ts (simplified)
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const posts = await getAllPosts('ko')
+  return posts.map((post) => ({
+    url: `https://example.com/writing/${post.slug}`,
+    lastModified: post.date,
+    alternates: {
+      languages: {
+        ko: `https://example.com/writing/${post.slug}`,
+        en: `https://example.com/en/writing/${post.slug}`,
+      },
+    },
+  }))
+}
+```
+
+## Preserving Old URLs: 301 Redirects
+
+Docusaurus defaults to `/blog/:slug`. The new blog uses `/writing/:slug`. From an SEO standpoint, letting old URLs die means losing backlinks and existing index equity. Permanent redirects in `next.config.ts` handle it:
+
+```ts
+// next.config.ts
+async redirects() {
+  return [
+    {
+      source: '/blog/:slug',
+      destination: '/writing/:slug',
+      permanent: true,
+    },
+    {
+      source: '/en/blog/:slug',
+      destination: '/en/writing/:slug',
+      permanent: true,
+    },
+  ]
+},
+```
+
+`permanent: true` tells Next.js to emit a 301. Vercel honors it at the edge, so no origin hit is needed for redirected requests.
+
+## Deployment Gotchas
+
+This is the part worth bookmarking. Each of these broke only on Vercel's clean build — not locally.
+
+### 1. Force the Framework in `vercel.json`
+
+Vercel auto-detects the framework from the repository. The problem: this repo used to be a Docusaurus site. Vercel's project settings still had the Docusaurus build configuration pointing at the `build/` output directory. After deploying Next.js, the build succeeded but Vercel couldn't find the output:
+
+```
+Error: No Output Directory named "build" found after the Build completed.
+```
+
+The fix is a single line in `vercel.json`:
+
+```json
+{
+  "framework": "nextjs"
+}
+```
+
+This overrides whatever Vercel inferred from history and tells it to treat the project as Next.js, expecting `.next/` as the output directory.
+
+### 2. `as const` Makes Keywords a Readonly Tuple
+
+Site-wide metadata defaults were defined with `as const`:
+
+```ts
+export const siteConfig = {
+  keywords: ['Next.js', 'blog', 'frontend'],
+} as const
+```
+
+`as const` freezes the array as `readonly ['Next.js', 'blog', 'frontend']`. Next.js's `Metadata.keywords` expects `string[]`. TypeScript accepted this locally — likely because the local `tsconfig` was slightly more permissive — but Vercel's clean build runs a strict `tsc` check and failed:
+
+```
+Type 'readonly string[]' is not assignable to type 'string[]'
+```
+
+The fix is a spread to produce a new mutable array:
+
+```ts
+// Before — type error on clean build
+keywords: siteConfig.keywords,
+
+// After — spread removes the readonly constraint
+keywords: [...siteConfig.keywords],
+```
+
+### 3. Tailwind v4 `@import` Order Breaks Font Loading
+
+Tailwind v4 uses `@import "tailwindcss"` as an inline declaration at the top of the CSS file. Adding a font `@import url(...)` after it violates CSS parsing rules — `@import` statements must precede all other rules, and Tailwind v4's layer expansion breaks that assumption.
+
+```css
+/* Font does NOT load with Tailwind v4 */
+@import "tailwindcss";
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+```
+
+The fix is to move the font out of CSS entirely and load it via a `<link>` tag in `app/layout.tsx`:
+
+```tsx
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+/>
+```
+
+A `<link>` tag is independent of the CSS layer cascade, so there is no ordering conflict.
+
+## Closing Thoughts
+
+Migrating from Docusaurus to Next.js App Router is a trade: full control in exchange for building the pieces Docusaurus gave you for free. The MDX pipeline, sitemap, and redirects are not hard to implement — but they do take time, and the gaps only show up once you try to ship.
+
+The three deployment failures above — framework detection, `readonly` type mismatch, and Tailwind v4 `@import` — each took longer to debug than they should have because they only appeared on Vercel's clean build. If you're doing the same migration, I hope this record saves you a few hours.

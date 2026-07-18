@@ -1,0 +1,156 @@
+---
+title: Why flutter_secure_storage Hangs on Safari Web (and How to Fix It)
+authors: me
+description: "How Safari ITP's iframe storage partitioning causes flutter_secure_storage to hang at crypto.subtle — and how we fixed it with an in-memory token strategy"
+tags: [troubleshooting, Safari, Flutter]
+keywords: [flutter_secure_storage, Safari ITP, iframe auth, crypto.subtle, web authentication]
+date: 2026-07-18
+draft: true
+---
+
+## flutter_secure_storage on Safari Web: the silent hang
+
+While running a Flutter-web app embedded inside a Next.js iframe, we hit a frustrating bug that only reproduced on Safari. After completing signup or login in the Next.js layer, the Flutter-web map area stayed in an unauthenticated state — as if the auth event had never happened. Chrome worked perfectly.
+
+This post documents why `flutter_secure_storage` hangs silently on Safari in a nested iframe setup, and how we resolved it using an in-memory token approach.
+
+---
+
+## Environment
+
+- **Architecture**: `Next.js (parent iframe) → Flutter-web (child iframe)` — nested cross-origin iframes
+- **Flutter package**: `flutter_secure_storage` (web implementation)
+- **Affected browser**: Safari (including iOS Safari)
+- **Unaffected browser**: Chrome
+
+Some context on the architecture: the service was mid-migration from Flutter-web to Next.js. Rather than doing a hard cutover, we placed Next.js at the top level and kept Flutter-web running inside a child iframe. When authentication happened in Next.js, a PostMessage would deliver the token to Flutter-web.
+
+---
+
+## Symptom
+
+After completing signup or login in Next.js:
+
+1. The Next.js UI correctly showed the logged-in state
+2. **The Flutter-web map stayed in an unauthenticated state**
+3. API requests from Flutter-web had no auth header, so auth-gated map features did not work
+
+Since Chrome handled the exact same flow without issues, a Safari-specific behavior was immediately suspect.
+
+---
+
+## Diagnosis: Why does the hang occur?
+
+### Step 1: Tracing the token delivery flow
+
+Breaking the auth flow into steps:
+
+1. Signup completes in Next.js → `postMessage` delivers the token to Flutter-web
+2. Flutter-web receives the token → attempts to write it via `FlutterSecureStorage`
+3. Later API calls → Flutter-web attempts to read the token from `FlutterSecureStorage`
+
+The failure was happening silently between steps 2 and 3.
+
+### Step 2: Understanding the flutter_secure_storage web implementation
+
+The web implementation of `flutter_secure_storage` uses **WebCrypto + IndexedDB** internally. It calls `crypto.subtle` to generate and wrap encryption keys, then stores the encrypted value in IndexedDB.
+
+```dart
+// Before: hangs on Safari inside an iframe
+const storage = FlutterSecureStorage();
+var opnToken = await storage.read(key: "OPN_OPNDOCTOR_KEY_AUTH_OPN_TOKEN");
+```
+
+On Safari, this `await` never resolves and never rejects. It just **hangs indefinitely**.
+
+### Step 3: Safari ITP's third-party storage partitioning
+
+The root cause is Safari's **ITP (Intelligent Tracking Prevention)**.
+
+Safari ITP aggressively partitions storage access from third-party contexts — i.e., cross-origin iframes. The causal chain:
+
+```
+Safari ITP active
+  └─ iframe requests third-party IndexedDB access → partitioned/blocked
+       └─ WebCrypto (crypto.subtle) call returns a hanging Promise
+            └─ FlutterSecureStorage.read() / .write() waits forever
+                 └─ token never stored or retrieved
+                      └─ API requests have no auth header
+                           └─ map stays unauthenticated
+```
+
+The critical detail: **`crypto.subtle` does not throw an error**. It returns a Promise that never settles. No exception is raised, no error is logged. The Flutter app looks like it's still processing normally. This makes the bug very hard to spot — especially when Chrome (which is less strict about third-party storage in iframes) shows no problem at all.
+
+{/* TODO: fill in — any observable output from Safari DevTools, e.g. IndexedDB access warnings or network requests missing auth headers */}
+
+---
+
+## Fix: In-memory token + bidirectional auth sync
+
+### Core idea
+
+Remove all direct `FlutterSecureStorage` reads and replace them with an in-memory token held by `AuthManager`.
+
+### Flutter side: remove FlutterSecureStorage reads
+
+```dart
+// Before: hangs on Safari inside an iframe
+const storage = FlutterSecureStorage();
+var opnToken = await storage.read(key: "OPN_OPNDOCTOR_KEY_AUTH_OPN_TOKEN");
+
+// After: use in-memory token
+// (FlutterSecureStorage can hang in Safari iframes — do not use directly)
+var opnToken = AuthManager().opn_token;
+```
+
+`AuthManager().opn_token` is an in-memory value that lives for the duration of the app session. Because it involves no storage I/O, it is completely unaffected by Safari ITP.
+
+### Next.js side: centralize bidirectional auth sync
+
+Replacing the Flutter storage reads is only half the job. We also needed a reliable path for the token to reach `AuthManager` in the first place when authentication originates in Next.js.
+
+We introduced `useAuthMessageHandlers` — a hook that centralizes all PostMessage-based auth events between Flutter-web and Next.js, handling both directions (Next.js → Flutter-web and Flutter-web → Next.js).
+
+```ts
+// Next.js: centralized bidirectional auth sync with Flutter-web
+// useAuthMessageHandlers — unified handler for auth PostMessage events
+{/* TODO: fill in — actual useAuthMessageHandlers implementation */}
+```
+
+The revised auth flow:
+
+1. Login/signup completes in Next.js
+2. `useAuthMessageHandlers` sends the token to Flutter-web via PostMessage
+3. Flutter-web stores the token **in memory** via `AuthManager().opn_token` — no IndexedDB access
+4. Subsequent API calls read from `AuthManager().opn_token` → auth header included correctly
+
+---
+
+## Verification
+
+After deploying the fix, the following scenarios were confirmed on Safari:
+
+- [ ] Safari: Next.js signup → Flutter-web map immediately reflects authenticated state
+- [ ] Safari: Next.js login → Flutter-web map immediately reflects authenticated state
+- [ ] Chrome: same flows continue to work as before
+- [ ] Hard refresh: Next.js reinjects the token via PostMessage → Flutter-web recovers correctly
+
+---
+
+## What we learned
+
+**1. Safari ITP's crypto.subtle hang produces no error**
+
+A `try-catch` around the `await` won't help — the catch block is never reached. The Promise simply never settles. If you have a "works on Chrome, silently fails on Safari" pattern in an iframe, ITP-related storage blocking should be your first hypothesis.
+
+**2. Nested iframes require a different storage strategy**
+
+`flutter_secure_storage` is a solid choice for native apps. On the web, especially inside a cross-origin iframe, its WebCrypto + IndexedDB combination is unreliable on Safari. The deeper the iframe nesting, the more aggressively Safari applies partitioning.
+
+**3. "Works on Chrome" hides Safari bugs**
+
+Our QA was Chrome-heavy, so the issue wasn't caught before deployment. Any feature involving nested iframes and authentication should treat Safari testing as a hard requirement, not an afterthought.
+
+**4. The tradeoff of in-memory tokens**
+
+In-memory tokens bypass Safari ITP cleanly, but they don't survive a page refresh. The solution requires a complementary initialization path: when Flutter-web loads (or the page is refreshed), the parent Next.js must re-inject the token via PostMessage. The `useAuthMessageHandlers` bidirectional sync handles this case.

@@ -1,0 +1,115 @@
+---
+title: How We Migrated a Live Flutter-Web Service to Next.js Incrementally
+authors: me
+description: "Zero-downtime Flutter-web to Next.js migration using nested iframes, PostMessage, and feature flags — 15.2x SEO impressions achieved"
+tags: [migration, Next.js, Flutter, SEO]
+keywords: [Flutter web, Next.js migration, incremental frontend migration, iframe, feature flags, SEO]
+date: 2026-07-18
+draft: true
+---
+
+## The Problem: Flutter-Web and SEO Are Incompatible
+
+OpenDoctor is a medical real-estate platform where doctors and healthcare professionals analyze clinic locations and search for properties. The entire service was built on Flutter-web.
+
+Flutter-web renders via canvas, which means search engines cannot crawl its content. The numbers told the story clearly:
+
+- **Monthly impressions stuck at 9,390** — 313 daily impressions, roughly 10 actual clicks per day
+- No organic search path existed for queries like _"Gangnam dermatology opening analysis"_
+- FCP **15.9 seconds**, LCP **18 seconds** — the first meaningful content took over 15 seconds to appear
+
+Maintainability was also painful. Changing anything in the map area required running three projects simultaneously, and confirming a UI change in the dev server meant waiting **15–30 seconds** every time.
+
+## The Constraint: Can't Rewrite Everything at Once
+
+Tearing out Flutter-web in one go was not an option. Two hard constraints:
+
+1. **Live service** — real customers using it in real-time
+2. **Scope** — multiple domains: location analysis, listings, clinics, reports, and more
+
+"Zero downtime, piece by piece" — this constraint drove every design decision that followed.
+
+## Solution Design: Nested Iframe Architecture
+
+### Phase 1 [July 2025] — Embed React inside Flutter
+
+The first step was building an environment where React components could live inside Flutter-web. Small features (consultation request forms, etc.) were replaced with React, establishing the groundwork for incremental replacement.
+
+### Phase 2 [November 2025] — Promote Next.js to the Top
+
+As SEO became urgent, the team agreed to make a more fundamental architectural change.
+
+![img alt="asis-tobe"](/img/study/asis-tobe.png)
+
+**Core idea**: Put Next.js at the top level (parent) to handle SEO, and embed the existing Flutter-web inside it as an iframe. Users see no change. Search engines index the SSR HTML from Next.js.
+
+```
+Next.js (parent — owns SEO)
+  └─ iframe: Flutter-web (existing service, unchanged)
+       └─ iframe: React (incremental replacement zone)
+```
+
+Parent-child communication runs over **PostMessage**. This required solving: cross-domain cookie/auth sync, URL synchronization, and handling the communication drop on hard refresh.
+
+{/* TODO: Add key PostMessage code snippet */}
+
+### Phase 3 [February 2026] — AI-Friendly Task Decomposition
+
+At the 50% mark, we shifted how we worked to accelerate the second half. The project had a lot of context that AI tools didn't know — "this part is an iframe," "state is managed this way," etc.
+
+**The fix**: break tasks into smaller pieces, inject only the context relevant to that specific task.
+
+![img alt="work-list"](/img/study/work-list.png)
+
+The insight that emerged: **how clearly you divide the problem before handing it to AI is what determines the outcome. Planning remains a human job.**
+
+### Phase 4 [March 2026] — Feature Flags as a Safety Net
+
+Near the finish line, a teammate proposed adding **feature flags** — a decision that proved its worth immediately.
+
+![img alt="feature-flag"](/img/study/feature-flag.png)
+
+- **Production**: an environment variable chooses whether to render the Next.js or Flutter version → instant rollback if anything breaks
+- **Development**: a UI toggle lets you switch between Next.js and Flutter side-by-side to spot missing features or bugs fast
+
+This meant every domain migration could be shipped and verified safely, with a one-variable escape hatch always available.
+
+## How We Used AI
+
+Early in the migration, the workflow was manual: read backend DTOs and entity definitions, trace how each field mapped to UI, then reimplement in Next.js by hand.
+
+From the midpoint onward, the process changed:
+
+1. Ask AI to analyze DTOs, entities, and existing screen designs
+2. Review AI's understanding and discuss the Next.js implementation approach together
+3. Let AI handle the implementation
+
+**"Humans plan, AI implements"** — this became the process that determined pace in the second half. The key to effective AI collaboration turned out to be the same thing as good engineering: narrow the context, define the task clearly.
+
+## Results
+
+{/* Measurement basis: architecture change date (Nov 11, 2025) as baseline; same ~6.7-month window before vs. after — Google Search Console + AWS Amplify deploy logs */}
+
+![img alt="migration_result"](/img/study/migration_result.png)
+
+| Metric | Before | After | Change |
+|--------|--------|-------|--------|
+| Google impressions | 9,730 | 148,000 | **15.2x ↑** (+1,421%) |
+| Google clicks | 4,280 | 7,180 | **1.67x ↑** (+67%) |
+| FCP | 15.9s | 1.0s | **16x faster** |
+| LCP | 18.0s | 5.4s | **3.4x faster** |
+| Deploy frequency | 92 / 6.7 mo | 180 / 6.7 mo | **~2x ↑** |
+
+SEO data from Google Search Console; deploy counts from AWS Amplify logs. Measurement window: ~6.7 months before vs. after the Nov 11, 2025 architecture change.
+
+The 2x deploy frequency is more than a number. It means customer feedback gets reflected in the product **the same day**, with no bottleneck.
+
+## What We Learned
+
+**Technically**: Nested iframes collide with Safari ITP (Intelligent Tracking Prevention). We encountered this firsthand: `FlutterSecureStorage` (which uses WebCrypto + IndexedDB under the hood) entered an infinite hang under Safari's third-party storage partitioning. The fix was removing direct storage reads and switching to in-memory token management via `AuthManager().opn_token`, with bidirectional auth sync unified through Next.js `useAuthMessageHandlers`.
+
+**Process-wise**: The foundation of incremental migration is "always being able to roll back." Without feature flags, every deploy would have been a gamble.
+
+**On AI collaboration**: AI is good at implementation but blind to project-specific context. Narrowing that context — breaking work into small, well-defined tasks — is ultimately the human's job, and it's also the key to getting AI to do its best work.
+
+> Replacing the technology stack of a running service without stopping it is like changing the wheels on a moving train. Architecture is everything.

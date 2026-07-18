@@ -1,0 +1,118 @@
+---
+title: From Cursor to Claude Code — A 10-Day Task Done in 5
+authors: me
+description: "An honest first-person account of switching from Cursor to Claude Code as a frontend developer"
+tags: [AI, tooling, productivity]
+keywords: [Claude Code, Cursor, AI coding, developer productivity, claude code review, cursor vs claude code]
+date: 2026-07-18
+draft: true
+---
+
+## Why I Switched
+
+Honestly, it wasn't my own decision to make the move.
+
+I'd been using Cursor for over three months through 2025. I wasn't using MCP properly — I'd just paste in Figma screenshots and say "implement this." The results weren't great, but at the time I didn't think that was strange.
+
+The trigger was an in-company AI study group. The company started an org-wide AI initiative, and thanks to a suggestion from my colleague Gyuseok, the entire dev team got approved for a Max plan. That's when I made the jump to Claude Code. ShoutOut to Gyuseok.
+
+I'd heard people say they'd "doubled their productivity with AI" and been skeptical. Until I tried it myself.
+
+---
+
+## What Actually Changed
+
+### The Numbers First
+
+At OpenDoctor, I had a task to implement two features: member sign-up and medical license verification. The scope looked like this:
+
+**Sign-up**
+- Screen components (publishing)
+- UI validation
+- Server communication
+- Backend API modifications
+- Flutter-web ↔ iframe-based auth communication
+
+**Medical license verification**
+- Screen components (publishing)
+- UI logic (e.g., error message after too many failed attempts)
+- Server communication
+
+Based on my six months of experience at the company, I estimated this at **1 sprint — 10 working days**. That was my honest read based on Cursor-era productivity.
+
+After switching to Claude Code: **2 days implementation + 3 days testing = 5 days total**. Exactly half.
+
+### Why It Got Faster
+
+A few factors drove this result.
+
+**1. Figma MCP**
+
+With Cursor, I was screenshotting Figma frames and pasting them in. With Claude Code and Figma MCP connected, the AI reads Figma directly. Since our design system lives in Figma, I built a custom publishing skill around it — and the output quality jumped noticeably. The conversation shifted from "implement this screen" to "implement this frame from the Figma file," and that specificity made a real difference.
+
+**2. `/add-dir` for multi-project context**
+
+Our service is mid-migration, so it has a lot of iframe communication: Next.js (parent) → Flutter-web → React. Touching auth in one place means understanding all three projects simultaneously.
+
+With Cursor, I could only open one project at a time. With Claude Code's `/add-dir` command, I pulled all three frontend codebases into a single session. I called it a 300% productivity increase — and that wasn't an exaggeration. Context-switching disappeared. The AI understood the cross-project connections and the nonsensical errors dropped sharply.
+
+**3. A well-written PRD**
+
+This is a collaboration factor, not a tooling one — but our PO Seongwook's PRD was excellent. When the AI works from a solid spec, intent never gets lost.
+
+**4. Letting go of familiarity**
+
+I stuck with Cursor for three months out of habit. Switching quickly, even when Claude Code felt unfamiliar, was itself a productivity gain.
+
+---
+
+## Where I Still Think About Using Cursor
+
+{/* TODO: Fill in with real experience (e.g., specific task types where Cursor still feels faster, whether you've ever switched back after the transition) */}
+
+Truthfully, Claude Code is my primary tool now. But there are a few situations where I still pause and think.
+
+For quick file navigation or in-editor inline edits, Cursor's editor integration feels more natural. Claude Code is terminal-based — getting comfortable with that took time. In the first two weeks, there were definitely moments of "is writing code via CLI actually the right way to work?"
+
+{/* TODO: Fill in with real experience (e.g., Cursor tab autocomplete vs Claude Code workflow comparison, specific examples where Cursor is still faster) */}
+
+---
+
+## Honest Downsides
+
+**Terminal-based onboarding friction**
+
+Cursor sits on top of VSCode — the learning curve is minimal. Claude Code is a CLI tool. If you're comfortable in the terminal, no problem. But there's a real "wait, how does this even work?" moment at the start. I'd recommend reading the official docs once before diving in.
+
+**Cost**
+
+{/* TODO: Fill in with real numbers (e.g., monthly cost change — actual billing for Cursor Pro vs Claude Code Max plan, whether company-sponsored or personally paid) */}
+
+I switched with the company footing the Max plan bill, so I had no out-of-pocket cost. If you're paying personally, you'll need to compare the plan structures directly against your usage patterns. The pricing models for Cursor Pro and Claude Code differ enough that it's worth estimating your daily usage before committing.
+
+**Context management**
+
+On long sessions, you can see the context window filling up. You need to develop a habit of chunking work and opening fresh sessions. Cursor has the same issue in practice, but Claude Code requires managing it more explicitly.
+
+---
+
+## Verdict — Worth Switching?
+
+**Yes.** With conditions.
+
+I'd strongly recommend the switch if:
+
+- Your work spans multiple projects simultaneously (monorepo, iframe communication, microfrontends)
+- You have heavy publishing work that involves referencing Figma constantly
+- Your team has well-organized PRDs or spec documents
+- You're comfortable in a terminal environment
+
+If the following applies, starting with Cursor is fine:
+
+- Most of your work is inline autocomplete within a single project
+- You're in a single-codebase environment
+- You want zero onboarding friction
+
+For me, the decisive factor was `/add-dir` — the ability to pull multiple projects into one session. In a multi-project environment tangled with iframe communication, that single feature completely changed my felt productivity. The 10-day estimate becoming a 5-day reality wasn't luck.
+
+The tool matters less than how you use it. Figma MCP connected, multi-project context injected, solid PRD in place — when those three clicked together, Claude Code was genuinely different.

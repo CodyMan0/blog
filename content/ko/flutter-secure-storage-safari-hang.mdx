@@ -1,0 +1,156 @@
+---
+title: flutter_secure_storage 웹 사파리에서 hang이 발생하는 이유와 해결법
+authors: me
+description: "Safari ITP의 iframe 스토리지 파티셔닝으로 flutter_secure_storage가 crypto.subtle에서 무한 대기하는 문제를 인메모리 토큰으로 해결한 트러블슈팅"
+tags: [트러블슈팅, Safari, Flutter]
+keywords: [flutter_secure_storage, Safari ITP, iframe 인증, crypto.subtle, 웹 인증]
+date: 2026-07-18
+draft: true
+---
+
+## flutter_secure_storage 웹 사파리에서 멈추는 문제를 만났다
+
+Flutter-web 앱을 Next.js iframe 안에 임베드해서 운영하던 중, 사파리에서만 재현되는 이상한 증상을 만났다. Next.js에서 회원가입 또는 로그인을 완료해도 Flutter-web 지도 영역의 인증 상태가 전혀 반영되지 않는 것이었다. 크롬에서는 아무 문제가 없었다.
+
+이 글은 `flutter_secure_storage`의 웹 구현체가 Safari에서 왜 hang 상태에 빠지는지, 그리고 어떻게 해결했는지를 정리한 트러블슈팅 기록이다.
+
+---
+
+## 재현 환경
+
+- **구조**: `Next.js(부모 iframe) → Flutter-web(자식 iframe)` 의 중첩 iframe 구조
+- **Flutter 패키지**: `flutter_secure_storage` (웹 구현체 사용)
+- **증상 브라우저**: Safari (iOS 포함)
+- **정상 브라우저**: Chrome
+
+서비스 아키텍처를 간략히 설명하면, Flutter-web에서 Next.js로 점진적 마이그레이션을 진행하는 과정에서 Next.js를 최상위 부모로, 기존 Flutter-web을 자식 iframe으로 배치한 구조다. 이 구조에서 Next.js에서 인증이 발생하면 PostMessage로 Flutter-web에 토큰을 전달하는 흐름이었다.
+
+---
+
+## 증상
+
+Next.js에서 회원가입 또는 로그인을 완료한 뒤:
+
+1. Next.js 쪽 UI는 정상적으로 로그인 상태를 보여줌
+2. **Flutter-web 지도 영역은 비인증 상태 그대로 유지됨**
+3. API 요청에 인증 헤더가 없어서 인증이 필요한 지도 기능이 동작하지 않음
+
+Chrome에서는 동일한 흐름이 문제없이 동작했기 때문에, Safari 특유의 동작이 원인임을 의심할 수 있었다.
+
+---
+
+## 진단: 왜 hang이 발생하는가
+
+### 1단계: 토큰 전달 흐름 추적
+
+인증 흐름을 단계별로 분해해보면 다음과 같다.
+
+1. Next.js에서 회원가입 완료 → `postMessage`로 Flutter-web에 토큰 전달
+2. Flutter-web이 토큰을 수신 → `FlutterSecureStorage`에 저장 시도
+3. 이후 API 호출 시 `FlutterSecureStorage`에서 토큰 읽기 시도
+
+문제는 2번과 3번 사이에서 발생하고 있었다.
+
+### 2단계: flutter_secure_storage 웹 구현체 이해
+
+`flutter_secure_storage`의 웹 구현체는 내부적으로 **WebCrypto + IndexedDB** 를 사용한다. 구체적으로는 `crypto.subtle` API로 키를 생성하고, 암호화된 값을 IndexedDB에 저장하는 방식이다.
+
+```dart
+// Before: Safari iframe에서 hang 발생
+const storage = FlutterSecureStorage();
+var opnToken = await storage.read(key: "OPN_OPNDOCTOR_KEY_AUTH_OPN_TOKEN");
+```
+
+이 `await`가 Safari에서 resolve도 reject도 하지 않고 **영원히 대기**하고 있었다.
+
+### 3단계: Safari ITP의 third-party 스토리지 파티셔닝
+
+원인은 Safari의 **ITP(Intelligent Tracking Prevention)** 정책이었다.
+
+Safari ITP는 third-party 컨텍스트(즉, 크로스 오리진 iframe)에서의 스토리지 접근을 엄격하게 파티셔닝한다. 구체적인 인과 관계는 다음과 같다.
+
+```
+Safari ITP 활성화
+  └─ iframe 내 third-party IndexedDB 접근 → 파티셔닝 처리
+       └─ WebCrypto (crypto.subtle) 접근 시 Promise hang
+            └─ FlutterSecureStorage.read() / .write() 무한 대기
+                 └─ 토큰 저장 실패 → API 호출 시 인증 헤더 없음
+                      └─ 지도에 인증 상태 미반영
+```
+
+핵심은 `crypto.subtle`이 에러를 던지지 않는다는 점이다. **에러 없이 조용히 멈춘다.** 그래서 Flutter 앱 로그에는 아무 예외도 찍히지 않고, 마치 정상적으로 처리 중인 것처럼 보인다.
+
+Chrome은 iframe 내 third-party 스토리지 접근을 Safari만큼 엄격히 제한하지 않기 때문에 동일한 코드에서 문제가 발생하지 않는다.
+
+{/* TODO: 실제 코드/에러 메시지 채우기 — Safari 개발자 도구에서 관찰된 IndexedDB 접근 차단 메시지 또는 타임아웃 흔적 */}
+
+---
+
+## 해결: 인메모리 토큰 + 양방향 인증 동기화
+
+### 핵심 방향
+
+`FlutterSecureStorage`를 통한 직접 읽기를 제거하고, 인메모리 상태로 전환한다.
+
+### Flutter 측: FlutterSecureStorage 직접 읽기 제거
+
+```dart
+// Before: Safari iframe에서 hang 발생
+const storage = FlutterSecureStorage();
+var opnToken = await storage.read(key: "OPN_OPNDOCTOR_KEY_AUTH_OPN_TOKEN");
+
+// After: 인메모리 토큰 사용 (Safari iframe에서 FlutterSecureStorage가 멈출 수 있어 사용하지 않음)
+var opnToken = AuthManager().opn_token;
+```
+
+`AuthManager().opn_token`은 앱 생명주기 동안 메모리에 유지되는 토큰이다. 스토리지 I/O가 없으므로 Safari ITP의 영향을 받지 않는다.
+
+### Next.js 측: 양방향 인증 동기화 일원화
+
+단순히 Flutter 쪽을 수정하는 것만으로는 부족하다. Next.js에서 인증이 발생했을 때 Flutter-web의 `AuthManager`가 토큰을 보유하게 만드는 경로도 정비해야 한다.
+
+`useAuthMessageHandlers` 훅을 통해 Flutter ↔ Next.js 간 인증 상태 양방향 동기화를 처리하고, 세션 관리 포인트를 한 곳에 모아 관리하도록 했다.
+
+```ts
+// Next.js 측: Flutter-web과의 인증 상태 양방향 동기화
+// useAuthMessageHandlers — PostMessage 기반 인증 메시지 수신 및 발신 일원화
+{/* TODO: 실제 코드/에러 메시지 채우기 — useAuthMessageHandlers 실제 구현 코드 */}
+```
+
+인증 흐름을 다시 정리하면:
+
+1. Next.js에서 로그인/회원가입 완료
+2. `useAuthMessageHandlers`가 PostMessage로 Flutter-web에 토큰 전달
+3. Flutter-web은 수신한 토큰을 `AuthManager().opn_token`에 **인메모리 저장** (IndexedDB 접근 없음)
+4. 이후 API 호출 시 `AuthManager().opn_token`에서 직접 읽기 → 인증 헤더 정상 포함
+
+---
+
+## 검증
+
+수정 배포 후 다음 시나리오를 Safari에서 직접 확인했다.
+
+- [ ] Safari에서 Next.js 회원가입 → Flutter-web 지도 인증 상태 즉시 반영
+- [ ] Safari에서 Next.js 로그인 → Flutter-web 지도 인증 상태 즉시 반영
+- [ ] Chrome에서 동일 흐름 → 기존과 동일하게 정상 동작
+- [ ] 새로고침 후 Flutter-web 단독 인증 흐름 → 정상 동작
+
+---
+
+## 배운 것
+
+**1. Safari ITP의 crypto.subtle hang은 에러를 던지지 않는다**
+
+일반적인 예외 처리로는 잡히지 않는다. `try-catch`로 감싸도 catch 블록에 진입하지 않고 그냥 멈춘다. 이 특성이 디버깅을 더 어렵게 만든다. Chrome에서 잘 되는데 Safari에서 조용히 안 되는 패턴이라면 ITP를 먼저 의심해야 한다.
+
+**2. 중첩 iframe 구조에서는 스토리지 접근 전략을 재검토해야 한다**
+
+`flutter_secure_storage`는 네이티브 환경에서는 훌륭한 선택이다. 그러나 웹 환경, 특히 크로스 오리진 iframe 안에서는 WebCrypto + IndexedDB 조합이 Safari에서 신뢰하기 어렵다. iframe 깊이가 깊어질수록 이 문제는 더 빈번해질 수 있다.
+
+**3. "크롬에서는 된다"는 사실이 Safari 버그를 숨긴다**
+
+QA를 크롬 위주로 했기 때문에 배포 이후에야 발견됐다. 중첩 iframe + 인증을 다루는 기능이라면 Safari 테스트를 필수 체크리스트에 넣어야 한다.
+
+**4. 인메모리 토큰의 트레이드오프**
+
+인메모리 방식은 Safari ITP 문제를 깔끔하게 우회하지만, 페이지 새로고침 시 토큰이 날아간다. 이 경우 부모(Next.js)가 새로고침 시점에 다시 토큰을 PostMessage로 주입하는 초기화 로직이 함께 필요하다. 양방향 동기화(`useAuthMessageHandlers`)가 이 역할을 담당한다.

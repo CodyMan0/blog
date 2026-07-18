@@ -1,0 +1,105 @@
+---
+title: Safari ITP와 iframe 안 IndexedDB·localStorage — Storage Access API로 안 풀리는 이유
+authors: me
+description: "Safari ITP의 서드파티 스토리지 파티셔닝이 iframe 안 IndexedDB·localStorage를 막는 원인과 PostMessage + 인메모리 패턴으로 해결하는 방법."
+tags: [트러블슈팅, Safari, 크로스브라우징]
+keywords: [Safari ITP, iframe, IndexedDB, 스토리지 파티셔닝, Storage Access API, 크로스브라우징]
+date: 2026-07-18
+draft: true
+---
+
+## 현상 — 크롬은 멀쩡한데 Safari만 멈춘다
+
+새로운 기능을 배포했다. Chrome에서는 로그인 후 인증 상태가 iframe 내부에도 정상적으로 전파된다. 그런데 Safari에서는 이상하게도 조용히 멈춘다. 에러 메시지도 없고, 콘솔에 예외도 없다. 그냥 대기(hang) 상태다.
+
+우리 팀이 맞닥뜨린 상황도 그랬다. Next.js(부모) → Flutter-web → React 로 이어지는 중첩 iframe 아키텍처에서 로그인 후 지도 영역에 인증이 반영되지 않는 문제가 Safari에서만 재현됐다. Flutter-web의 보안 스토리지 구현체인 `FlutterSecureStorage`가 웹 환경에서 `WebCrypto + IndexedDB`를 사용하는데, Safari에서 이 부분이 무한 대기에 빠지고 있었다.
+
+문제를 파고들면서 이유가 명확해졌다: **Safari의 ITP(Intelligent Tracking Prevention) 스토리지 파티셔닝**이었다.
+
+---
+
+## ITP 스토리지 파티셔닝이란
+
+ITP는 WebKit에 내장된 크로스사이트 트래킹 방지 메커니즘이다. 쿠키 만료 단축처럼 잘 알려진 동작 외에도, **서드파티 컨텍스트(= iframe)에서의 스토리지 접근을 파티셔닝**한다.
+
+파티셔닝의 의미는 이렇다. `parent.example.com`이 `embed.example.com`을 iframe으로 불러올 때, `embed.example.com`이 쓰는 IndexedDB나 localStorage는 최상위 도메인(`parent.example.com`)과 결합된 별도의 파티션 안에 격리된다. 즉, `embed.example.com`을 직접 열었을 때의 스토리지와 iframe 안에서 접근하는 스토리지가 **다른 공간**이다.
+
+크로스 오리진 iframe의 경우 상황은 더 제한적이다. Safari는 사용자가 서드파티 사이트와 명시적으로 상호작용한 이력이 없으면 iframe 내부에서의 스토리지 접근 자체를 차단하거나 빈 스토리지를 돌려줄 수 있다. 이 때문에 IndexedDB 읽기/쓰기가 예외 없이 그냥 "응답 없음"이 되는 것이다.
+
+Chrome은 이 제한을 적용하지 않아서 똑같은 코드가 완전히 다르게 동작한다.
+
+---
+
+## "Storage Access API로 해결하면 되지 않나요?"
+
+가장 먼저 떠오르는 해법이 Storage Access API(`document.requestStorageAccess()`)다. 실제로 Safari가 권장하는 방법이기도 하다. 하지만 결정적인 제약이 있다.
+
+**Storage Access API는 쿠키(Cookie)만 unpartition한다.**
+
+MDN과 WebKit 문서 모두 Storage Access API가 부여하는 접근 권한은 쿠키에 한정된다고 명시한다. IndexedDB, localStorage, sessionStorage, Cache API, Service Worker 등은 이 API의 적용 범위 밖이다. 즉, `document.requestStorageAccess()`를 성공적으로 호출해 사용자 동의를 받더라도 iframe 안의 IndexedDB는 여전히 파티셔닝된 채로 남는다.
+
+그리고 Storage Access API 자체도 조건이 까다롭다.
+
+- iframe 내부에서 사용자 제스처(클릭 등)가 필요하다.
+- 팝업이 뜨는 경우 사용자가 명시적으로 허용해야 한다.
+- 이미 차단된 오리진이면 거부될 수 있다.
+
+토큰이나 세션 데이터를 IndexedDB에 저장하는 패턴이라면, Storage Access API는 해결책이 아니다.
+
+---
+
+## iframe 안 IndexedDB·localStorage가 막히는 메커니즘
+
+정리하면 다음과 같이 작동한다.
+
+1. Safari는 서드파티 컨텍스트에서 실행 중인 iframe을 감지한다.
+2. 해당 iframe 오리진에 사용자 인터랙션 이력이 없으면 스토리지를 파티셔닝하거나 접근을 지연시킨다.
+3. IndexedDB를 열려는 코드(`indexedDB.open(...)`)가 pending 상태로 머물거나 실패한다.
+4. 그 위에서 동작하는 WebCrypto 키 조회나 토큰 읽기가 함께 hang된다.
+5. 인증 흐름 전체가 응답 없는 상태가 된다.
+
+에러가 throw되지 않기 때문에 try-catch나 `.catch()` 핸들러가 있어도 잡히지 않는다. 로그에 아무것도 찍히지 않는 채로 멈추기 때문에 디버깅이 어렵다.
+
+---
+
+## 해결 패턴 — PostMessage + 인메모리 토큰
+
+근본적인 접근은 하나다: **iframe 안에서 스토리지에 직접 의존하지 않는다.**
+
+인증 토큰의 소유권을 최상위 컨텍스트(부모 페이지)에 두고, 자식 iframe은 필요할 때 PostMessage로 받아서 인메모리에서만 들고 있는 방식이다.
+
+구체적인 흐름은 이렇다.
+
+1. 최상위 오리진(예: Next.js)에서 로그인을 처리하고 토큰을 자신의 스토리지(httpOnly 쿠키 또는 자신의 localStorage)에 보관한다.
+2. iframe이 마운트되면 PostMessage로 "인증 요청"을 보낸다.
+3. 부모가 토큰을 PostMessage로 내려보낸다.
+4. iframe은 받은 토큰을 메모리 변수에만 유지하고, IndexedDB·localStorage에 쓰지 않는다.
+5. 토큰이 필요한 API 호출은 메모리에서 꺼내 사용한다.
+
+{/* TODO: PostMessage 기반 인증 동기화 실제 코드 채우기 */}
+
+이 패턴의 핵심은 **스토리지 파티셔닝 문제를 우회하는 것이 아니라, 애초에 파티셔닝된 컨텍스트에서 스토리지를 읽지 않는 것**이다. Safari의 제약을 없애는 게 아니라 그 제약이 걸리지 않는 경로를 쓴다.
+
+우리 팀에서는 이 방식으로 전환한 뒤 Safari에서의 인증 hang이 완전히 사라졌다.
+
+---
+
+## 체크리스트
+
+Safari + iframe 조합에서 스토리지 문제가 의심될 때 확인할 것들.
+
+- [ ] **재현 환경 분리**: Safari에서만 발생하고 Chrome에서는 정상인지 확인한다.
+- [ ] **스토리지 의존 여부 확인**: iframe 내부 코드가 IndexedDB, localStorage, sessionStorage, WebCrypto 키 스토리지를 직접 읽는지 추적한다.
+- [ ] **오리진 관계 확인**: 부모와 iframe이 크로스 오리진인지 확인한다. 동일 오리진이라면 파티셔닝 범위가 다를 수 있다.
+- [ ] **Storage Access API 착각 방지**: `requestStorageAccess()`를 이미 붙였더라도 IndexedDB에는 효과가 없다는 점을 확인한다.
+- [ ] **hang 여부 확인**: 에러 없이 멈추는 경우 IndexedDB open 호출에 타임아웃을 붙여서 진단한다.
+- [ ] **인메모리 전환**: 토큰·세션 데이터를 iframe 안에서 스토리지에 쓰는 코드를 제거하고 PostMessage 기반 인메모리 패턴으로 대체한다.
+- [ ] **Safari 실기기 테스트**: Safari는 시뮬레이터와 실기기 동작이 다를 수 있다. ITP 관련 이슈는 실기기에서만 나타나는 경우가 있다.
+
+---
+
+## 마치며
+
+"크롬에서 되는데 사파리에서 안 된다"는 증상이 iframe + 스토리지 조합에서 나왔다면, 에러 로그보다 먼저 ITP 파티셔닝을 의심해볼 만하다. Storage Access API가 만능 해결책처럼 소개될 때도 있지만, IndexedDB에는 적용되지 않는다는 점을 기억하면 불필요한 삽질을 줄일 수 있다.
+
+파티셔닝된 컨텍스트에서 스토리지를 읽으려 할수록 문제는 복잡해진다. 설계 레벨에서 "iframe 안에서 스토리지에 의존하지 않는다"는 원칙을 세우는 게 가장 확실한 대비책이다.

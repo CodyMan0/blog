@@ -1,0 +1,113 @@
+---
+title: Safari ITP and IndexedDB / localStorage Inside iframes — Why Storage Access API Won't Save You
+authors: me
+description: "How Safari ITP's third-party storage partitioning blocks IndexedDB and localStorage inside iframes, and why Storage Access API doesn't fix it."
+tags: [troubleshooting, Safari, cross-browser]
+keywords: [Safari ITP, iframe, IndexedDB, storage partitioning, Storage Access API, cross-browser]
+date: 2026-07-18
+draft: true
+---
+
+## The Symptom — Works in Chrome, Silently Hangs in Safari
+
+You ship a feature. Chrome is fine. Login works, the auth state propagates into the embedded iframe, everything behaves as expected. Then someone opens it in Safari and the page just… stops. No error, no console exception, no network failure — just an eternal spinner.
+
+That is exactly what we ran into. Our architecture at the time was a nested-iframe stack: Next.js (top-level) → Flutter-web → React. After login, the map widget embedded in the Flutter-web iframe was not reflecting the authenticated state, but only in Safari. In Chrome the same flow worked perfectly.
+
+Digging in, we found the culprit: the Flutter-web secure storage implementation (`FlutterSecureStorage`) uses `WebCrypto + IndexedDB` as its web backend. In Safari, that combination was hanging indefinitely inside the iframe — no error thrown, no promise rejected, just silence.
+
+The root cause: **Safari's ITP (Intelligent Tracking Prevention) storage partitioning**.
+
+---
+
+## What Safari ITP Storage Partitioning Actually Does
+
+ITP is WebKit's cross-site tracking prevention system. Beyond its well-known cookie-expiry behavior, ITP **partitions storage for third-party contexts** — meaning any origin loaded inside an iframe.
+
+Here is what partitioning means in practice. When `parent.example.com` embeds `embed.example.com` in an iframe, the IndexedDB and localStorage that `embed.example.com` accesses are isolated into a partition keyed to the top-level origin (`parent.example.com`). The storage seen inside the iframe is a completely separate namespace from the storage that `embed.example.com` would see if you navigated to it directly in a tab.
+
+For cross-origin iframes without prior user interaction with the embedded origin, Safari can go further: it may block storage access outright or return an empty result with no error. This is why an `indexedDB.open()` call can return a request object that never fires `onsuccess` or `onerror` — it simply pends forever.
+
+Chrome does not apply this constraint, which is why identical code produces entirely different outcomes across browsers.
+
+---
+
+## "Can't We Just Use the Storage Access API?"
+
+The Storage Access API (`document.requestStorageAccess()`) is the first thing most developers reach for when they hear "Safari is blocking iframe storage." It is also what WebKit's own documentation points to. There is one critical constraint that makes it irrelevant to this problem:
+
+**The Storage Access API unpartitions cookies only.**
+
+The MDN specification and WebKit documentation both state clearly that the access granted by a successful `requestStorageAccess()` call applies exclusively to cookies. IndexedDB, localStorage, sessionStorage, the Cache API, and Service Workers are all outside its scope. Even if a user clicks through a permission prompt and grants access, the iframe's IndexedDB remains partitioned.
+
+On top of that, the API itself comes with friction:
+
+- It requires a user gesture inside the iframe to even call it.
+- It can surface a browser-level permission prompt that users may dismiss or block.
+- Origins that have been previously blocked may be denied regardless.
+
+If your auth token or session data lives in IndexedDB — which is the case for many token-store implementations, including `FlutterSecureStorage` on web — the Storage Access API is not the answer.
+
+---
+
+## The Mechanism: Why IndexedDB Hangs Without an Error
+
+The sequence that produces the silent hang looks like this:
+
+1. Safari detects that the frame is running in a third-party context.
+2. The embedded origin has no recorded prior user interaction at this top-level site.
+3. ITP blocks or defers access to the origin's storage partition.
+4. The `indexedDB.open(...)` request is issued. The request object is created but its `onsuccess` / `onerror` / `onupgradeneeded` callbacks are never invoked.
+5. Any code awaiting the open result — such as a WebCrypto key retrieval or token read — waits indefinitely.
+6. The authentication flow stalls with no visible signal.
+
+Because no exception is thrown, `try/catch` and `.catch()` handlers never fire. The hang produces nothing in the console. This makes the issue unusually difficult to diagnose: the code looks correct, the browser devtools show nothing alarming, and the bug only surfaces on Safari.
+
+{/* TODO: Add a minimal reproduction snippet showing indexedDB.open() hanging in a cross-origin iframe on Safari */}
+
+---
+
+## The Solution: PostMessage + In-Memory Token
+
+The fix is an architectural one: **do not let iframes own persistent auth state**.
+
+Move storage ownership to the top-level origin. The iframe receives its token via PostMessage and holds it in memory only — it never writes to IndexedDB or localStorage.
+
+The pattern in broad strokes:
+
+1. The top-level page (e.g., Next.js) handles login and stores the token in its own storage — an `httpOnly` cookie set by the server is the most secure option; alternatively, the top-level origin's own localStorage works because it is not in a third-party context.
+2. When the iframe mounts, it sends a PostMessage to the parent requesting credentials.
+3. The parent replies with the token over PostMessage.
+4. The iframe keeps the token in a memory variable. It does not write to IndexedDB or localStorage.
+5. API calls that need the token read it from memory.
+6. On logout, the parent broadcasts a revocation message; iframes clear their in-memory state.
+
+{/* TODO: Fill in actual PostMessage auth-sync code from useAuthMessageHandlers */}
+
+The key insight is that this approach does not try to circumvent ITP. It works with the constraint by eliminating the iframe's dependency on partitioned storage altogether. Safari's restriction simply stops being relevant.
+
+After we switched to this pattern, the hang in Safari disappeared entirely.
+
+---
+
+## Checklist
+
+When debugging a Safari + iframe storage issue:
+
+- [ ] **Confirm the Safari-only split**: Verify the behavior reproduces in Safari but not Chrome/Firefox. This strongly points to ITP rather than application logic.
+- [ ] **Trace storage reads inside the iframe**: Find every `indexedDB.open()`, `localStorage.getItem()`, and `crypto.subtle.*` call that occurs inside an iframe context. These are the candidates.
+- [ ] **Check the origin relationship**: Is the iframe cross-origin relative to the parent? Same-origin iframes are not subject to third-party storage partitioning.
+- [ ] **Don't assume Storage Access API covers IndexedDB**: If someone has already added `requestStorageAccess()`, confirm it was not expected to fix IndexedDB — it won't.
+- [ ] **Diagnose a hang with a timeout**: Wrap `indexedDB.open()` in a `Promise.race` with a timeout to confirm whether it is actually hanging rather than failing silently for another reason.
+- [ ] **Migrate to in-memory + PostMessage**: Remove any code that writes auth tokens inside an iframe and replace it with a PostMessage-based delivery from the top-level origin.
+- [ ] **Test on a real Safari device**: Safari on real iOS hardware can behave differently from the simulator regarding ITP. Cross-origin iframe restrictions are among the cases most likely to differ.
+
+---
+
+## Closing Thought
+
+"Works in Chrome, broken in Safari" on an iframe + storage combination is almost always ITP partitioning. The absence of error output is what makes it so disorienting — the browser does not tell you it blocked the call, it just never answers.
+
+Storage Access API is a useful tool for unblocking cookies in cross-origin iframes, but it leaves IndexedDB untouched. Knowing that boundary saves a lot of time when debugging.
+
+The most durable fix is architectural: treat iframe contexts as unable to own persistent storage, and route auth state through PostMessage from a context that can. Safari's partitioning then becomes irrelevant by design.
