@@ -47,8 +47,8 @@ export const siteConfig = {
     ],
   },
   avatar: "/img/profile.png",
-  // 공유(OG/트위터) 미리보기 이미지 — 얼굴 대신 하늘 사진
-  ogImage: "/img/sky-bg.jpg",
+  // 공유(OG/트위터) 미리보기 이미지 — 하늘 배경 위 얼굴 (1200×630)
+  ogImage: "/img/og-profile.jpg",
   social: {
     github: "https://github.com/CodyMan0",
     linkedin: "https://www.linkedin.com/in/brian0",
@@ -88,7 +88,7 @@ export const siteConfig = {
       hintEn: "Built the medical-device 'Danawa' page + admin solo (Amplitude funnel)",
     },
     {
-      value: 1850,
+      value: 3000,
       decimals: 0,
       suffix: "만원",
       label: "외주비 절감",
