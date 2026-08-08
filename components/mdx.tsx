@@ -16,6 +16,15 @@ const components = {
     // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
     <img loading="lazy" {...props} />
   ),
+  a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+    // 외부 링크(http로 시작)는 새 탭에서 연다. 내부 링크·제목 앵커(#)는 그대로.
+    const isExternal = props.href?.startsWith("http");
+    return isExternal ? (
+      <a {...props} target="_blank" rel="noopener noreferrer" />
+    ) : (
+      <a {...props} />
+    );
+  },
 };
 
 export function Mdx({ source }: { source: string }) {
