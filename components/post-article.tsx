@@ -3,7 +3,8 @@ import type { Post } from "@/lib/posts";
 import { Mdx } from "@/components/mdx";
 import { JsonLd } from "@/components/json-ld";
 import { formatDate } from "@/lib/format";
-import { siteConfig, writingHref, type Lang } from "@/lib/config";
+import { siteConfig, homeHref, writingHref, type Lang } from "@/lib/config";
+import { CATEGORY_LABEL } from "@/lib/categories";
 
 const t = {
   ko: { back: "← 회고", read: "분 읽기" },
@@ -28,7 +29,9 @@ export function PostArticle({ post, lang }: { post: Post; lang: Lang }) {
     image: `${siteConfig.url}${siteConfig.avatar}`,
     mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
     url: canonical,
+    articleSection: CATEGORY_LABEL[post.category][lang],
   };
+  // 홈 › 카테고리(회고/기술/영어) › 글 — 검색 결과에 계층이 드러나도록 3단
   const breadcrumbLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -36,10 +39,16 @@ export function PostArticle({ post, lang }: { post: Post; lang: Lang }) {
       {
         "@type": "ListItem",
         position: 1,
-        name: lang === "en" ? "Writing" : "회고",
+        name: lang === "en" ? siteConfig.nameEn : siteConfig.name,
+        item: `${siteConfig.url}${homeHref(lang)}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: CATEGORY_LABEL[post.category][lang],
         item: `${siteConfig.url}${writingHref(lang)}`,
       },
-      { "@type": "ListItem", position: 2, name: post.title, item: canonical },
+      { "@type": "ListItem", position: 3, name: post.title, item: canonical },
     ],
   };
 

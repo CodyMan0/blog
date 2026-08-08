@@ -28,7 +28,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...withAlternates(`/writing/${post.slug}`, `/en/writing/${post.slug}`),
     lastModified: post.dateValue ? new Date(post.dateValue) : undefined,
     changeFrequency: "monthly",
-    priority: 0.6,
+    // 개별 글은 홈(1.0)·목록(0.8)보다 낮게 — 검색 사이트링크가 글로 파편화되지 않도록
+    priority: 0.4,
   }));
 
   return [...staticRoutes, ...postRoutes];
