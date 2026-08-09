@@ -2,6 +2,9 @@ import Link from "next/link";
 import type { Post } from "@/lib/posts";
 import { Mdx } from "@/components/mdx";
 import { JsonLd } from "@/components/json-ld";
+import { ViewCounter } from "@/components/view-counter";
+import { LikeButton } from "@/components/like-button";
+import { Comments } from "@/components/comments";
 import { formatDate } from "@/lib/format";
 import { siteConfig, homeHref, writingHref, type Lang } from "@/lib/config";
 import { CATEGORY_LABEL } from "@/lib/categories";
@@ -69,6 +72,7 @@ export function PostArticle({ post, lang }: { post: Post; lang: Lang }) {
           <span>
             {post.readingMinutes} {tx.read}
           </span>
+          <ViewCounter slug={post.slug} lang={lang} />
         </div>
         {post.tags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
@@ -87,6 +91,9 @@ export function PostArticle({ post, lang }: { post: Post; lang: Lang }) {
       <div className="prose">
         <Mdx source={post.content} />
       </div>
+
+      <LikeButton slug={post.slug} lang={lang} />
+      <Comments slug={post.slug} lang={lang} />
     </article>
   );
 }
