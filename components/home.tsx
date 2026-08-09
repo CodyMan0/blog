@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { getAllPosts } from "@/lib/posts";
 import { PostList } from "@/components/post-list";
-import { Contributions } from "@/components/contributions";
 import { siteConfig, writingHref, type Lang } from "@/lib/config";
 
 const t = {
@@ -59,10 +58,7 @@ export function Home({ lang = "ko" }: { lang?: Lang }) {
         />
       </section>
 
-      {/* 기여 + 회고 반반 (모바일: 기여 → 회고 순서) */}
-      <div className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-8">
-        <Contributions lang={lang} />
-
+      <div className="mt-14">
         <section>
           <div className="mb-4 flex items-baseline justify-between">
             <h2 className="text-lg font-semibold">{tx.recent}</h2>
