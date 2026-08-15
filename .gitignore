@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Private (경력/이력서/연봉 자료 — git 제외)
 /private
+
+# OMC 내부 상태 (로컬 전용)
+.omc/
