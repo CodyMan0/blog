@@ -3,7 +3,7 @@ import { siteConfig, type Lang } from "@/lib/config";
 
 const t = {
   ko: {
-    prompt: "이 글이 궁금하거나, 커리어 이야기를 나누고 싶다면 편하게 연락 주세요.",
+    prompt: "이 글이 궁금하거나, 커리어 이야기를 나누고 싶다면\n편하게 연락 주세요.",
     linkedin: "LinkedIn",
     email: "이메일",
     coffee: "커피챗",
@@ -11,7 +11,7 @@ const t = {
     coffeeSubject: "커피챗 요청드려요",
   },
   en: {
-    prompt: "Curious about this, or up for a chat about work and careers? Reach out anytime.",
+    prompt: "Curious about this, or up for a chat about work and careers?\nReach out anytime.",
     linkedin: "LinkedIn",
     email: "Email",
     coffee: "Coffee chat",
@@ -83,7 +83,7 @@ export function ConnectCta({ lang }: { lang: Lang }) {
 
   return (
     <section className="mt-8 flex flex-col items-center gap-3 rounded-xl border border-border px-5 py-6 text-center">
-      <p className="max-w-sm text-sm text-muted">{tx.prompt}</p>
+      <p className="max-w-sm whitespace-pre-line text-sm text-muted">{tx.prompt}</p>
       <div className="flex flex-wrap items-center justify-center gap-2">
         <Link
           href={linkedin}
