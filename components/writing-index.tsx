@@ -1,4 +1,5 @@
 import { getAllPosts } from "@/lib/posts";
+import { getPostStats } from "@/lib/stats";
 import { PostsBrowser } from "@/components/posts-browser";
 import type { Lang } from "@/lib/config";
 
@@ -7,15 +8,16 @@ const t = {
   en: { title: "Writing", desc: "Notes, engineering, and English learning." },
 } as const;
 
-export function WritingIndex({ lang = "ko" }: { lang?: Lang }) {
+export async function WritingIndex({ lang = "ko" }: { lang?: Lang }) {
   const posts = getAllPosts(lang);
+  const stats = await getPostStats(posts.map((p) => p.slug));
   const tx = t[lang];
   return (
     <div className="mx-auto max-w-2xl px-5 py-16">
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{tx.title}</h1>
       <p className="mt-2 text-muted">{tx.desc}</p>
       <div className="mt-8">
-        <PostsBrowser posts={posts} lang={lang} />
+        <PostsBrowser posts={posts} lang={lang} stats={stats} />
       </div>
     </div>
   );

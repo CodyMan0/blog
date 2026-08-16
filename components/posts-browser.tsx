@@ -3,12 +3,21 @@
 import { useState } from "react";
 import { PostList } from "./post-list";
 import type { PostMeta } from "@/lib/posts";
+import type { PostStats } from "@/lib/stats";
 import { CATEGORIES, CATEGORY_LABEL as LABEL, type Category } from "@/lib/categories";
 import type { Lang } from "@/lib/config";
 
 const EMPTY = { ko: "아직 글이 없어요.", en: "No posts yet." };
 
-export function PostsBrowser({ posts, lang }: { posts: PostMeta[]; lang: Lang }) {
+export function PostsBrowser({
+  posts,
+  lang,
+  stats,
+}: {
+  posts: PostMeta[];
+  lang: Lang;
+  stats?: Record<string, PostStats>;
+}) {
   // 발행된 글이 있는 카테고리만 탭으로 노출
   const available = CATEGORIES.filter((c) => posts.some((p) => p.category === c));
   const [selected, setSelected] = useState<Category>(available[0] ?? "회고");
@@ -38,7 +47,7 @@ export function PostsBrowser({ posts, lang }: { posts: PostMeta[]; lang: Lang })
       )}
 
       {filtered.length > 0 ? (
-        <PostList posts={filtered} lang={lang} />
+        <PostList posts={filtered} lang={lang} stats={stats} />
       ) : (
         <p className="py-8 text-sm text-muted">{EMPTY[lang]}</p>
       )}

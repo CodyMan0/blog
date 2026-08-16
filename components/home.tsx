@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getAllPosts } from "@/lib/posts";
+import { getPostStats } from "@/lib/stats";
 import { PostList } from "@/components/post-list";
 import { siteConfig, writingHref, type Lang } from "@/lib/config";
 
@@ -19,8 +20,9 @@ const t = {
   },
 } as const;
 
-export function Home({ lang = "ko" }: { lang?: Lang }) {
+export async function Home({ lang = "ko" }: { lang?: Lang }) {
   const recent = getAllPosts(lang).slice(0, 5);
+  const stats = await getPostStats(recent.map((p) => p.slug));
   const tx = t[lang];
   const tagline = lang === "en" ? siteConfig.taglineEn : siteConfig.tagline;
   const name = lang === "en" ? siteConfig.nameEn : siteConfig.name;
@@ -69,7 +71,7 @@ export function Home({ lang = "ko" }: { lang?: Lang }) {
               {tx.viewAll}
             </Link>
           </div>
-          <PostList posts={recent} lang={lang} />
+          <PostList posts={recent} lang={lang} stats={stats} />
         </section>
       </div>
     </div>
