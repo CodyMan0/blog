@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { siteConfig, type Lang } from "@/lib/config";
 
 const t = {
@@ -84,7 +85,7 @@ export function ConnectCta({ lang }: { lang: Lang }) {
     <section className="mt-8 flex flex-col items-center gap-3 rounded-xl border border-border px-5 py-6 text-center">
       <p className="max-w-sm text-sm text-muted">{tx.prompt}</p>
       <div className="flex flex-wrap items-center justify-center gap-2">
-        <a
+        <Link
           href={linkedin}
           target="_blank"
           rel="noopener noreferrer"
@@ -92,22 +93,22 @@ export function ConnectCta({ lang }: { lang: Lang }) {
         >
           <LinkedInIcon />
           {tx.linkedin}
-        </a>
-        <a
+        </Link>
+        <Link
           href={mailto}
           className={`${pill} border-border text-muted hover:border-accent hover:text-accent`}
         >
           <MailIcon />
           {tx.email}
-        </a>
-        <a
+        </Link>
+        <Link
           href={coffeeHref}
           {...(coffeeSet ? { target: "_blank", rel: "noopener noreferrer" } : {})}
           className={`${pill} border-border text-muted hover:border-accent hover:text-accent`}
         >
           <CoffeeIcon />
           {tx.coffee}
-        </a>
+        </Link>
       </div>
     </section>
   );
