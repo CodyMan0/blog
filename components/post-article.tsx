@@ -4,6 +4,7 @@ import { Mdx } from "@/components/mdx";
 import { JsonLd } from "@/components/json-ld";
 import { ViewCounter } from "@/components/view-counter";
 import { LikeButton } from "@/components/like-button";
+import { ConnectCta } from "@/components/connect-cta";
 import { Comments } from "@/components/comments";
 import { formatDate } from "@/lib/format";
 import { siteConfig, homeHref, writingHref, type Lang } from "@/lib/config";
@@ -93,6 +94,7 @@ export function PostArticle({ post, lang }: { post: Post; lang: Lang }) {
       </div>
 
       <LikeButton slug={post.slug} lang={lang} />
+      <ConnectCta lang={lang} />
       <Comments slug={post.slug} lang={lang} />
     </article>
   );
