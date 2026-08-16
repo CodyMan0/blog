@@ -21,7 +21,11 @@ export const metadata: Metadata = {
   keywords: [...siteConfig.keywords.ko],
   authors: [{ name: siteConfig.nameEn, url: siteConfig.url }],
   creator: siteConfig.nameEn,
-  alternates: { canonical: "/", languages: { ko: "/", en: "/en" } },
+  alternates: {
+    canonical: "/",
+    languages: { ko: "/", en: "/en" },
+    types: { "application/rss+xml": "/rss.xml" },
+  },
   openGraph: {
     type: "website",
     locale: "ko_KR",
@@ -44,7 +48,7 @@ export const metadata: Metadata = {
   },
   verification: {
     other: {
-      "naver-site-verification": "c0c4bc608b4c9f22fcd573cdbbb8bdec6544577e",
+      "naver-site-verification": "3852c4c6c568b802c6ed5f65bd591e8086f2272a",
     },
   },
 };
