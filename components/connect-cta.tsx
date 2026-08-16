@@ -7,6 +7,7 @@ const t = {
     email: "이메일",
     coffee: "커피챗",
     subject: "블로그 보고 연락드려요",
+    coffeeSubject: "커피챗 요청드려요",
   },
   en: {
     prompt: "Curious about this, or up for a chat about work and careers? Reach out anytime.",
@@ -14,6 +15,7 @@ const t = {
     email: "Email",
     coffee: "Coffee chat",
     subject: "Hello from lee2022.com",
+    coffeeSubject: "Coffee chat request",
   },
 } as const;
 
@@ -68,12 +70,15 @@ const pill =
 export function ConnectCta({ lang }: { lang: Lang }) {
   const tx = t[lang];
   const { linkedin, email } = siteConfig.social;
-  // 커피챗 링크가 실제로 지정된 경우에만 버튼 노출 (플레이스홀더 "#"는 숨김)
-  const coffee =
-    siteConfig.coffeeChatUrl && siteConfig.coffeeChatUrl !== "#"
-      ? siteConfig.coffeeChatUrl
-      : null;
   const mailto = `mailto:${email}?subject=${encodeURIComponent(tx.subject)}`;
+
+  // 실제 예약 링크가 지정되면 그리로, 아직 없으면 "커피챗 요청" 메일로 폴백.
+  // 추후 lib/config.ts의 coffeeChatUrl에 Cal.com 등 링크만 넣으면 자동 전환된다.
+  const coffeeSet =
+    siteConfig.coffeeChatUrl && siteConfig.coffeeChatUrl !== "#";
+  const coffeeHref = coffeeSet
+    ? siteConfig.coffeeChatUrl
+    : `mailto:${email}?subject=${encodeURIComponent(tx.coffeeSubject)}`;
 
   return (
     <section className="mt-8 flex flex-col items-center gap-3 rounded-xl border border-border px-5 py-6 text-center">
@@ -95,17 +100,14 @@ export function ConnectCta({ lang }: { lang: Lang }) {
           <MailIcon />
           {tx.email}
         </a>
-        {coffee && (
-          <a
-            href={coffee}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`${pill} border-border text-muted hover:border-accent hover:text-accent`}
-          >
-            <CoffeeIcon />
-            {tx.coffee}
-          </a>
-        )}
+        <a
+          href={coffeeHref}
+          {...(coffeeSet ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          className={`${pill} border-border text-muted hover:border-accent hover:text-accent`}
+        >
+          <CoffeeIcon />
+          {tx.coffee}
+        </a>
       </div>
     </section>
   );
