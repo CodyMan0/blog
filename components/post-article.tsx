@@ -3,6 +3,7 @@ import type { Post } from "@/lib/posts";
 import { Mdx } from "@/components/mdx";
 import { JsonLd } from "@/components/json-ld";
 import { ViewCounter } from "@/components/view-counter";
+import { Toc } from "@/components/toc";
 import { LikeButton } from "@/components/like-button";
 import { ConnectCta } from "@/components/connect-cta";
 import { Comments } from "@/components/comments";
@@ -88,6 +89,8 @@ export function PostArticle({ post, lang }: { post: Post; lang: Lang }) {
           </div>
         )}
       </header>
+
+      <Toc label={lang === "en" ? "Contents" : "목차"} />
 
       <div className="prose">
         <Mdx source={post.content} />
