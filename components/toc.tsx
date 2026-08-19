@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 
 type Item = { id: string; text: string; level: 2 | 3 };
 
@@ -39,14 +39,21 @@ export function Toc({ label }: { label: string }) {
     return () => observer.disconnect();
   }, []);
 
+  // 기본 앵커 점프 대신 부드럽게 스크롤 (뚝딱거림 방지) + hash는 점프 없이 갱신
+  const scrollTo = (e: MouseEvent<HTMLAnchorElement>, id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    e.preventDefault();
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    history.pushState(null, "", `#${id}`);
+    setActiveId(id);
+  };
+
   if (items.length < 2) return null;
 
   return (
-    <details
-      open
-      className="group mb-10 rounded-xl border border-border bg-card/40 px-4 py-3"
-    >
-      <summary className="cursor-pointer select-none text-sm font-semibold text-foreground">
+    <details open className="mb-10 border-b border-border pb-5">
+      <summary className="mb-2 inline-flex cursor-pointer select-none list-none text-sm font-medium text-muted transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
         {label}
       </summary>
       <nav className="mt-2">
@@ -55,6 +62,7 @@ export function Toc({ label }: { label: string }) {
             <li key={item.id} className={item.level === 3 ? "pl-4" : ""}>
               <a
                 href={`#${item.id}`}
+                onClick={(e) => scrollTo(e, item.id)}
                 className={`block py-0.5 transition-colors ${
                   activeId === item.id
                     ? "font-medium text-accent"
