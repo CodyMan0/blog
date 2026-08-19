@@ -39,7 +39,7 @@ export function Toc({ label }: { label: string }) {
     return () => observer.disconnect();
   }, []);
 
-  // 기본 앵커 점프 대신 부드럽게 스크롤 (뚝딱거림 방지) + hash는 점프 없이 갱신
+  // 기본 앵커 점프 대신 부드럽게 스크롤 + hash는 점프 없이 갱신
   const scrollTo = (e: MouseEvent<HTMLAnchorElement>, id: string) => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -52,29 +52,27 @@ export function Toc({ label }: { label: string }) {
   if (items.length < 2) return null;
 
   return (
-    <details open className="mb-10 border-b border-border pb-5">
-      <summary className="mb-2 inline-flex cursor-pointer select-none list-none text-sm font-medium text-muted transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
-        {label}
-      </summary>
-      <nav className="mt-2">
-        <ul className="flex flex-col gap-1 text-sm">
-          {items.map((item) => (
-            <li key={item.id} className={item.level === 3 ? "pl-4" : ""}>
-              <a
-                href={`#${item.id}`}
-                onClick={(e) => scrollTo(e, item.id)}
-                className={`block py-0.5 transition-colors ${
-                  activeId === item.id
-                    ? "font-medium text-accent"
-                    : "text-muted hover:text-foreground"
-                }`}
-              >
-                {item.text}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </details>
+    <nav aria-label={label} className="mb-10">
+      <p className="mb-3 text-xs font-medium text-muted">{label}</p>
+      <ul className="flex flex-col border-l border-border">
+        {items.map((item) => (
+          <li key={item.id}>
+            <a
+              href={`#${item.id}`}
+              onClick={(e) => scrollTo(e, item.id)}
+              className={`-ml-px block border-l-2 py-1 text-sm transition-colors ${
+                item.level === 3 ? "pl-7" : "pl-4"
+              } ${
+                activeId === item.id
+                  ? "border-accent font-medium text-accent"
+                  : "border-transparent text-muted hover:border-foreground/30 hover:text-foreground"
+              }`}
+            >
+              {item.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 }
