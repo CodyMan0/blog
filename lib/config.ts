@@ -46,6 +46,8 @@ export const siteConfig = {
       "developer blog",
     ],
   },
+  // 해외 독자를 위해 지금 어디 사는지
+  location: { ko: "대한민국 서울 거주 중", en: "Based in Seoul, South Korea" },
   avatar: "/img/profile.png",
   // 공유(OG/트위터) 미리보기 이미지 — 하늘 배경 위 얼굴 (1200×630)
   ogImage: "/img/og-profile.jpg",
@@ -130,6 +132,16 @@ export function localePath(lang: Lang, path = ""): string {
 
 export function homeHref(lang: Lang): string {
   return lang === "en" ? "/en" : "/";
+}
+
+// 기술 섹션 — 목록(/tech)과 층 설계도(/tech/[slug]). 글 상세는 writingHref 유지
+export function techHref(lang: Lang, slug?: string): string {
+  const base = lang === "en" ? "/en/tech" : "/tech";
+  return slug ? `${base}/${slug}` : base;
+}
+
+export function galleryHref(lang: Lang): string {
+  return lang === "en" ? "/en/gallery" : "/gallery";
 }
 
 export function writingHref(lang: Lang, slug?: string): string {

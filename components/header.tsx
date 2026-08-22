@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { ThemeToggle } from "./theme-toggle";
-import { siteConfig, homeHref, writingHref, type Lang } from "@/lib/config";
+import { siteConfig, galleryHref, homeHref, techHref, writingHref, type Lang } from "@/lib/config";
 
 export function Header() {
   const pathname = usePathname() || "/";
@@ -25,6 +25,8 @@ export function Header() {
 
   const name = lang === "en" ? siteConfig.nameEn : siteConfig.name;
   const writingLabel = lang === "en" ? "Writing" : "회고";
+  const techLabel = lang === "en" ? "Engineering" : "기술";
+  const galleryLabel = lang === "en" ? "Gallery" : "갤러리";
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
@@ -41,6 +43,18 @@ export function Header() {
             className="rounded-md px-3 py-1.5 text-muted transition-colors hover:bg-card hover:text-foreground"
           >
             {writingLabel}
+          </Link>
+          <Link
+            href={techHref(lang)}
+            className="rounded-md px-3 py-1.5 text-muted transition-colors hover:bg-card hover:text-foreground"
+          >
+            {techLabel}
+          </Link>
+          <Link
+            href={galleryHref(lang)}
+            className="rounded-md px-3 py-1.5 text-muted transition-colors hover:bg-card hover:text-foreground"
+          >
+            {galleryLabel}
           </Link>
           <Link
             href={toggleHref}

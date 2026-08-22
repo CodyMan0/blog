@@ -1,5 +1,9 @@
 import Link from "next/link";
 import type { Post } from "@/lib/posts";
+import { getAncestorPath, getLayerNeighbors, getSeriesPostsFor } from "@/lib/posts";
+import { SeriesBadge, SeriesNav } from "@/components/series-nav";
+import { LayerNav, LayerTrail } from "@/components/layer-nav";
+import { TopicChip } from "@/components/topic-chips";
 import { Mdx } from "@/components/mdx";
 import { JsonLd } from "@/components/json-ld";
 import { ViewCounter } from "@/components/view-counter";
@@ -18,6 +22,9 @@ export function PostArticle({ post, lang }: { post: Post; lang: Lang }) {
   const tx = t[lang];
   const path = writingHref(lang, post.slug);
   const canonical = `${siteConfig.url}${path}`;
+  const seriesPosts = getSeriesPostsFor(lang, post);
+  const layers = getLayerNeighbors(lang, post);
+  const ancestors = getAncestorPath(lang, post);
 
   const articleLd = {
     "@context": "https://schema.org",
@@ -65,6 +72,16 @@ export function PostArticle({ post, lang }: { post: Post; lang: Lang }) {
       </Link>
 
       <header className="mb-10 mt-4">
+        {(post.series || ancestors.length > 0) && (
+          <div className="mb-3 flex flex-col gap-2">
+            {post.series && (
+              <div>
+                <SeriesBadge series={post.series} order={post.seriesOrder} lang={lang} />
+              </div>
+            )}
+            <LayerTrail ancestors={ancestors} lang={lang} />
+          </div>
+        )}
         <h1 className="text-3xl font-bold leading-tight tracking-tight">{post.title}</h1>
         <div className="mt-3 flex items-center gap-3 text-sm text-muted">
           <time dateTime={post.date}>{formatDate(post.date, lang)}</time>
@@ -74,6 +91,11 @@ export function PostArticle({ post, lang }: { post: Post; lang: Lang }) {
           </span>
           <ViewCounter slug={post.slug} lang={lang} />
         </div>
+        {post.topic !== null && (
+          <div className="mt-4">
+            <TopicChip topic={post.topic} />
+          </div>
+        )}
         {post.tags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
             {post.tags.map((tag) => (
@@ -91,6 +113,17 @@ export function PostArticle({ post, lang }: { post: Post; lang: Lang }) {
       <div className="prose">
         <Mdx source={post.content} />
       </div>
+
+      <LayerNav neighbors={layers} currentTitle={post.title} lang={lang} />
+
+      {post.series && (
+        <SeriesNav
+          series={post.series}
+          posts={seriesPosts}
+          currentSlug={post.slug}
+          lang={lang}
+        />
+      )}
 
       <LikeButton slug={post.slug} lang={lang} />
       <Comments slug={post.slug} lang={lang} />

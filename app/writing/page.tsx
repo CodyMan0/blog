@@ -9,7 +9,8 @@ export const metadata: Metadata = {
 };
 
 export default function WritingPage() {
-  const posts = getAllPosts("ko");
+  // 기술은 /tech 로 분리. 영어는 블로그로 다루지 않아 목록에 올리지 않는다
+  const posts = getAllPosts("ko").filter((p) => p.category === "회고");
 
   return (
     <div className="mx-auto max-w-2xl px-5 py-16">
