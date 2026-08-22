@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { TopicChip } from "@/components/topic-chips";
+import { EmptyState } from "@/components/empty-state";
 import { techHref, type Lang } from "@/lib/config";
 import { formatShort } from "@/lib/format";
 
@@ -22,14 +23,14 @@ const t = {
     clear: "필터 해제",
     open: "어디까지 팠는지 보기 →",
     progress: (written: number, total: number) => `글 ${written} / ${total} 공개`,
-    empty: "아직 글이 없어요.",
+    empty: "준비중",
   },
   en: {
     filtered: (topic: string, n: number) => `${topic} · ${n}`,
     clear: "Clear filter",
     open: "See how deep it goes →",
     progress: (written: number, total: number) => `${written} / ${total} published`,
-    empty: "No posts yet.",
+    empty: "Coming soon",
   },
 } as const;
 
@@ -57,7 +58,7 @@ export function TechBrowser({ items, lang }: { items: TechItem[]; lang: Lang }) 
       )}
 
       <div className="flex flex-col gap-3">
-        {shown.length === 0 && <p className="py-8 text-sm text-muted">{tx.empty}</p>}
+        {shown.length === 0 && <EmptyState label={tx.empty} />}
         {shown.map((item) => {
           const written = item.nodes.filter((n) => n.written).length;
           return (

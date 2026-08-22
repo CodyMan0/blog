@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getAllPosts, getTechRoots } from "@/lib/posts";
 import { getPostStats } from "@/lib/stats";
 import { PostList } from "@/components/post-list";
+import { EmptyState } from "@/components/empty-state";
 import { siteConfig, techHref, writingHref, type Lang } from "@/lib/config";
 
 const t = {
@@ -16,7 +17,7 @@ const t = {
     tech: "기술",
     techDesc: "협업에서 만난 문제를 파보며",
     viewAll: "전체 보기",
-    empty: "곧 채웁니다.",
+    empty: "준비중",
   },
   en: {
     lead: [
@@ -28,7 +29,7 @@ const t = {
     tech: "Engineering",
     techDesc: "Digging into problems from real teamwork",
     viewAll: "View all",
-    empty: "Coming soon.",
+    empty: "Coming soon",
   },
 } as const;
 
@@ -90,7 +91,7 @@ export async function Home({ lang = "ko" }: { lang?: Lang }) {
           {memoirs.length > 0 ? (
             <PostList posts={memoirs} lang={lang} stats={stats} />
           ) : (
-            <p className="py-6 text-sm text-muted">{tx.empty}</p>
+            <EmptyState label={tx.empty} />
           )}
         </section>
 
@@ -108,7 +109,7 @@ export async function Home({ lang = "ko" }: { lang?: Lang }) {
           {tech.length > 0 ? (
             <PostList posts={tech} lang={lang} href={techHref} stats={stats} />
           ) : (
-            <p className="py-6 text-sm text-muted">{tx.empty}</p>
+            <EmptyState label={tx.empty} />
           )}
         </section>
       </div>
