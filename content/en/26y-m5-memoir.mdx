@@ -1,0 +1,108 @@
+---
+title: Retrospective — May 2026
+authors: me
+description: "A month I worked more proactively than usual — my first customer interview, building a clinic's website and admin solo, and our first engineering lead joining."
+tags: [retrospective, writing]
+keywords: [retrospective]
+date: 2026-06-13
+---
+
+## Introduction
+
+Looking back on May, three things stood out.
+
+**Joining a customer interview** because I wanted to understand our customers better, and **volunteering to own a project that was about to be outsourced** — I wanted to see how far I could go with Claude and get a sense of my own capacity. The third was **the change that came after our first engineering lead joined the team.**
+
+I'm writing this hoping to keep seeking out opportunities proactively in June, just as I did in May.
+
+---
+
+## 1. My first interview with a doctor (our customer)
+
+Our customers are medical professionals.
+
+> In Korea, a "medical professional" means a doctor, dentist, oriental-medicine doctor, or nurse licensed by the Minister of Health and Welfare.
+
+**Among them, doctors and dentists are our target customers.**
+
+To build a product that's genuinely useful, you have to know your customers well — but meeting doctors and dentists in person was surprisingly hard.
+
+So last year I took on customer support. We don't have a separate CS team, and I handled every product-related technical issue myself. I also talked with the marketing and brokerage teams to slowly piece together what medical professionals worry about and where they struggle. Even so, my desire to understand our customers only grew. I wanted to know the real usability — where doctors feel the value as they use our product, and where it frustrates them.
+
+Around that time, OpenDoctor was launching a new medical-device platform feature. I led it from the initial DB design and drove the collaboration with the device sales team, so it was a launch I felt especially attached to. In short, it's a feature that helps clinic owners judge whether a device's price is reasonable.
+
+The core question was **whether doctors actually need this**. Through one of our CEO's contacts we got a chance to validate it — and, wanting to know our customers more, I joined the interview alongside the CEO.
+
+In the interview we showed the device platform's UI and features to a real doctor, listened to the reactions, and caught blind spots I hadn't considered. Back at the office, I wrote up the insights in Notion and shared them with the whole team.
+
+![Doctor customer interview](/img/study/interview.png)
+
+The feedback from this interview led directly to **June's full revamp of the device "Danawa" page and its addition to the app.**
+
+Until then I'd only cared about *how* to implement whatever the spec said. This was the moment I started caring about the **content itself** — because when you build with a real understanding of the content, you can spot gaps in the plan and think about better ways to express it. The more I thought about it, the more I wanted to know our customers.
+
+This interview also got me interested in the medical-device market itself; I even went to a medical-device expo. It was my first, so I can't claim a profound takeaway, but one thing was clear: this market is big.
+
+![Confusion](/img/study/confusion.jpg)
+
+Lately I get confused now and then.
+
+> Is this really the time to be doing interviews? Shouldn't I be studying engineering harder instead of going out to meet customers? Someone might assume I'm in meetings every day — I'm not.
+
+I'm only 2 years and 3 months into my career, still near the start, so studying and applying engineering to build real expertise matters. But meeting customers feels even more important, and I decided I won't miss those chances even if it means investing more of my after-work hours.
+
+As of May, 9 devices were uploaded to the page, and I built prototypes of the details based on feedback. I'm looking forward to the page maturing to the point of driving actual demo requests and revenue.
+
+[See OpenDoctor's medical-device list page](https://www.opndoctor.com/medical-device)
+
+> (Added in July) And between June and July, it generated 22 demo requests and real revenue. This is fun.
+
+---
+
+## 2. Building the Mio Clinic website and admin
+
+Around March 2026, a dermatology clinic in Gangnam (Mio Clinic) — one OpenDoctor was helping open — asked us to build their website and admin. But our dev team was already running several projects in parallel and short on resources, so we looked at outsourcing it.
+
+The quote came back: 2M KRW for the static pages plus six languages, for a **total of 11M KRW**. Add an admin system on top and, well, it would have been no joke. But after hearing the web quote, I thought — busy as I am, this is a spec I could do myself. And it would let me build up DB design and backend fundamentals along the way.
+
+It was also the moment the whole industry was buzzing about AI. I wanted to test how far I could get with AI, and I wanted to do something that genuinely saved the company money. I'd just heard on YouTube that "in the AI wave, the developers who generate revenue are the ones who survive," so I couldn't sit still. I told our product PO I wanted to take it on.
+
+The goal was clear: build Mio Clinic's website and admin so that, when they opened in June, consultation requests and package prices would actually work. Back in March when I raised my hand, June felt far away — but by May, the regret started creeping in. Two tasks in particular drained more energy than I expected:
+
+1. **The multilingual (i18n) feature**
+2. **DB design (especially the relationship between treatments and packages...)**
+
+There was a good reason the outsourcing quote priced **six languages** (Korean, English, Japanese, Chinese traditional/simplified, Thai) so high. Six foreign teammates handled the translations, and it was harder than I'd thought.
+
+Working out how to collaborate on translation, it came down to two concepts: **translating values stored in the DB**, and **translating strings that live only on the client, not in the DB.** Splitting it into those two clarified my thinking. The specific technical details would make this retro too long, so I'll write them up separately as a tech post.
+
+Unexpectedly, the hardest part wasn't the code — it was **communication.** Code, when it got stuck, always gave way eventually; but pinning down exactly what the other person wanted and reaching agreement was a completely different problem. Sometimes *agreeing on what to build* took longer than building it.
+
+Running this alongside OpenDoctor's web/app work, I did everything solo — frontend, backend, DB, deploy. I was lucky to learn DB design and know-how one piece at a time from Gyuseok on the dev team, which was a huge help and let me work far more safely. Thank you, Gyuseok!
+
+> (Added in June) I finally finished and shipped it! → https://www.mioclinic.co.kr/ko
+> Using AI, I created **more than the 11M KRW quote's worth of value.** I was clumsy, but what stayed with me most was shaping an incomplete plan together through conversation, developing it myself, and taking it all the way to deploy — building one whole service on my own.
+
+---
+
+## 3. Our first engineering lead joins
+
+OpenDoctor had a product PO leading the product team, but the technical lead seat was empty. There often wasn't a clear way to check whether my judgment was right, so I'd talk things through with AI to solve problems.
+
+Around May, an engineering lead joined OpenDoctor. And then... big changes started, fast.
+
+Deploy and technical-decision processes got organized, and 1-on-1s to talk about growth appeared. Isn't this what a good workplace looks like? I'm grateful. Above all, he tackled structural problems no one had been able to touch — improving the parts where we weren't using the relational database's strengths, and, while we were building out a design system, kicking off a push to convert the existing app to a web-UI (webview) base so we could use that design system properly.
+
+He also merged the projects into a monorepo and moved the frontend infra from Amplify to Vercel. Looking back, the changes I'd have had to persuade people about one by one, he came in and resolved quickly — which was genuinely great. There were side effects, and, honestly, some fatigue too.
+
+Still, it feels like a season of growth, both for the company and for me, and a deep satisfaction welled up. I'll share the details one by one as tech content. (If you're curious, leave a comment!)
+
+---
+
+## Wrapping up
+
+May was a month I moved a bit more proactively than before. I wanted to experience how much further I could go with AI — and whether I could turn it into revenue. It's the kind of thing that's possible at a small startup. I want to keep aligning my direction so that I help the company as much as I can while growing myself at the same time.
+
+It was also a month I realized how much I want to understand our customers. I learned I had this thirst — and while writing this retro, I started thinking: what if I paired it with Amplitude analysis? In June I want to talk with my lead about how to make the most of my strengths. I'm really grateful.
+
+> In June, I hope to push a little harder than before. Fighting, everyone!

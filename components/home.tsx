@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getAllPosts, getTechRoots } from "@/lib/posts";
+import { getPostStats } from "@/lib/stats";
 import { PostList } from "@/components/post-list";
 import { siteConfig, techHref, writingHref, type Lang } from "@/lib/config";
 
@@ -31,12 +32,13 @@ const t = {
   },
 } as const;
 
-export function Home({ lang = "ko" }: { lang?: Lang }) {
+export async function Home({ lang = "ko" }: { lang?: Lang }) {
   // 회고와 기술은 성격이 달라 섞지 않는다
   const memoirs = getAllPosts(lang)
     .filter((p) => p.category === "회고")
     .slice(0, 5);
   const tech = getTechRoots(lang).slice(0, 5);
+  const stats = await getPostStats([...memoirs, ...tech].map((p) => p.slug));
   const tx = t[lang];
   const tagline = lang === "en" ? siteConfig.taglineEn : siteConfig.tagline;
   const name = lang === "en" ? siteConfig.nameEn : siteConfig.name;
@@ -86,7 +88,7 @@ export function Home({ lang = "ko" }: { lang?: Lang }) {
           </div>
           <p className="mb-4 text-sm text-muted">{tx.recentDesc}</p>
           {memoirs.length > 0 ? (
-            <PostList posts={memoirs} lang={lang} />
+            <PostList posts={memoirs} lang={lang} stats={stats} />
           ) : (
             <p className="py-6 text-sm text-muted">{tx.empty}</p>
           )}
@@ -104,7 +106,7 @@ export function Home({ lang = "ko" }: { lang?: Lang }) {
           </div>
           <p className="mb-4 text-sm text-muted">{tx.techDesc}</p>
           {tech.length > 0 ? (
-            <PostList posts={tech} lang={lang} href={techHref} />
+            <PostList posts={tech} lang={lang} href={techHref} stats={stats} />
           ) : (
             <p className="py-6 text-sm text-muted">{tx.empty}</p>
           )}

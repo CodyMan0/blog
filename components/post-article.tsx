@@ -7,7 +7,9 @@ import { TopicChip } from "@/components/topic-chips";
 import { Mdx } from "@/components/mdx";
 import { JsonLd } from "@/components/json-ld";
 import { ViewCounter } from "@/components/view-counter";
+import { Toc } from "@/components/toc";
 import { LikeButton } from "@/components/like-button";
+import { ConnectCta } from "@/components/connect-cta";
 import { Comments } from "@/components/comments";
 import { formatDate } from "@/lib/format";
 import { siteConfig, homeHref, writingHref, type Lang } from "@/lib/config";
@@ -110,6 +112,8 @@ export function PostArticle({ post, lang }: { post: Post; lang: Lang }) {
         )}
       </header>
 
+      <Toc label={lang === "en" ? "Contents" : "목차"} />
+
       <div className="prose">
         <Mdx source={post.content} />
       </div>
@@ -126,6 +130,7 @@ export function PostArticle({ post, lang }: { post: Post; lang: Lang }) {
       )}
 
       <LikeButton slug={post.slug} lang={lang} />
+      <ConnectCta lang={lang} />
       <Comments slug={post.slug} lang={lang} />
     </article>
   );
