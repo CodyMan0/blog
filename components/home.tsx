@@ -9,8 +9,8 @@ import { siteConfig, techHref, writingHref, type Lang } from "@/lib/config";
 const t = {
   ko: {
     lead: [
-      "AI로 작업 방식은 크게 바뀌었지만, 바뀌지 않는 것을 익히려 합니다.",
-      "매달 회고하고, 문제를 구조적으로 분해해 지식으로 남깁니다.",
+      "AI로 작업 방식은 크게 바뀌었지만, 바뀌지 않는 것에 더 관심을 두고 학습해나가려 합니다.",
+      "매달 회고하고, 문제를 구조적으로 나누어 지식을 습득합니다.",
     ],
     recent: "회고",
     recentDesc: "매달의 경험과 성장",
@@ -21,8 +21,8 @@ const t = {
   },
   en: {
     lead: [
-      "AI changed how I work, but I keep after the parts that did not change.",
-      "Every month I look back, then break each problem down into knowledge.",
+      "AI changed how I work, so I put more attention on the parts that did not.",
+      "Every month I look back, then break problems apart until they become knowledge.",
     ],
     recent: "Writing",
     recentDesc: "Monthly experience and growth",
