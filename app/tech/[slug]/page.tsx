@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPost, getTechRoots } from "@/lib/posts";
+import { NOINDEX } from "@/lib/post-seo";
 import { TechMapPage } from "@/components/tech-map-page";
 
 type Params = { slug: string };
@@ -20,6 +21,7 @@ export async function generateMetadata({
   return {
     title: `${post.title} — 어디까지 팠나`,
     description: post.description,
+    robots: NOINDEX,
     alternates: { canonical: `/tech/${slug}` },
   };
 }
