@@ -17,14 +17,6 @@ const svgProps = {
   "aria-hidden": true,
 };
 
-function EyeIcon() {
-  return (
-    <svg {...svgProps}>
-      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
 function HeartIcon() {
   return (
     <svg {...svgProps}>
@@ -45,6 +37,16 @@ function Stat({ icon, value }: { icon: React.ReactNode; value: number }) {
     <span className="inline-flex items-center gap-1 tabular-nums">
       {icon}
       {value.toLocaleString()}
+    </span>
+  );
+}
+
+function Stats({ stats }: { stats: PostStats }) {
+  if (stats.likes === 0 && stats.comments === 0) return null;
+  return (
+    <span className="flex shrink-0 items-center gap-2.5 text-xs text-muted">
+      {stats.likes > 0 && <Stat icon={<HeartIcon />} value={stats.likes} />}
+      {stats.comments > 0 && <Stat icon={<CommentIcon />} value={stats.comments} />}
     </span>
   );
 }
@@ -83,17 +85,11 @@ export function PostList({
                   )}
                   {post.title}
                 </span>
+                {s && <Stats stats={s} />}
                 <span className="hidden shrink-0 text-sm text-muted sm:block">
                   {post.readingMinutes} min
                 </span>
               </div>
-              {s && (
-                <div className="mt-1.5 flex items-center gap-3 pl-20 text-xs text-muted">
-                  <Stat icon={<EyeIcon />} value={s.views} />
-                  <Stat icon={<HeartIcon />} value={s.likes} />
-                  <Stat icon={<CommentIcon />} value={s.comments} />
-                </div>
-              )}
             </Link>
           </li>
         );

@@ -1,13 +1,13 @@
-// 목록 페이지용 글별 지표(조회·좋아요·댓글) 배치 조회.
+// 목록 페이지용 글별 지표(좋아요·댓글) 배치 조회.
 // 상세 페이지는 클라이언트에서 slug 하나씩 부르지만, 목록은 슬러그 전체를
-// 서버에서 in.(...) 한 번으로 모아 온다 (요청 N×3 방지). 서버 전용.
+// 서버에서 in.(...) 한 번으로 모아 온다 (요청 N×2 방지). 서버 전용.
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
 // 지표는 자주 안 바뀌므로 5분 캐시 (목록 페이지를 매 요청 동적으로 만들지 않기 위함)
 const REVALIDATE = 300;
 
-export type PostStats = { views: number; likes: number; comments: number };
+export type PostStats = { likes: number; comments: number };
 
 function headers(): HeadersInit {
   return {
@@ -21,7 +21,7 @@ function inList(slugs: string[]): string {
   return `in.(${slugs.join(",")})`;
 }
 
-// count 컬럼을 가진 테이블(blog_post_views / blog_post_likes) → slug당 1행
+// count 컬럼을 가진 테이블(blog_post_likes) → slug당 1행
 async function fetchCountColumn(
   table: string,
   slugs: string[],
@@ -62,7 +62,7 @@ function hash(s: string): number {
 }
 function placeholderStats(slug: string): PostStats {
   const h = hash(slug);
-  return { views: 30 + (h % 400), likes: h % 18, comments: h % 9 };
+  return { likes: h % 18, comments: h % 9 };
 }
 
 /**
@@ -83,15 +83,13 @@ export async function getPostStats(
     return out;
   }
 
-  const [views, likes, comments] = await Promise.all([
-    fetchCountColumn("blog_post_views", slugs),
+  const [likes, comments] = await Promise.all([
     fetchCountColumn("blog_post_likes", slugs),
     fetchCommentCounts(slugs),
   ]);
 
   for (const slug of slugs) {
     out[slug] = {
-      views: views[slug] ?? 0,
       likes: likes[slug] ?? 0,
       comments: comments[slug] ?? 0,
     };

@@ -6,7 +6,6 @@ import { LayerNav, LayerTrail } from "@/components/layer-nav";
 import { TopicChip } from "@/components/topic-chips";
 import { Mdx } from "@/components/mdx";
 import { JsonLd } from "@/components/json-ld";
-import { ViewCounter } from "@/components/view-counter";
 import { Toc } from "@/components/toc";
 import { LikeButton } from "@/components/like-button";
 import { ConnectCta } from "@/components/connect-cta";
@@ -91,7 +90,6 @@ export function PostArticle({ post, lang }: { post: Post; lang: Lang }) {
           <span>
             {post.readingMinutes} {tx.read}
           </span>
-          <ViewCounter slug={post.slug} lang={lang} />
         </div>
         {post.topic !== null && (
           <div className="mt-4">
