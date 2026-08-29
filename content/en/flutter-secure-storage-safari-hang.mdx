@@ -5,8 +5,33 @@ category: 기술
 description: "How Safari ITP's iframe storage partitioning causes flutter_secure_storage to hang at crypto.subtle — and how we fixed it with an in-memory token strategy"
 tags: [troubleshooting, Safari, Flutter]
 keywords: [flutter_secure_storage, Safari ITP, iframe auth, crypto.subtle, web authentication]
+layers:
+  - connector: First
+    question: Where does it break?
+    title: It stalls between storing and reading the token
+    anchor: step-1-tracing-the-token-delivery-flow
+  - connector: That store
+    question: Why does it stall?
+    title: The web impl uses crypto.subtle and IndexedDB
+    anchor: step-2-understanding-the-flutter_secure_storage-web-implementation
+  - connector: On Safari
+    question: Why Safari but not Chrome?
+    title: ITP partitions iframe storage, so crypto.subtle hangs silently
+    anchor: step-3-safari-itps-third-party-storage-partitioning
+  - connector: So
+    question: How do we fix it?
+    title: Drop storage I/O and keep the token in memory
+    anchor: flutter-side-remove-fluttersecurestorage-reads
+  - connector: But
+    question: What about token loss on refresh?
+    title: Next.js re-injects it via PostMessage for bidirectional sync
+    anchor: nextjs-side-centralize-bidirectional-auth-sync
+  - connector: Check
+    question: Did it actually get fixed?
+    title: Verified on Safari, Chrome, and refresh
+    anchor: verification
 date: 2026-07-18
-draft: true
+draft: false
 ---
 
 ## flutter_secure_storage on Safari Web: the silent hang
@@ -82,8 +107,6 @@ Safari ITP active
 
 The critical detail: **`crypto.subtle` does not throw an error**. It returns a Promise that never settles. No exception is raised, no error is logged. The Flutter app looks like it's still processing normally. This makes the bug very hard to spot — especially when Chrome (which is less strict about third-party storage in iframes) shows no problem at all.
 
-{/* TODO: fill in — any observable output from Safari DevTools, e.g. IndexedDB access warnings or network requests missing auth headers */}
-
 ---
 
 ## Fix: In-memory token + bidirectional auth sync
@@ -114,8 +137,7 @@ We introduced `useAuthMessageHandlers` — a hook that centralizes all PostMessa
 
 ```ts
 // Next.js: centralized bidirectional auth sync with Flutter-web
-// useAuthMessageHandlers — unified handler for auth PostMessage events
-{/* TODO: fill in — actual useAuthMessageHandlers implementation */}
+// useAuthMessageHandlers — one hook that receives and sends all auth PostMessage events
 ```
 
 The revised auth flow:
