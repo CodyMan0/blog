@@ -1,0 +1,65 @@
+---
+title: Am I Actually Using AI Well?
+authors: me
+category: 회고
+series: AI와 함께
+description: "I'm done studying AI for AI's sake. This time, the yardstick is the company's goals — revenue and cost."
+tags: [AI, retrospective, career]
+date: 2026-10-25
+---
+
+## The more I use AI, the bigger the question gets
+
+Last October, midway through moving our Flutter-web app to Next.js, I started switching from Cursor to Claude. Cursor is clearly a good tool, but after the switch my productivity felt roughly ten times higher.
+
+Looking back, the biggest reason was probably MCP integration. The Figma MCP handled about 80 percent of my markup work automatically. That was the first time AI made me say "wow" at work.
+
+## Did I get too attached to tools?
+
+After moving to Claude, I focused on which tools would push my productivity even further. I sharpened my skills, then sharpened my harness. I love doing that. But I'm not sure I sharpened them well — and that was a problem too. Without a clear yardstick, I slowly lost sight of why I was sharpening them at all.
+
+Whenever something new came out, I tried it and thought, "Ah, so that's why it's good." A local LLM is out — could we use it in our service? There's this thing called Cmux, and Orca, and it makes sessions talk to each other easily…. That was about it.
+
+But when I asked myself **whether the way I work had actually changed**, the answer was: not really. I had more tools, yet I worked the same way, and there were no results worth mentioning.
+
+## What if the yardstick were contributing to the company?
+
+This topic had been rattling around in my head for a long time without settling. Here's where I landed for now: I was confused because I had no yardstick, so I decided the yardstick would be contribution to the company.
+
+Faced with "Am I using AI well? It doesn't feel like it — so what should I do?", I focused only on maximizing my own productivity. Faster tools, better skills, quicker execution. But those are means. I had never actually asked, "Did this move revenue, cost, or the company's goals?"
+
+I needed a yardstick. I decided to measure things by how much they help the company's direction, and to use AI aggressively toward that contribution.
+
+![Without a yardstick I ran a loop chasing tools; with one, I start from the company's goals](/img/ai/criteria-loop.svg)
+
+## Side note: what I took away from [The Goal](https://product.kyobobook.co.kr/detail/S000220307312) (a business book)
+
+While I was wrestling with these AI questions, I came across a book called The Goal. I'd heard its message was that you should remove the bottleneck, not optimize everything else. So I bought it and read it through, and one thought crystallized.
+
+> I'd been obsessing over improving things that weren't the bottleneck.
+
+Thanks to AI, development is no longer the bottleneck. Yet I was still pouring myself into making development even faster.
+
+Agile, after all, is about shipping features quickly in short cycles. Here's what one of those cycles used to look like. In my experience, how long a PRD takes to write varies wildly, but once it's out, the dev team defines the spec in a meeting together with the designer. Backend work runs in parallel, and the frontend starts building against mock data such as MSW so it's ready to receive the backend. Then the frontend wraps up as the design and backend arrive. Depending on size, it took roughly one to one and a half weeks.
+
+Back then, development was the longest stretch of the process. Of those one to one and a half weeks, about five days went to development alone, so it's fair to say development was the bottleneck. Meanwhile, POs and PMs were pouring their time into writing PRDs with the right strategy to grow the product in line with the company's direction. So once they handed over a PRD, I imagine they could breathe easy for a week or so.
+
+What's changed is that PRDs still come out at the same pace, while the dev team's productivity has gone through the roof. So the bottleneck moved. Today, the bottleneck is the PRD and the design.
+
+![Development used to be the longest stretch; now it finishes first and waits on the PRD and design](/img/ai/bottleneck-flow.svg)
+
+That's roughly how the flow has changed. The surprising part is that even this way, it's done in about three days — that's about how long my recent work has taken.
+
+Counting development time alone, what used to take about five days now feels like it gets built in five hours. The rest of those three days is spent waiting on and applying the PRD and design. Since PRDs and designs still arrive at the same speed, it's no wonder they struggle to keep up.
+
+![Development time fell from about five days to five hours, but PRD-to-release only fell from one to one and a half weeks to about three days](/img/ai/dev-vs-leadtime.svg)
+
+So I plan to write more about how product teams like ours work. I hope it gives someone an insight, and that it becomes a channel where I can learn from others too. In a time with this many open questions, it would be great to share what we're each figuring out.
+
+## Action points
+
+Trying new tools and models as they come out still matters. But I won't fall for the whisper that doing so is the same as using AI well.
+
+If the bottleneck has moved outside development, then the place where AI can help is outside development too. So I'll focus on contributing to the company. It's not concrete yet, but our dev team has become a technology team, and we're about to roll out AX to improve efficiency not just for the product team but for other departments as well. This quarter, I want to put more of my focus there.
+
+"Maybe you end up using AI well when you're trying to contribute to the company?" I'm still not sure.
