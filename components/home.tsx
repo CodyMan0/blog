@@ -1,10 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getAllPosts, getTechRoots } from "@/lib/posts";
-import { getPostStats } from "@/lib/stats";
+import { getAllPosts } from "@/lib/posts";
 import { PostList } from "@/components/post-list";
 import { EmptyState } from "@/components/empty-state";
-import { siteConfig, techHref, writingHref, type Lang } from "@/lib/config";
+import { siteConfig, writingHref, type Lang } from "@/lib/config";
 
 const t = {
   ko: {
@@ -14,32 +13,33 @@ const t = {
     ],
     recent: "회고",
     recentDesc: "매달의 경험과 성장",
-    tech: "기술",
-    techDesc: "협업에서 만난 문제를 파보며",
+    ai: "AI 사용 회고",
+    aiDesc: "AI를 사용하며 만난 고민들을 기록",
     viewAll: "전체 보기",
     empty: "준비중",
   },
   en: {
     lead: [
-      "AI changed how I work, so I put more attention on the parts that did not.",
-      "Every month I look back, then break problems apart until they become knowledge.",
+      "AI has changed the way I work, but I want to keep learning with more attention on what hasn't changed.",
+      "I look back every month and learn by breaking problems down into their structure.",
     ],
-    recent: "Writing",
-    recentDesc: "Monthly experience and growth",
-    tech: "Engineering",
-    techDesc: "Digging into problems from real teamwork",
+    recent: "Retrospectives",
+    recentDesc: "Monthly experiences and growth",
+    ai: "AI Retrospectives",
+    aiDesc: "Notes on the questions I run into while using AI",
     viewAll: "View all",
     empty: "Coming soon",
   },
 } as const;
 
-export async function Home({ lang = "ko" }: { lang?: Lang }) {
-  // 회고와 기술은 성격이 달라 섞지 않는다
+export function Home({ lang = "ko" }: { lang?: Lang }) {
+  // 회고와 AI 성장기는 성격이 달라 섞지 않는다
   const memoirs = getAllPosts(lang)
-    .filter((p) => p.category === "회고")
+    .filter((p) => p.category === "회고" && p.series !== "AI와 함께")
     .slice(0, 5);
-  const tech = getTechRoots(lang).slice(0, 5);
-  const stats = await getPostStats([...memoirs, ...tech].map((p) => p.slug));
+  const ai = getAllPosts(lang)
+    .filter((p) => p.series === "AI와 함께")
+    .slice(0, 5);
   const tx = t[lang];
   const tagline = lang === "en" ? siteConfig.taglineEn : siteConfig.tagline;
   const name = lang === "en" ? siteConfig.nameEn : siteConfig.name;
@@ -75,7 +75,7 @@ export async function Home({ lang = "ko" }: { lang?: Lang }) {
         />
       </section>
 
-      {/* 회고 · 기술 반반. 좁은 화면에서는 위아래로 쌓인다 */}
+      {/* 회고 · AI와 함께 성장기 반반. 좁은 화면에서는 위아래로 쌓인다 */}
       <div className="mt-10 grid gap-8 md:grid-cols-2">
         <section>
           <div className="mb-1 flex items-baseline justify-between">
@@ -89,7 +89,7 @@ export async function Home({ lang = "ko" }: { lang?: Lang }) {
           </div>
           <p className="mb-4 text-sm text-muted">{tx.recentDesc}</p>
           {memoirs.length > 0 ? (
-            <PostList posts={memoirs} lang={lang} stats={stats} />
+            <PostList posts={memoirs} lang={lang} />
           ) : (
             <EmptyState label={tx.empty} />
           )}
@@ -97,17 +97,17 @@ export async function Home({ lang = "ko" }: { lang?: Lang }) {
 
         <section>
           <div className="mb-1 flex items-baseline justify-between">
-            <h2 className="text-lg font-semibold">{tx.tech}</h2>
+            <h2 className="text-lg font-semibold">{tx.ai}</h2>
             <Link
-              href={techHref(lang)}
+              href={writingHref(lang)}
               className="text-sm text-muted transition-colors hover:text-accent"
             >
               {tx.viewAll}
             </Link>
           </div>
-          <p className="mb-4 text-sm text-muted">{tx.techDesc}</p>
-          {tech.length > 0 ? (
-            <PostList posts={tech} lang={lang} href={techHref} stats={stats} />
+          <p className="mb-4 text-sm text-muted">{tx.aiDesc}</p>
+          {ai.length > 0 ? (
+            <PostList posts={ai} lang={lang} />
           ) : (
             <EmptyState label={tx.empty} />
           )}
