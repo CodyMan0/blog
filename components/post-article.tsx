@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Post } from "@/lib/posts";
 import { getAncestorPath, getLayerNeighbors, getSeriesPostsFor } from "@/lib/posts";
 import { SeriesBadge, SeriesNav } from "@/components/series-nav";
+import { SERIES_META } from "@/lib/series";
 import { LayerNav, LayerTrail } from "@/components/layer-nav";
 import { TopicChip } from "@/components/topic-chips";
 import { Mdx } from "@/components/mdx";
@@ -63,6 +64,8 @@ export function PostArticle({ post, lang }: { post: Post; lang: Lang }) {
     ],
   };
 
+  const showSeries = !!post.series && SERIES_META[post.series].inPost !== false;
+
   return (
     <article className="mx-auto max-w-2xl px-5 py-16">
       <JsonLd data={articleLd} />
@@ -73,9 +76,9 @@ export function PostArticle({ post, lang }: { post: Post; lang: Lang }) {
       </Link>
 
       <header className="mb-10 mt-4">
-        {(post.series || ancestors.length > 0) && (
+        {(showSeries || ancestors.length > 0) && (
           <div className="mb-3 flex flex-col gap-2">
-            {post.series && (
+            {showSeries && post.series && (
               <div>
                 <SeriesBadge series={post.series} order={post.seriesOrder} lang={lang} />
               </div>
@@ -118,7 +121,7 @@ export function PostArticle({ post, lang }: { post: Post; lang: Lang }) {
 
       <LayerNav neighbors={layers} currentTitle={post.title} lang={lang} />
 
-      {post.series && (
+      {showSeries && post.series && (
         <SeriesNav
           series={post.series}
           posts={seriesPosts}

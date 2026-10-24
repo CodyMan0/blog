@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { PostMeta } from "@/lib/posts";
 import type { PostStats } from "@/lib/stats";
 import { writingHref, type Lang } from "@/lib/config";
-import { SERIES_META } from "@/lib/series";
 import { formatShort } from "@/lib/format";
 
 const iconClass = "h-3.5 w-3.5 shrink-0";
@@ -78,11 +77,6 @@ export function PostList({
                   {formatShort(post.date)}
                 </span>
                 <span className="min-w-0 flex-1 truncate font-medium transition-colors group-hover:text-accent">
-                  {post.series && (
-                    <span className="mr-2 align-middle text-xs font-medium text-accent">
-                      {SERIES_META[post.series].label[lang]}
-                    </span>
-                  )}
                   {post.title}
                 </span>
                 {s && <Stats stats={s} />}
