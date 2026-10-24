@@ -1,0 +1,144 @@
+---
+title: 리프레시 토큰을 붙였더니 슬랙에 로그인 알림이 세 번 왔다
+authors: me
+category: 기술
+topic: 인증
+description: "액세스 토큰이 만료된 뒤 자동 재발급이 동시 요청 수만큼 불려 슬랙 로그인 알림이 여러 번 오던 문제와, 그걸 줄인 과정, 그리고 진짜 정답(single-flight)에 대한 메모."
+tags: [면접준비, 초안]
+date: 2026-04-19
+draft: true
+---
+
+> 초안. 데스크탑에서 대화하며 채운다.
+
+## 배경 — loader로 CLS를 없애려 했다
+
+이 프로젝트는 페이지 권한 검증과 화면에 필요한 데이터 prefetch를 react-router-dom의 `loader` 한곳에 모아 관리한다. loader를 쓴 이유는 Cumulative Layout Shift(CLS)를 줄이기 위해서였다. react-router-dom은 서버에서 데이터가 준비된 뒤에 페이지를 렌더링한다. 그래서 진입이 다소 느려 보여도, 사용자는 데이터와 UI가 처음부터 결합된 완성 화면을 본다. 빈 껍데기가 먼저 뜨고 데이터가 늦게 채워지며 레이아웃이 튀는 일이 없다.
+
+```ts
+export const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <DefaultLayout />,
+    loader: DefaultLayoutLoader.page,
+    errorElement: <ErrorPage />,
+    children: [],
+  },
+  {
+    path: "/app",
+    element: <AuthLayout />,
+    loader: AuthLayoutLoader.page,
+    errorElement: <ErrorPage />,
+    children: [],
+  },
+]);
+```
+
+인증은 axios interceptor로 처리했다. 응답이 401이면 액세스 토큰을 재발급받아 원래 요청을 다시 보내는, 흔한 자동 로그인 구조다.
+
+## 문제 발견 — 슬랙에 로그인 알림이 세 번 왔다
+
+우리는 로그인이 일어나면 슬랙으로 알림이 오도록 해두었다. 액세스 토큰이 만료된 뒤 자동으로 재발급되어 로그인 상태가 유지될 때도 이 알림이 온다. 여기까지는 의도한 동작이다.
+
+문제는 재발급 "한 번"에 슬랙 알림이 세 번 왔다는 것이다. 왜 그런지 파보니, 메인 페이지에 진입할 때 loader가 API를 세 개 호출하고 있었다.
+
+## 원인 — 동시에 터진 401을 각자 따로 처리했다
+
+세 요청이 거의 같은 순간에 나간다. 액세스 토큰이 만료된 상태라 셋 다 401을 받는다. 그러면 interceptor가 각 401마다 독립적으로 재발급을 시도한다. 재발급 엔드포인트는 서버 입장에서 로그인으로 취급되니, 슬랙 알림이 요청 수만큼 울린 것이다.
+
+즉 리프레시 토큰 자체가 문제가 아니었다. "동시에 터진 401을 각자 따로 처리한 것"이 문제였다.
+
+```
+메인 페이지 진입
+   └─ loader (CLS 제거용 prefetch)
+        ├─ API A ─┐
+        ├─ API B ─┼─ 동시에 발사
+        └─ API C ─┘   (액세스 토큰 만료)
+            │   │   │
+          401 401 401   ← 셋 다 거의 동시에 튕김
+            │   │   │
+          재발급 재발급 재발급  ← 각 401이 독립적으로 시도
+            │   │   │
+          슬랙  슬랙  슬랙   ← 로그인 알림 세 번
+```
+
+## 지금의 해결 — 호출 지점을 하나로 줄였다
+
+원래 loader는 `queryClient.prefetchQuery`를 쓰고 있었다. `prefetchQuery`는 에러를 삼킨다. 실패해도 조용히 넘어가서, 401이 interceptor까지 온전히 전달되는 흐름이 애매했다.
+
+이걸 `fetchQuery`로 바꿔 에러를 던지게(reject) 했다. 그러자 그 시점에 interceptor가 한 번만 타면서 재발급이 한 번, 슬랙 알림도 한 번으로 정리됐다.
+
+```ts
+// before: 에러를 삼킨다
+await queryClient.prefetchQuery({ queryKey, queryFn });
+
+// after: 에러를 던져 interceptor가 타도록
+await queryClient.fetchQuery({ queryKey, queryFn });
+```
+
+효과는 분명했다. 다만 냉정하게 보면 이건 "호출을 하나로 줄여서 우연히 한 번이 된" 완화책이다. loader 밖에서 동시 요청이 다시 생기면 같은 문제가 재발할 수 있다. 근본 원인인 "동시 401"은 그대로 남아 있다.
+
+## 정답 — 재발급을 한 번으로 묶는 single-flight
+
+`fetchQuery` 완화책은 급한 불을 껐지만, 근본 원인인 "동시 401"은 그대로였다. 그래서 이번 달 안에 제대로 마무리하기로 했다. 진짜 해법은 호출 지점을 줄이는 게 아니라, 재발급이라는 부수효과 자체를 한 번으로 묶는 것이다.
+
+interceptor에서 401을 그대로 처리하지 않고, 재발급을 전담하는 작은 매니저에 위임했다. `isRefreshing` 플래그와 대기 큐를 두고, 첫 401만 실제 재발급을 실행한다. 그 사이 들어온 나머지 401들은 진행 중인 재발급을 큐에서 구독하다가, 새 토큰이 나오면 헤더를 갈아끼워 원래 요청을 재시도한다.
+
+```ts
+type RequestCallback = (token: string) => void;
+
+class RefreshManager {
+  private isRefreshing = false;
+  private queue: RequestCallback[] = [];
+
+  async handle401(config, refreshFn, api) {
+    // 이미 누가 재발급 중이면, 큐에 원래 요청을 걸어두고 기다린다
+    if (this.isRefreshing) {
+      return new Promise((resolve) => {
+        this.queue.push((token) => {
+          config.headers.Authorization = `Bearer ${token}`;
+          resolve(api(config));
+        });
+      });
+    }
+
+    // 첫 401만 실제 재발급을 실행한다
+    this.isRefreshing = true;
+    try {
+      const newToken = await refreshFn();
+      this.queue.forEach((cb) => cb(newToken)); // 대기하던 요청 일괄 재시도
+      this.queue = [];
+      config.headers.Authorization = `Bearer ${newToken}`;
+      return api(config);
+    } catch (err) {
+      this.queue = [];
+      throw err;
+    } finally {
+      this.isRefreshing = false;
+    }
+  }
+}
+```
+
+interceptor는 401(액세스 만료)일 때 이 매니저에 재발급 함수를 넘겨주기만 한다.
+
+```ts
+if (error.response?.status === 401 && isAccessExpired) {
+  const retry = await refreshManager.handle401(
+    config,
+    async () => {
+      const reissued = await authApi.reissueToken();
+      setSession(reissued);
+      return reissued.access_token;
+    },
+    instance,
+  );
+  return retry;
+}
+```
+
+이게 흔히 말하는 single-flight(요청 합치기) 패턴이다. 재발급을 한 번으로 보장하니, 동시 요청이 세 개든 열 개든 슬랙 알림도 한 번이다. `fetchQuery`처럼 호출 지점 개수에 기대지 않으므로, loader 밖에서 동시 요청이 생겨도 안전하다.
+
+## 마무리 — 왜 이게 재밌었나
+
+CLS를 줄이려고 넣은 loader가, 리프레시 토큰을 붙이자 "동시성" 문제로 되돌아왔다. 좋은 의도로 넣은 구조가 다른 축에서 비용을 만든 셈이다. 증상(슬랙 세 번)에서 시작해 원인(동시 401)까지 내려가 보니, 완화책과 정석의 차이가 선명해졌다. `fetchQuery`로 호출 지점을 줄인 건 급한 불이었고, 제대로 된 마무리는 재발급을 한 번으로 묶는 single-flight였다. 결국 `RefreshManager`로 그렇게 정리했다.
